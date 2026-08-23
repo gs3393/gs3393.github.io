@@ -1,0 +1,37 @@
+[
+  {
+    "objectID": "work.html",
+    "href": "work.html",
+    "title": "Work",
+    "section": "",
+    "text": "Selected engineering and research projects will be added here."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "First Page",
+    "section": "",
+    "text": "I am an AI/ML engineer working on generative AI products.\nI write about model evaluation, research engineering, and product-oriented ML experiments."
+  },
+  {
+    "objectID": "index.html#latest-work",
+    "href": "index.html#latest-work",
+    "title": "First Page",
+    "section": "Latest work",
+    "text": "Latest work\nSelected work will be added here."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
+    "objectID": "notes.html",
+    "href": "notes.html",
+    "title": "Notes",
+    "section": "",
+    "text": "Short technical notes and experiment records will be added here."
+  }
+]

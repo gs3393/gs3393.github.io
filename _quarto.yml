@@ -1,0 +1,23 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "gs3393"
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: work.qmd
+        text: Work
+      - href: notes.qmd
+        text: Notes
+    right:
+      - icon: github
+        href: https://github.com/gs3393
+
+format:
+  html:
+    theme: cosmo
+    css: styles.css
+    toc: true
