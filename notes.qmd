@@ -1,5 +1,13 @@
 ---
 title: "Notes"
+toc: false
+listing:
+  contents: "notes/*.qmd"
+  type: default
+  sort: "date desc"
+  fields: [date, title, description, categories]
+  date-format: "MMM D, YYYY"
+  categories: true
 ---
 
-Short technical notes and experiment records will be added here.
+Technical analyses and experiment records on generative models, evaluation, and research engineering.

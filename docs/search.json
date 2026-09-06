@@ -7,6 +7,55 @@
     "text": "Selected engineering and research projects will be added here."
   },
   {
+    "objectID": "notes/jit-fd-loss-analysis.html",
+    "href": "notes/jit-fd-loss-analysis.html",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "",
+    "text": "Converting JiT into a one-step generator with FD-Inception improves FID but worsens FDr6 relative to its original 50-step results. This note examines what that disagreement shows and what it leaves unexplained."
+  },
+  {
+    "objectID": "notes/jit-fd-loss-analysis.html#the-idea-and-contributions-of-fd-loss",
+    "href": "notes/jit-fd-loss-analysis.html#the-idea-and-contributions-of-fd-loss",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "The idea and contributions of FD-loss",
+    "text": "The idea and contributions of FD-loss\nRepresentation Fréchet Loss for Visual Generation uses Fréchet distance (FD), an image evaluation measure, as a loss for post-training generators. A pretrained representation model extracts features from real and generated images, and the generator is updated to bring their feature means and covariances closer. With Inception features, this distance becomes the familiar FID metric. FD-Loss, §3.1.\nThe key idea is to separate the population size used for distribution estimation from the batch size used for backpropagation. Features or their statistics accumulate across batches, while gradients flow only through the current batch. This makes matching distributions over a large sample population computationally manageable. FD-Loss, §3.2.\nThe paper shows that this approach can improve existing one-step generators and convert multi-step models into one-step generators without per-sample teacher predictions. It also shows that FID and other evaluations can disagree depending on the training representation, and introduces FDr6 to aggregate distances across several representations. FD-Loss, §§3.3–4."
+  },
+  {
+    "objectID": "notes/jit-fd-loss-analysis.html#where-jits-evaluation-scores-disagree",
+    "href": "notes/jit-fd-loss-analysis.html#where-jits-evaluation-scores-disagree",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "Where JiT’s evaluation scores disagree",
+    "text": "Where JiT’s evaluation scores disagree\nJiT normally generates images through repeated denoising. Post-training with FD-loss enables generation in a single network call, but the evaluation of that result depends on the representation used for training. The main comparison here is between FD-Inception, which uses Inception alone, and FD-SIM, which combines SigLIP, Inception, and MAE.\nFDr6 averages normalized FD values across six spaces: Inception, ConvNeXt, DINOv2, MAE, SigLIP, and CLIP. In each space, generated-to-training distance is divided by validation-to-training distance. Both FID and FDr6 are better when lower. FDr6 complements evaluation in a single representation, but it does not directly measure human preference. FD-Loss, §3.4.\nThe following results use JiT-L/16 on ImageNet 256 × 256. The post-trained models receive 50 epochs of additional training, and evaluation uses 50,000 generated images. FD-Loss, Table 2 and §4.\n\n\n\nTable 1: JiT-L results reported in FD-Loss Table 2. The 50-step reference uses 200 network evaluations: 50 steps × 2 for the Heun solver × 2 for classifier-free guidance. Each one-step condition uses one network evaluation.\n\n\n\n\n\nGenerator / post-training loss\nGeneration\nFID ↓\nFDr6 ↓\n\n\n\n\nOriginal JiT-L\n50-step\n2.59\n10.73\n\n\nOriginal JiT-L\nOne-step\n291.59\n214.75\n\n\nFD-Inception\nOne-step\n0.77\n12.86\n\n\nFD-MAE\nOne-step\n6.52\n9.30\n\n\nFD-SigLIP\nOne-step\n5.10\n9.04\n\n\nFD-SigLIP + MAE\nOne-step\n4.67\n3.83\n\n\nFD-SIM\nOne-step\n0.85\n3.29\n\n\n\n\n\n\nThe first two rows show why conversion training is needed. Simply calling the original model once produces very poor scores. FD-Inception makes a large improvement from this starting point: FID falls from 291.59 to 0.77, and FDr6 from 214.75 to 12.86.\nThe disagreement appears when comparing against the original model running its full 50-step sampler. FD-Inception has a better FID but a worse FDr6. FD-SIM has a slightly higher FID than FD-Inception and a much lower FDr6. Selecting a model by FID alone would therefore favor a different result than selecting by the broader evaluation panel.\nAnother detail matters: MAE or SigLIP alone also yields a lower FDr6 than the 50-step reference. The table does not support a simple explanation that conversion is impossible with a single representation. Which representation is used, and what information it supplies for this conversion, matters.\nThe comparison baseline needs care. The 50-step reference is a different sampling procedure, not an earlier point on the one-step training curve. Finishing with a higher FDr6 than that reference does not establish that training destroyed performance the one-step generator previously had. Some properties of the multi-step result may never have been sufficiently recovered in one step."
+  },
+  {
+    "objectID": "notes/jit-fd-loss-analysis.html#what-the-average-conceals",
+    "href": "notes/jit-fd-loss-analysis.html#what-the-average-conceals",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "What the average conceals",
+    "text": "What the average conceals\n\n\n\n\n\n\nFigure 1: Final results in six representation spaces. Lower is better. Replotted from FD-Loss Table F.4; lines connect corresponding endpoints, not intermediate training states.\n\n\n\nThe per-representation comparison in Figure 1 shows that FD-Inception’s worse average does not mean uniform deterioration. Relative to the 50-step reference, DINOv2, MAE, and SigLIP distances increase, while Inception, ConvNeXt, and CLIP distances decrease. The particularly large gaps in MAE and SigLIP make the disagreement clearer than the aggregate alone.\nThree of FDr6’s six representations also appear in SIM’s training loss, so an improved aggregate score alone cannot establish improvement outside the training representations. Here, SIM lowers all six distances, including ConvNeXt, DINOv2, and CLIP, which are outside its training set of representations. This is evidence of improvement beyond the spaces directly optimized, although those additional evaluators do not cover every visual property.\nThese results make the observation more specific. Inception optimization produces a generator that matches one set of feature statistics especially well, with uneven improvement elsewhere. Calling this “metric gaming” can express the concern without explaining its cause. An increase in MAE distance also cannot be translated directly into a loss of a particular property, such as shape or texture. The metric comparison needs to be read alongside the paper’s visual evidence.\nThe paper’s Figure 5 places outputs from the original JiT and models post-trained with different losses side by side, using the same noise inputs. In the dog example, the original one-step model’s blurry output becomes a recognizable dog after post-training, while Inception and SIM also differ in background and texture. These examples provide evidence of changes visible in the images themselves. A small set of examples cannot establish which condition people prefer more often, how consistently the differences occur across the generated distribution, or what causes them.\nThere is also evidence about human preference. In the base-model comparison in Figure 6, models post-trained with FD-SIM are preferred. However, this evaluates FD-SIM against the corresponding base models; it does not directly test the Inception–SIM difference in JiT.\n\n\n\n\n\n\nNoteExact values and figure source\n\n\n\n\n\n\n\n\nRepresentation\nOriginal 50-step\nFD-Inception\nFD-SIM\n\n\n\n\nInception\n1.54\n0.46\n0.51\n\n\nConvNeXt\n3.49\n2.57\n1.09\n\n\nDINOv2\n6.10\n7.34\n3.06\n\n\nMAE\n8.07\n15.28\n1.01\n\n\nSigLIP\n19.37\n26.22\n2.78\n\n\nCLIP\n25.82\n25.29\n11.30\n\n\n\nSource: FD-Loss v1, Table F.4. The paper uses SigLIP2 and labels it SigLIP in the tables; the figure preserves that label. Download the transcribed CSV and plotting script."
+  },
+  {
+    "objectID": "notes/jit-fd-loss-analysis.html#could-the-starting-model-matter",
+    "href": "notes/jit-fd-loss-analysis.html#could-the-starting-model-matter",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "Could the starting model matter?",
+    "text": "Could the starting model matter?\nFD-Loss also post-trains pMF and iMF, which already generate in one step. In its separate 100-epoch comparison, Inception post-training improves their FDr6, while JiT remains worse than its original multi-step reference on that metric. FD-Loss, Table 3.\nThis contrast connects to the authors’ suggestion that converting a denoiser is harder than improving an existing one-step generator. FD-Loss, §4.3. In multi-step generation, an intermediate prediction is used to update the current sample; in one-step generation, a single output must be the final image. A representation that supplies useful corrections to a function already producing complete samples may be insufficient to teach a denoiser to perform the entire process in one call.\nThat explanation is plausible, but the comparison changes more than the starting ability. The model families differ in architecture and training history, and JiT uses a different post-training learning rate. Their results cannot isolate conversion difficulty as the cause. What they show is that the same loss can behave differently across settings.\nThe remaining question is therefore: does Inception fail to teach some properties needed for conversion, or can optimizing it also undo those properties once they are present?"
+  },
+  {
+    "objectID": "notes/jit-fd-loss-analysis.html#what-remains-unexplained",
+    "href": "notes/jit-fd-loss-analysis.html#what-remains-unexplained",
+    "title": "When FID Becomes the Loss: Reading JiT’s One-Step Results",
+    "section": "What remains unexplained",
+    "text": "What remains unexplained\nThe first possibility is an incomplete learning signal. Inception statistics may become easy to match before the generator learns everything needed to satisfy the other representations. In this case, the gap concerns what conversion has yet to achieve.\nThe second possibility is a conflict between objectives. A change that brings Inception features closer to the real-data reference can move another representation’s features farther away. Reducing distance in one space provides no mathematical guarantee of improvement in another. This could also affect a generator that already produces good one-step samples.\nOptimization offers another explanation. The paper normalizes each FD term, but this does not equalize the magnitudes and directions of parameter gradients. Differences in the actual updates induced by the losses therefore remain a possible explanation. FD-Loss, §3.2 and Eq. 6. Accumulated feature statistics may also reflect earlier generator states. These training dynamics could partly account for a difference attributed to the representation. The published endpoints do not distinguish these explanations, and identifying which metric improved does not establish the cause.\nA useful follow-up would compare Inception refinement from an already good one-step JiT with conversion from the original denoiser. With continued SIM training as a control, learning curves could help distinguish distances that never recover from distances that improve and later reverse. This is the kind of evidence missing from the current tables.\nThe central lesson for reading the paper is concrete. FD-loss gives a representation model a role in both evaluating and teaching the generator. JiT shows why those roles deserve separate scrutiny. Success in the training representation need not translate into even improvement elsewhere, and the learning signal required of that representation changes when the generator must learn a new way to produce images.\n\nSource scope: This note analyzes the JiT results reported in FD-Loss 2604.28190v1. All numerical results come from the paper, and the figure replots those values. The possible causes discussed here are interpretations, not findings established by new experiments."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "About this site"
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "First Page",
@@ -21,17 +70,10 @@
     "text": "Latest work\nSelected work will be added here."
   },
   {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "About this site"
-  },
-  {
     "objectID": "notes.html",
     "href": "notes.html",
     "title": "Notes",
     "section": "",
-    "text": "Short technical notes and experiment records will be added here."
+    "text": "Technical analyses and experiment records on generative models, evaluation, and research engineering.\n\n\n\n\n\n\n\n\n\nWhen FID Becomes the Loss: Reading JiT’s One-Step Results\n\n\n\nAnalysis\n\nGenerative Models\n\nEvaluation\n\n\n\nThe core idea behind FD-loss, the disagreement between FID and FDr6 in JiT, and what these results reveal about possible causes.\n\n\n\n\n\nSep 6, 2026\n\n\n\n\n\nNo matching items"
   }
 ]
