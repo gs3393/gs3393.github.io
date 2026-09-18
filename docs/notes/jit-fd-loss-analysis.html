@@ -25,7 +25,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 </style>
@@ -98,24 +98,24 @@ ul.task-list li input[type="checkbox"] {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="../index.html">
+    <a class="nav-link" href="../index.html"> 
 <span class="menu-text">Home</span></a>
-  </li>
+  </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../work.html">
+    <a class="nav-link" href="../work.html"> 
 <span class="menu-text">Work</span></a>
-  </li>
+  </li>  
   <li class="nav-item">
-    <a class="nav-link" href="../notes.html">
+    <a class="nav-link" href="../notes.html"> 
 <span class="menu-text">Notes</span></a>
-  </li>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/gs3393"> <i class="bi bi-github" role="img">
-</i>
+</i> 
 <span class="menu-text"></span></a>
-  </li>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -130,7 +130,7 @@ ul.task-list li input[type="checkbox"] {
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
         <nav id="TOC" role="doc-toc" class="toc-active">
     <h2 id="toc-title">On this page</h2>
-
+   
   <ul class="collapse">
   <li><a href="#the-idea-and-contributions-of-fd-loss" id="toc-the-idea-and-contributions-of-fd-loss" class="nav-link active" data-scroll-target="#the-idea-and-contributions-of-fd-loss">The idea and contributions of FD-loss</a></li>
   <li><a href="#where-jits-evaluation-scores-disagree" id="toc-where-jits-evaluation-scores-disagree" class="nav-link" data-scroll-target="#where-jits-evaluation-scores-disagree">Where JiT’s evaluation scores disagree</a></li>
@@ -162,17 +162,17 @@ ul.task-list li input[type="checkbox"] {
 
 <div class="quarto-title-meta">
 
-
+    
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
       <p class="date">September 6, 2026</p>
     </div>
   </div>
-
-
+  
+    
   </div>
-
+  
 
 
 </header>
@@ -374,7 +374,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
     anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {
+        if (clz.startsWith('code-annotation-')) {                     
           return true;
         }
       }
@@ -394,11 +394,11 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
         button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button,
-          { trigger: "manual",
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
             offset: [0, -8]});
-        tooltip.show();
+        tooltip.show();    
       }
       setTimeout(function() {
         if (tooltip) {
@@ -475,7 +475,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
       if (onUntriggerFn) {
         config.onUntrigger = onUntriggerFn;
       }
-      window.tippy(el, config);
+      window.tippy(el, config); 
     }
     const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
     for (var i=0; i<noterefs.length; i++) {
@@ -550,7 +550,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
       tippyHover(xref, undefined, function(instance) {
         instance.disable();
         let url = xref.getAttribute('href');
-        let hash = undefined;
+        let hash = undefined; 
         if (url.startsWith('#')) {
           hash = url;
         } else {
@@ -578,7 +578,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
               if (note !== null) {
                 const html = processXRef(id, note);
                 instance.setContent(html);
-              }
+              } 
             }).finally(() => {
               instance.enable();
               instance.show();
@@ -602,7 +602,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
               }
               const html = processXRef(null, note);
               instance.setContent(html);
-            }
+            } 
           }).finally(() => {
             instance.enable();
             instance.show();
@@ -642,7 +642,7 @@ Figure&nbsp;1: Final results in six representation spaces. Lower is better. Repl
               height = bottom - top;
             }
             if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it
+              // cook up a div (if necessary) and position it 
               let div = window.document.getElementById("code-annotation-line-highlight");
               if (div === null) {
                 div = window.document.createElement("div");

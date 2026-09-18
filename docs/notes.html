@@ -23,7 +23,7 @@ div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
 ul.task-list{list-style: none;}
 ul.task-list li input[type="checkbox"] {
   width: 0.8em;
-  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
 }
 </style>
@@ -81,13 +81,13 @@ ul.task-list li input[type="checkbox"] {
     const listingTargetEl = window.document.querySelector('#listing-listing .list');
     if (!listingTargetEl) {
       // No listing discovered, do not attach.
-      return;
+      return; 
     }
 
     const options = {
       valueNames: ['listing-date','listing-title','listing-description','listing-categories',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-file-modified-sort'] }],
-
-      searchColumns: ["listing-date","listing-title","listing-author","listing-image","listing-description","listing-categories"],
+      
+      searchColumns: ["listing-date","listing-title","listing-author","listing-subtitle","listing-image","listing-description","listing-categories"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -156,24 +156,24 @@ window.Quarto = {
           <div class="collapse navbar-collapse" id="navbarCollapse">
             <ul class="navbar-nav navbar-nav-scroll me-auto">
   <li class="nav-item">
-    <a class="nav-link" href="./index.html">
+    <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
-  </li>
+  </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./work.html">
+    <a class="nav-link" href="./work.html"> 
 <span class="menu-text">Work</span></a>
-  </li>
+  </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./notes.html" aria-current="page">
+    <a class="nav-link active" href="./notes.html" aria-current="page"> 
 <span class="menu-text">Notes</span></a>
-  </li>
+  </li>  
 </ul>
             <ul class="navbar-nav navbar-nav-scroll ms-auto">
   <li class="nav-item compact">
     <a class="nav-link" href="https://github.com/gs3393"> <i class="bi bi-github" role="img">
-</i>
+</i> 
 <span class="menu-text"></span></a>
-  </li>
+  </li>  
 </ul>
           </div> <!-- /navcollapse -->
             <div class="quarto-navbar-tools">
@@ -186,7 +186,7 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(1)</span></div><div class="category" data-category="QW5hbHlzaXM=">Analysis <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R2VuZXJhdGl2ZSUyME1vZGVscw==">Generative Models <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Categories</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(2)</span></div><div class="category" data-category="QW5hbHlzaXM=">Analysis <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RGlmZnVzaW9u">Diffusion <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R2VuZXJhdGl2ZSUyME1vZGVscw==">Generative Models <span class="quarto-category-count">(2)</span></div><div class="category" data-category="U3R1ZHklMjBOb3Rlcw==">Study Notes <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -199,11 +199,11 @@ window.Quarto = {
 
 <div class="quarto-title-meta">
 
-
-
-
+    
+  
+    
   </div>
-
+  
 
 
 </header>
@@ -216,7 +216,33 @@ window.Quarto = {
 
 <div class="quarto-listing quarto-listing-container-default" id="listing-listing">
 <div class="list quarto-listing-default">
-<div class="quarto-post image-right" data-index="0" data-categories="QW5hbHlzaXMlMkNHZW5lcmF0aXZlJTIwTW9kZWxzJTJDRXZhbHVhdGlvbg==" data-listing-date-sort="1788620400000" data-listing-file-modified-sort="1788690015441" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1576">
+<div class="quarto-post image-right" data-index="0" data-categories="U3R1ZHklMjBOb3RlcyUyQ0RpZmZ1c2lvbiUyQ0dlbmVyYXRpdmUlMjBNb2RlbHM=" data-listing-date-sort="1789657200000" data-listing-file-modified-sort="1789713636345" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="40" data-listing-word-count-sort="7984">
+<div class="body">
+<h3 class="no-anchor listing-title">
+<a href="./notes/diffusion-foundations.html" class="no-external">From Noise to Images</a>
+</h3>
+<div class="listing-categories">
+
+<div class="listing-category" onclick="window.quartoListingCategory('U3R1ZHklMjBOb3Rlcw=='); return false;">Study Notes</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('RGlmZnVzaW9u'); return false;">Diffusion</div>
+
+<div class="listing-category" onclick="window.quartoListingCategory('R2VuZXJhdGl2ZSUyME1vZGVscw=='); return false;">Generative Models</div>
+
+</div>
+<div class="delink listing-description"><a href="./notes/diffusion-foundations.html" class="no-external">
+<p>A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise.</p>
+</a></div>
+</div>
+<div class="metadata">
+<a href="./notes/diffusion-foundations.html" class="no-external">
+<div class="listing-date">
+Sep 18, 2026
+</div>
+</a>
+</div>
+</div>
+<div class="quarto-post image-right" data-index="1" data-categories="QW5hbHlzaXMlMkNHZW5lcmF0aXZlJTIwTW9kZWxzJTJDRXZhbHVhdGlvbg==" data-listing-date-sort="1788620400000" data-listing-file-modified-sort="1788690015441" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1576">
 <div class="body">
 <h3 class="no-anchor listing-title">
 <a href="./notes/jit-fd-loss-analysis.html" class="no-external">When FID Becomes the Loss: Reading JiT’s One-Step Results</a>
@@ -256,7 +282,7 @@ Sep 6, 2026
     anchorJS.add('.anchored');
     const isCodeAnnotation = (el) => {
       for (const clz of el.classList) {
-        if (clz.startsWith('code-annotation-')) {
+        if (clz.startsWith('code-annotation-')) {                     
           return true;
         }
       }
@@ -276,11 +302,11 @@ Sep 6, 2026
         button.setAttribute("data-bs-toggle", "tooltip");
         button.setAttribute("data-bs-placement", "left");
         button.setAttribute("data-bs-title", "Copied!");
-        tooltip = new bootstrap.Tooltip(button,
-          { trigger: "manual",
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
             customClass: "code-copy-button-tooltip",
             offset: [0, -8]});
-        tooltip.show();
+        tooltip.show();    
       }
       setTimeout(function() {
         if (tooltip) {
@@ -357,7 +383,7 @@ Sep 6, 2026
       if (onUntriggerFn) {
         config.onUntrigger = onUntriggerFn;
       }
-      window.tippy(el, config);
+      window.tippy(el, config); 
     }
     const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
     for (var i=0; i<noterefs.length; i++) {
@@ -432,7 +458,7 @@ Sep 6, 2026
       tippyHover(xref, undefined, function(instance) {
         instance.disable();
         let url = xref.getAttribute('href');
-        let hash = undefined;
+        let hash = undefined; 
         if (url.startsWith('#')) {
           hash = url;
         } else {
@@ -460,7 +486,7 @@ Sep 6, 2026
               if (note !== null) {
                 const html = processXRef(id, note);
                 instance.setContent(html);
-              }
+              } 
             }).finally(() => {
               instance.enable();
               instance.show();
@@ -484,7 +510,7 @@ Sep 6, 2026
               }
               const html = processXRef(null, note);
               instance.setContent(html);
-            }
+            } 
           }).finally(() => {
             instance.enable();
             instance.show();
@@ -524,7 +550,7 @@ Sep 6, 2026
               height = bottom - top;
             }
             if (top !== null && height !== null && parent !== null) {
-              // cook up a div (if necessary) and position it
+              // cook up a div (if necessary) and position it 
               let div = window.document.getElementById("code-annotation-line-highlight");
               if (div === null) {
                 div = window.document.createElement("div");

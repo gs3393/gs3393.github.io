@@ -1,0 +1,80 @@
+/* Styles scoped to the standalone diffusion note. */
+#quarto-content main {
+  font-size: 1.04rem;
+  line-height: 1.75;
+}
+main p { margin-bottom: 1.15rem; }
+main h2 {
+  margin-top: 3.5rem;
+  padding-top: .8rem;
+  border-top: 1px solid #e3e9ec;
+  letter-spacing: -.018em;
+}
+main h3 { margin-top: 2.1rem; letter-spacing: -.01em; }
+main .quarto-figure { margin: 2rem 0; }
+main .quarto-figure img { width: 100%; height: auto; }
+main figcaption { font-size: .88rem; line-height: 1.6; color: #586671; }
+main table { font-size: .92rem; line-height: 1.55; }
+main .math.display { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: .65rem 0; }
+main mjx-container[display="true"] { max-width: 100%; overflow-x: auto; overflow-y: hidden; padding: .2rem 0; }
+main pre { font-size: .82rem; line-height: 1.6; }
+.quarto-title .subtitle { color: #4f6875; font-weight: 400; }
+/* Keep the top-level outline visible in this long note. */
+#TOC > ul { display: block !important; }
+.algorithm-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  margin: 1.6rem 0 .7rem;
+}
+.paper-algorithm {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-top: 2px solid #223942;
+  border-bottom: 2px solid #223942;
+  padding: 0 .65rem .7rem;
+  font-size: .9rem;
+  line-height: 1.55;
+}
+.paper-algorithm p { margin-bottom: .8rem; }
+.paper-algorithm > p:first-child {
+  padding: .6rem 0;
+  border-bottom: 1px solid #9aaab1;
+}
+.algorithm-title { color: #223942; }
+.paper-algorithm ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.paper-algorithm li { padding-left: .2rem; margin-bottom: .45rem; }
+.paper-algorithm li::marker { color: #61747e; font-variant-numeric: tabular-nums; }
+.paper-algorithm li > ol { margin-top: .45rem; }
+.paper-algorithm > p:last-child { margin-top: auto; margin-bottom: 0; }
+.algorithm-result {
+  display: block;
+  border-top: 1px solid #d3dde1;
+  padding-top: .65rem;
+  color: #49616e;
+}
+.distribution-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: .7rem;
+}
+.distribution-panels p { margin: 0; }
+.distribution-panels .quarto-figure { margin: 0; }
+.concept-route {
+  border-left: 3px solid #187c80;
+  padding: .7rem 1rem;
+  margin: 1.4rem 0;
+  background: #f3f8f8;
+  line-height: 1.8;
+}
+.concept-route p:last-child { margin-bottom: 0; }
+main .callout { margin: 1.6rem 0; }
+main .callout-body { line-height: 1.7; }
+@media (max-width: 720px) {
+  .algorithm-pair { grid-template-columns: 1fr; gap: 1.4rem; }
+}
+@media (max-width: 640px) {
+  #quarto-content main { font-size: 1rem; }
+  main table { font-size: .82rem; }
+}
