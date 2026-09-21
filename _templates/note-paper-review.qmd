@@ -1,0 +1,19 @@
+---
+title: ""
+description: ""          # one or two sentences; shown in lists and share cards
+date: 2026-01-01
+post-type: Paper Review
+categories: []           # topics only, e.g. [Evaluation, Editing]
+image: /assets/site/social-card.png   # share card; replace with a PNG/JPG figure if the note has one
+draft: true              # remove when the note is approved for publishing
+---
+
+<!-- Copy to notes/<slug>.qmd. Figures and data go in notes/assets/<slug>/.
+     The body structure is up to the note; only the box below is a convention. -->
+
+::: {.paper-info}
+**Paper.** *Title*, Authors, Venue Year. [arXiv:0000.00000v1](https://arxiv.org/abs/0000.00000v1) · [code](https://github.com/)
+
+**What I read.** Version v1. Sections covered: … . Not covered: … .
+:::
+

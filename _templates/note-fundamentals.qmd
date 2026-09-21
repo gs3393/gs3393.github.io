@@ -1,0 +1,15 @@
+---
+title: ""
+subtitle: ""
+description: ""          # one or two sentences; shown in lists and share cards
+date: 2026-01-01
+post-type: Fundamentals
+categories: []           # topics only, e.g. [Diffusion, Guidance]
+draft: true              # remove when the note is approved for publishing
+---
+
+<!-- Copy to notes/<slug>.qmd. Figures and data go in notes/assets/<slug>/.
+     The body structure is up to the note; nothing below is required. -->
+
+## Why I am writing this
+

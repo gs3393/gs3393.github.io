@@ -3,18 +3,9 @@ title: "From Noise to Images"
 subtitle: "Connecting DDPM, score functions, classifier-free guidance, and DiT"
 description: "A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise."
 date: 2026-09-18
-date-format: "MMMM D, YYYY"
-categories: [Study Notes, Diffusion, Generative Models]
-lang: en
-toc: true
-toc-depth: 2
+post-type: Fundamentals
+categories: [Diffusion, Guidance, Architecture]
 toc-expand: true
-number-sections: false
-format:
-  html:
-    html-math-method: mathjax
-    code-copy: true
-    css: assets/diffusion-foundations/article.css
 resources:
   - assets/diffusion-foundations/*
 ---

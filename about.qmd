@@ -1,5 +1,30 @@
 ---
 title: "About"
+description: "Who writes this site and how it is organized."
+hide-description: true
+toc: false
 ---
 
-About this site
+I am an AI/ML engineer working on generative AI products. I write about model evaluation, research engineering, and product-oriented ML experiments.
+
+## What I study
+
+I am working through image generation along three lines.
+
+- **How generative models work and how they are designed.** Diffusion, flow matching, conditioning, architectures, and the relation between training and sampling.
+- **Controllable generation and evaluation.** Spatial conditions, consistency, and how to tell whether generated data is good.
+- **3D, video, and world models.** Geometry, cameras, and consistency across views and time.
+
+## How this site is organized
+
+Everything here is a note. Each note is one of three kinds.
+
+- **Fundamentals** connect the ideas that foundational papers share.
+- **Paper reviews** explain what a recent paper proposes, and what its results do and do not show.
+- **Experiments** record reproductions and checks, including the ones that did not work.
+
+Topics appear as tags on each note. New notes are also available through the [RSS feed](notes.xml).
+
+## Elsewhere
+
+Code and figure sources are on [GitHub](https://github.com/gs3393).

@@ -2,12 +2,9 @@
 title: "When FID Becomes the Loss: Reading JiT's One-Step Results"
 description: "The core idea behind FD-loss, the disagreement between FID and FDr6 in JiT, and what these results reveal about possible causes."
 date: 2026-09-06
-date-format: "MMMM D, YYYY"
-categories: [Analysis, Generative Models, Evaluation]
-lang: en
-toc: true
-toc-depth: 2
-number-sections: false
+post-type: Paper Review
+image: /assets/site/social-card.png
+categories: [Evaluation, Few-Step Generation]
 resources:
   - assets/jit-fd-loss/table-f4.csv
   - assets/jit-fd-loss/plot-fdr.py

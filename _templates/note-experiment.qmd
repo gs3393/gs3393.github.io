@@ -1,0 +1,20 @@
+---
+title: ""
+description: ""          # one or two sentences; shown in lists and share cards
+date: 2026-01-01
+post-type: Experiment
+categories: []           # topics only, e.g. [Guidance, Evaluation]
+draft: true              # remove when the note is approved for publishing
+---
+
+<!-- Copy to notes/<slug>.qmd. Figures and data go in notes/assets/<slug>/.
+     The body structure is up to the note; only the box below is a convention. -->
+
+::: {.setup-info}
+**Setup.** Model: … · Data: … (subset: …) · Hardware: … · [code](https://github.com/)
+
+**What this shows.** …
+
+**What it does not show.** …
+:::
+

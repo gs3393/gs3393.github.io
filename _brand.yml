@@ -1,0 +1,47 @@
+meta:
+  name: gs3393
+  link: https://gs3393.github.io
+
+color:
+  palette:
+    paper: "#FCFBF8"
+    plate: "#FFFFFF"
+    ink: "#1F2A30"
+    slate: "#223942"
+    ink-soft: "#56636B"
+    ink-faint: "#7A868C"
+    rule: "#E6E2DA"
+    wash: "#F3F1EC"
+    teal: "#187C80"
+    teal-deep: "#136B6F"
+    indigo: "#4338CA"
+    amber: "#92400E"
+  background: paper
+  foreground: ink
+  primary: teal-deep
+  secondary: ink-soft
+
+typography:
+  fonts:
+    - family: Source Serif 4
+      source: google
+      weight: [400, 600, 700]
+      style: [normal, italic]
+    - family: Inter
+      source: google
+      weight: [400, 500, 600, 700]
+    - family: JetBrains Mono
+      source: google
+      weight: [400, 500]
+  base:
+    family: Source Serif 4
+    line-height: 1.72
+  headings:
+    family: Inter
+    weight: 600
+    line-height: 1.25
+  monospace:
+    family: JetBrains Mono
+    size: 0.86em
+  link:
+    color: teal-deep
