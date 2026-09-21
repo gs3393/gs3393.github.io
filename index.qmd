@@ -1,12 +1,46 @@
 ---
-title: "First Page"
+pagetitle: "gs3393 · Notes on image generation models"
+description: "Study notes, paper reviews, and experiments on image generation models."
+image: assets/site/social-card.png
+toc: false
+listing:
+  - id: recent-notes
+    contents: "notes/*.qmd"
+    sort: "date desc"
+    max-items: 5
+    fields: [date, title, subtitle, description, categories, reading-time]
+    date-format: "MMM D, YYYY"
+    template: _templates/notes-listing.ejs
+    template-params:
+      mode: flat
+  - id: note-kinds
+    contents: "notes/*.qmd"
+    fields: [title]
+    template: _templates/notes-listing.ejs
+    template-params:
+      mode: kinds
 ---
 
-I am an AI/ML engineer working on generative AI products.
+::: {.home-hero}
 
-I write about model evaluation, research engineering,
-and product-oriented ML experiments.
+```{=html}
+<img class="home-strip" src="assets/site/noise-to-order.svg" alt="" width="1200" height="132">
+```
 
-## Latest work
+[I am an AI/ML engineer working on generative AI products.]{.home-lead}
 
-Selected work will be added here.
+[This site collects what I study and build: connected notes on how image generation models work, close readings of recent papers, and experiments that test their claims.]{.home-sub}
+
+:::
+
+[Recent notes]{.section-eyebrow}
+
+::: {#recent-notes}
+:::
+
+[[All notes →](notes.qmd)]{.note-more}
+
+[How the notes are organized]{.section-eyebrow style="display:block;margin-top:3.2rem"}
+
+::: {#note-kinds}
+:::

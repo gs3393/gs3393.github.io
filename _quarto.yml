@@ -4,23 +4,52 @@ project:
   render:
     - "*.qmd"
     - "notes/*.qmd"
+  resources:
+    - ".nojekyll"
 
 website:
   title: "gs3393"
+  site-url: https://gs3393.github.io
+  description: "Study notes, paper reviews, and experiments on image generation models."
+  favicon: assets/site/favicon.svg
+  image: assets/site/social-card.png
+  open-graph: true
+  twitter-card: true
   navbar:
+    title: "gs3393"
     left:
       - href: index.qmd
         text: Home
-      - href: work.qmd
-        text: Work
       - href: notes.qmd
         text: Notes
+      - href: about.qmd
+        text: About
     right:
+      - icon: rss
+        href: notes.xml
+        aria-label: RSS feed
       - icon: github
+        href: https://github.com/gs3393
+        aria-label: GitHub
+  page-footer:
+    left: "© 2026 gs3393"
+    right:
+      - text: "RSS"
+        href: notes.xml
+      - text: "GitHub"
         href: https://github.com/gs3393
 
 format:
   html:
-    theme: cosmo
-    css: styles.css
+    theme: [default, brand, styles/site.scss, styles/components.scss]
+    template-partials:
+      - _templates/title-block.html
     toc: true
+    toc-title: "On this page"
+    grid:
+      body-width: 720px
+      margin-width: 260px
+      gutter-width: 2rem
+    anchor-sections: true
+    smooth-scroll: true
+    link-external-newwindow: false

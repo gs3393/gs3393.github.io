@@ -1,0 +1,6 @@
+---
+title: "Page not found"
+toc: false
+---
+
+There is nothing at this address. The [notes](/notes.html) list everything published here, or you can go back to the [home page](/).

@@ -1,0 +1,53 @@
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+$if(post-type)$
+<p class="post-kicker" data-type="$post-type$"><a href="/notes.html">$post-type$</a></p>
+$endif$
+$if(title)$
+<h1 class="title">$title$</h1>
+$endif$
+$if(subtitle)$
+<p class="subtitle lead">$subtitle$</p>
+$endif$
+</div>
+
+$if(hide-description)$
+$elseif(description)$
+<div>
+  <div class="description">
+    $description$
+  </div>
+</div>
+$endif$
+
+$if(date)$
+<div class="post-meta">
+$if(by-author)$
+  <span class="post-author">$for(by-author)$$by-author.name.literal$$sep$, $endfor$</span>
+  <span class="sep" aria-hidden="true">·</span>
+$endif$
+  <span class="date">$date$</span>
+$if(date-modified)$
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="date-modified">Updated $date-modified$</span>
+$endif$
+$if(categories)$
+  <ul class="post-topics" aria-label="Topics">
+  $for(categories)$
+    <li class="topic">$categories$</li>
+  $endfor$
+  </ul>
+$endif$
+</div>
+$endif$
+
+$if(abstract)$
+<div>
+  <div class="abstract">
+    <div class="block-title">$labels.abstract$</div>
+    $abstract$
+  </div>
+</div>
+$endif$
+
+</header>

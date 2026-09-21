@@ -1,13 +1,25 @@
 ---
 title: "Notes"
+description: "Learning records on image generation models, grouped by the kind of writing."
+hide-description: true
 toc: false
 listing:
+  id: notes-listing
   contents: "notes/*.qmd"
-  type: default
   sort: "date desc"
-  fields: [date, title, description, categories]
+  fields: [date, title, subtitle, description, categories, reading-time]
   date-format: "MMM D, YYYY"
-  categories: true
+  template: _templates/notes-listing.ejs
+  template-params:
+    mode: grouped
+  feed:
+    title: "gs3393 · Notes"
+    description: "Study notes, paper reviews, and experiments on image generation models."
+    items: 20
+    type: partial
 ---
 
-Technical analyses and experiment records on generative models, evaluation, and research engineering.
+Notes are learning records. They are grouped by the kind of writing; topics appear as tags on each note.
+
+::: {#notes-listing}
+:::

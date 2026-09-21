@@ -1,0 +1,10 @@
+# Defaults shared by every note. A note's own front matter overrides these.
+lang: en
+toc: true
+toc-depth: 2
+number-sections: false
+date-format: "MMMM D, YYYY"
+format:
+  html:
+    html-math-method: mathjax
+    code-copy: true

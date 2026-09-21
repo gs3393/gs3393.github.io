@@ -1,0 +1,466 @@
+/*-- scss:defaults --*/
+
+// Site-wide tokens. Colors and font families come from _brand.yml;
+// the fallbacks below keep this file usable if the brand layer is absent.
+$brand-paper: #FCFBF8 !default;
+$brand-plate: #FFFFFF !default;
+$brand-ink: #1F2A30 !default;
+$brand-slate: #223942 !default;
+$brand-ink-soft: #56636B !default;
+$brand-ink-faint: #7A868C !default;
+$brand-rule: #E6E2DA !default;
+$brand-wash: #F3F1EC !default;
+$brand-teal: #187C80 !default;
+$brand-teal-deep: #136B6F !default;
+$brand-indigo: #4338CA !default;
+$brand-amber: #92400E !default;
+
+// Font stacks are quoted here on purpose. _brand.yml loads the web fonts, but it emits the
+// family unquoted, and `font-family: Source Serif 4` is invalid CSS (an identifier cannot
+// start with a digit), which silently drops the whole declaration.
+$font-family-base: "Source Serif 4", "Source Serif Pro", Georgia, "Times New Roman", serif;
+$headings-font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-family-monospace: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+$font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+$font-mono-ui: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+
+$font-size-root: 18px;
+$headings-color: $brand-slate;
+$link-decoration: underline;
+
+$navbar-bg: $brand-paper;
+$navbar-fg: $brand-ink-soft;
+$navbar-hl: $brand-ink;
+$footer-bg: $brand-paper;
+$footer-fg: $brand-ink-soft;
+
+$code-bg: $brand-wash;
+$code-color: $brand-slate;
+$code-block-bg: $brand-plate;
+$border-color: $brand-rule;
+$table-border-color: $brand-rule;
+$toc-color: $brand-teal-deep;
+$blockquote-border-color: $brand-teal;
+$blockquote-color: $brand-ink;
+
+/*-- scss:rules --*/
+
+:root {
+  --c-paper: #{$brand-paper};
+  --c-plate: #{$brand-plate};
+  --c-ink: #{$brand-ink};
+  --c-slate: #{$brand-slate};
+  --c-ink-soft: #{$brand-ink-soft};
+  --c-ink-faint: #{$brand-ink-faint};
+  --c-rule: #{$brand-rule};
+  --c-wash: #{$brand-wash};
+  --c-accent: #{$brand-teal};
+  --c-link: #{$brand-teal-deep};
+  --c-type-fundamentals: #{$brand-teal-deep};
+  --c-type-paper-review: #{$brand-indigo};
+  --c-type-experiment: #{$brand-amber};
+  --font-ui: #{$font-ui};
+  --font-mono-ui: #{$font-mono-ui};
+}
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  text-rendering: optimizeLegibility;
+  font-feature-settings: "kern", "liga";
+  font-optical-sizing: auto;
+}
+
+::selection { background: rgba(24, 124, 128, .18); }
+
+/* ---------- Links ---------- */
+
+main a,
+.page-footer a {
+  color: var(--c-link);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .18em;
+  text-decoration-color: rgba(19, 107, 111, .38);
+  transition: text-decoration-color .15s ease, color .15s ease;
+}
+main a:hover,
+.page-footer a:hover {
+  color: #0d5357;
+  text-decoration-color: currentColor;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--c-accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+a.anchorjs-link { text-decoration: none; }
+/* The brand layer gives links their own weight; inside headings they should follow the heading. */
+a { font-weight: inherit; }
+
+/* ---------- Navbar ---------- */
+
+.navbar {
+  border-bottom: 1px solid var(--c-rule);
+  font-family: var(--font-ui);
+  padding-top: .55rem;
+  padding-bottom: .55rem;
+  box-shadow: none;
+}
+.navbar .navbar-brand,
+.navbar .navbar-title {
+  font-family: var(--font-mono-ui);
+  font-weight: 500;
+  font-size: .95rem;
+  letter-spacing: -.01em;
+  color: var(--c-ink);
+}
+.navbar .nav-link {
+  font-size: .86rem;
+  font-weight: 500;
+  color: var(--c-ink-soft);
+  padding-left: .8rem !important;
+  padding-right: .8rem !important;
+}
+.navbar .nav-link:hover { color: var(--c-ink); }
+.navbar .nav-link.active {
+  color: var(--c-ink);
+  text-decoration: underline;
+  text-decoration-color: var(--c-accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: .45em;
+}
+.navbar .quarto-navbar-tools .bi,
+.navbar .nav-link .bi,
+#quarto-search .aa-DetachedSearchButtonIcon,
+.navbar #quarto-search.type-overlay .aa-Autocomplete svg.aa-SubmitIcon {
+  color: var(--c-ink-soft);
+}
+.navbar-toggler { border: 0; }
+
+/* ---------- Title block ---------- */
+
+#title-block-header.quarto-title-block.default {
+  margin-block-end: 2.4rem;
+  padding-bottom: 1.6rem;
+  border-bottom: 1px solid var(--c-rule);
+}
+#title-block-header .post-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  margin: 0 0 .9rem;
+  font-family: var(--font-mono-ui);
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--kicker-color, var(--c-ink-soft));
+}
+#title-block-header .post-kicker a {
+  color: inherit;
+  text-decoration: none;
+}
+#title-block-header .post-kicker a:hover { text-decoration: underline; }
+.post-kicker::before,
+.type-label::before {
+  content: "";
+  width: .5rem;
+  height: .5rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
+[data-type="Fundamentals"] { --kicker-color: var(--c-type-fundamentals); }
+[data-type="Paper Review"] { --kicker-color: var(--c-type-paper-review); }
+[data-type="Experiment"] { --kicker-color: var(--c-type-experiment); }
+
+#title-block-header h1.title {
+  font-size: 2.15rem;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  line-height: 1.16;
+  margin-bottom: .55rem;
+  color: var(--c-slate);
+}
+#title-block-header .subtitle {
+  font-family: inherit;
+  font-size: 1.22rem;
+  font-weight: 400;
+  line-height: 1.45;
+  color: var(--c-ink-soft);
+  margin-bottom: 0;
+}
+#title-block-header.quarto-title-block.default .description {
+  margin-top: 1.15rem;
+  margin-bottom: 0;
+  font-size: 1.02rem;
+  line-height: 1.65;
+  color: var(--c-ink-soft);
+}
+#title-block-header .post-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem .9rem;
+  margin-top: 1.25rem;
+  font-family: var(--font-ui);
+  font-size: .76rem;
+  color: var(--c-ink-soft);
+}
+#title-block-header .post-meta .sep { color: var(--c-ink-faint); }
+#title-block-header .post-topics {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.topic {
+  display: inline-block;
+  padding: .08rem .5rem;
+  border: 1px solid var(--c-rule);
+  border-radius: 999px;
+  background: var(--c-plate);
+  font-family: var(--font-ui);
+  font-size: .7rem;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+  white-space: nowrap;
+}
+
+/* ---------- Body typography ---------- */
+
+main.content p { margin-bottom: 1.15rem; }
+main.content h2 {
+  margin-top: 3.3rem;
+  padding-top: 1rem;
+  padding-bottom: 0;
+  border-top: 1px solid var(--c-rule);
+  border-bottom: 0;
+  font-size: 1.5rem;
+  letter-spacing: -.018em;
+}
+#title-block-header + section.level2 > h2 {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: 0;
+}
+main.content h3 {
+  margin-top: 2.2rem;
+  font-size: 1.16rem;
+  letter-spacing: -.01em;
+}
+main.content h4 {
+  margin-top: 1.7rem;
+  font-size: 1rem;
+}
+main.content strong { font-weight: 600; color: var(--c-slate); }
+main.content hr {
+  border: 0;
+  border-top: 1px solid var(--c-rule);
+  opacity: 1;
+  margin: 2.4rem 0;
+}
+main.content ul,
+main.content ol { padding-left: 1.4rem; }
+main.content li { margin-bottom: .3rem; }
+main.content li::marker { color: var(--c-ink-faint); }
+
+main.content blockquote {
+  margin: 1.6rem 0;
+  padding: .15rem 0 .15rem 1.1rem;
+  border-left: 3px solid var(--c-accent);
+  color: var(--c-ink);
+  font-size: 1.02rem;
+}
+main.content blockquote p:last-child { margin-bottom: 0; }
+
+/* ---------- Figures: every image sits on a white plate ---------- */
+
+main.content .quarto-figure { margin: 2.1rem 0; }
+main.content .quarto-figure img,
+main.content p > img {
+  width: 100%;
+  height: auto;
+  background: var(--c-plate);
+  border: 1px solid var(--c-rule);
+  border-radius: 6px;
+  padding: .6rem;
+}
+main.content figcaption,
+main.content .figure-caption,
+main.content caption,
+main.content .table-caption {
+  font-family: var(--font-ui);
+  font-size: .78rem;
+  line-height: 1.6;
+  color: var(--c-ink-soft);
+  text-align: left;
+}
+main.content figcaption { margin-top: .7rem; }
+
+/* ---------- Tables ---------- */
+
+main.content table {
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+  border-top: 1.5px solid var(--c-slate);
+  border-bottom: 1.5px solid var(--c-slate);
+  margin-bottom: 1.6rem;
+}
+main.content table thead th {
+  border-bottom: 1px solid var(--c-slate);
+  font-weight: 600;
+  color: var(--c-slate);
+  vertical-align: bottom;
+}
+main.content table th,
+main.content table td {
+  padding: .5rem .7rem;
+  border-color: var(--c-rule);
+}
+main.content table tbody tr:last-child td { border-bottom: 0; }
+main.content .table-responsive,
+main.content div:has(> table) { overflow-x: auto; }
+
+/* ---------- Math ---------- */
+
+main.content .math.display {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: .65rem 0;
+}
+main.content mjx-container[display="true"] {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: .2rem 0;
+}
+
+/* ---------- Code ---------- */
+
+main.content code:not(.sourceCode) {
+  padding: .1em .32em;
+  border-radius: 3px;
+}
+main.content div.sourceCode {
+  border: 1px solid var(--c-rule);
+  border-radius: 6px;
+  background: var(--c-plate);
+}
+main.content pre {
+  font-size: .78rem;
+  line-height: 1.6;
+}
+
+/* ---------- Callouts ---------- */
+
+main.content .callout {
+  margin: 1.7rem 0;
+  border-radius: 6px;
+  border-right: 1px solid var(--c-rule);
+  border-top: 1px solid var(--c-rule);
+  border-bottom: 1px solid var(--c-rule);
+  background: var(--c-plate);
+}
+main.content .callout .callout-title-container { font-family: var(--font-ui); font-size: .86rem; }
+main.content .callout-body { line-height: 1.7; font-size: .96rem; }
+
+/* ---------- Footnotes and references ---------- */
+
+main.content section.footnotes,
+main.content #refs,
+#quarto-appendix {
+  font-size: .88rem;
+  line-height: 1.6;
+}
+#quarto-appendix.default { border-top: 1px solid var(--c-rule); }
+
+/* ---------- Table of contents ---------- */
+
+#TOC,
+.sidebar nav[role="doc-toc"] {
+  font-family: var(--font-ui);
+}
+nav#TOC > ul.collapse { display: block !important; }
+.sidebar nav[role="doc-toc"] > h2,
+#toc-title {
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-ink-faint);
+  border: 0;
+  padding: 0;
+  margin: 0 0 .7rem;
+}
+.sidebar nav[role="doc-toc"] ul > li > a {
+  font-size: .76rem;
+  line-height: 1.45;
+  color: var(--c-ink-soft);
+  border-left: 1px solid var(--c-rule);
+  padding-top: .28rem;
+  padding-bottom: .28rem;
+}
+.sidebar nav[role="doc-toc"] ul > li > a:hover { color: var(--c-ink); }
+.sidebar nav[role="doc-toc"] ul > li > a.active {
+  color: var(--c-link) !important;
+  border-left: 2px solid var(--c-accent);
+  font-weight: 500;
+}
+
+/* ---------- Footer ---------- */
+
+.nav-footer {
+  border-top: 1px solid var(--c-rule);
+  font-family: var(--font-ui);
+  font-size: .74rem;
+  color: var(--c-ink-soft);
+  margin-top: 4.5rem;
+  padding-top: 1.3rem;
+  padding-bottom: 1.6rem;
+  min-height: 0;
+}
+.nav-footer .nav-link,
+.nav-footer a {
+  color: var(--c-ink-soft);
+  text-decoration: none;
+}
+.nav-footer .nav-link:hover,
+.nav-footer a:hover {
+  color: var(--c-ink);
+  text-decoration: underline;
+}
+
+/* ---------- Small screens ---------- */
+
+@media (max-width: 640px) {
+  #title-block-header h1.title { font-size: 1.72rem; }
+  #title-block-header .subtitle { font-size: 1.08rem; }
+  main.content h2 { font-size: 1.3rem; margin-top: 2.6rem; }
+  /* Tables cannot shrink below their content, so let them scroll on their own. */
+  main.content table {
+    display: block;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: .76rem;
+  }
+  main.content table th,
+  main.content table td { padding: .42rem .5rem; }
+  main.content .quarto-figure img,
+  main.content p > img { padding: .35rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  * { transition: none !important; }
+}

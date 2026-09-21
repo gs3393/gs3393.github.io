@@ -1,5 +1,15 @@
 ---
 title: "Work"
+description: "Projects where I chose the question, built the pipeline, and wrote down what the results support."
+toc: false
 ---
 
-Selected engineering and research projects will be added here.
+<!--
+Parked page. The leading underscore keeps Quarto from rendering it, so there is no public
+/work.html while there are no entries. To reopen it:
+  1. rename this file to work.qmd
+  2. add `- href: work.qmd` / `text: Work` to the navbar in _quarto.yml
+  3. list the entries below (title, one-line result, role, links to the note and the code)
+-->
+
+Projects where I chose the question, built the pipeline, and wrote down what the results support.

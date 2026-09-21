@@ -1,0 +1,247 @@
+/*-- scss:rules --*/
+
+/* Shared building blocks for pages and notes.
+   Tokens (--c-*, --font-*) are defined in site.scss. */
+
+/* ---------- Type label (listing sections, home) ---------- */
+
+.type-label {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--font-mono-ui);
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--kicker-color, var(--c-ink-soft));
+}
+
+/* ---------- Note listing ---------- */
+
+.note-group { margin-top: 2.9rem; }
+.note-group:first-of-type { margin-top: 2.2rem; }
+.note-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .3rem 1rem;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--c-rule);
+}
+.note-group-head h2 {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-size: inherit !important;
+  line-height: 1;
+}
+.note-group-blurb {
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
+}
+
+.note-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 !important;
+}
+.note-row {
+  margin: 0 !important;
+  padding: 1.25rem 0 1.3rem;
+  border-bottom: 1px solid var(--c-rule);
+}
+.note-row .note-kicker { margin-bottom: .45rem; }
+main.content .note-row h3 {
+  margin: 0 0 .3rem;
+  padding: 0;
+  border: 0;
+  font-size: 1.16rem;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -.012em;
+}
+main.content .note-row h3 a {
+  color: var(--c-slate);
+  text-decoration: none;
+}
+main.content .note-row h3 a:hover {
+  color: var(--c-link);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: .2em;
+}
+.note-subtitle {
+  margin: 0 0 .35rem !important;
+  font-size: .98rem;
+  line-height: 1.5;
+  color: var(--c-ink);
+}
+.note-desc {
+  margin: 0 0 .6rem !important;
+  font-size: .92rem;
+  line-height: 1.6;
+  color: var(--c-ink-soft);
+}
+.note-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: .3rem .8rem;
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: .74rem;
+  color: var(--c-ink-soft);
+}
+.note-meta .sep { color: var(--c-ink-faint); }
+.note-topics {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: .35rem;
+}
+.note-more {
+  margin-top: 1.2rem;
+  font-family: var(--font-ui);
+  font-size: .82rem;
+}
+
+/* ---------- Home ---------- */
+
+.home-hero { margin: 1.2rem 0 2.6rem; }
+.home-hero .home-strip {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin: 0 0 2.1rem;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  border-radius: 0;
+}
+.home-lead {
+  font-size: 1.42rem;
+  line-height: 1.45;
+  letter-spacing: -.005em;
+  color: var(--c-slate);
+  margin-bottom: 1rem !important;
+}
+.home-sub {
+  font-size: 1.02rem;
+  color: var(--c-ink-soft);
+  max-width: 38rem;
+}
+.section-eyebrow {
+  margin: 0 0 .2rem;
+  font-family: var(--font-ui);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-ink-faint);
+}
+.kind-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.1rem;
+  margin: 1rem 0 0;
+}
+.kind-card {
+  padding: 1rem 1.05rem 1.05rem;
+  border: 1px solid var(--c-rule);
+  border-radius: 8px;
+  background: var(--c-plate);
+}
+main.content a.type-label { text-decoration: none; }
+main.content a.type-label:hover { text-decoration: underline; color: var(--kicker-color, var(--c-link)); }
+.kind-card p {
+  margin: .55rem 0 0 !important;
+  font-size: .88rem;
+  line-height: 1.55;
+  color: var(--c-ink-soft);
+}
+@media (max-width: 720px) {
+  .home-lead { font-size: 1.22rem; }
+}
+
+/* ---------- Boxes used inside notes ---------- */
+
+/* Paper-style algorithm boxes, usually shown as a pair. */
+.algorithm-pair {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.4rem;
+  margin: 1.6rem 0 .7rem;
+}
+.paper-algorithm {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border-top: 2px solid var(--c-slate);
+  border-bottom: 2px solid var(--c-slate);
+  padding: 0 .65rem .7rem;
+  font-family: var(--font-ui);
+  font-size: .8rem;
+  line-height: 1.55;
+}
+.paper-algorithm p { margin-bottom: .8rem; }
+.paper-algorithm > p:first-child {
+  padding: .6rem 0;
+  border-bottom: 1px solid #9aaab1;
+}
+.algorithm-title { color: var(--c-slate); }
+.paper-algorithm ol { padding-left: 1.5rem; margin-bottom: 1rem; }
+.paper-algorithm li { padding-left: .2rem; margin-bottom: .45rem; }
+.paper-algorithm li::marker { color: #61747e; font-variant-numeric: tabular-nums; }
+.paper-algorithm li > ol { margin-top: .45rem; }
+.paper-algorithm > p:last-child { margin-top: auto; margin-bottom: 0; }
+.algorithm-result {
+  display: block;
+  border-top: 1px solid #d3dde1;
+  padding-top: .65rem;
+  color: #49616e;
+}
+@media (max-width: 720px) {
+  .algorithm-pair { grid-template-columns: 1fr; }
+}
+
+/* A row of small related figures. */
+.distribution-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: .7rem;
+}
+.distribution-panels p { margin: 0; }
+.distribution-panels .quarto-figure { margin: 0; }
+
+/* A highlighted chain of ideas. */
+.concept-route {
+  border-left: 3px solid var(--c-accent);
+  padding: .7rem 1rem;
+  margin: 1.4rem 0;
+  background: #f1f6f5;
+  border-radius: 0 6px 6px 0;
+  line-height: 1.8;
+}
+.concept-route p:last-child { margin-bottom: 0; }
+
+/* Facts about the paper a review covers: version read, scope read, links. */
+.paper-info,
+.setup-info {
+  margin: 0 0 2rem;
+  padding: .95rem 1.1rem;
+  border: 1px solid var(--c-rule);
+  border-radius: 8px;
+  background: var(--c-plate);
+  font-family: var(--font-ui);
+  font-size: .82rem;
+  line-height: 1.6;
+  color: var(--c-ink);
+}
+.paper-info p:last-child,
+.setup-info p:last-child,
+.paper-info ul:last-child,
+.setup-info ul:last-child { margin-bottom: 0; }
+.paper-info ul,
+.setup-info ul { padding-left: 1.1rem; margin-bottom: 0; }
