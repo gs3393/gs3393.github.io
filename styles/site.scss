@@ -25,6 +25,14 @@ $font-family-monospace: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consol
 $font-ui: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 $font-mono-ui: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
 
+// Page geometry, in rem so the whole page scales with the root font size.
+// body 40rem keeps the measure near 75-80 characters at every size.
+$page-body: 40rem;
+$page-gap: 3rem;
+$page-margin: 16rem;
+$page-width: $page-body + $page-gap + $page-margin; // 59rem
+$page-gutter: 2rem;
+
 $font-size-root: 18px;
 $headings-color: $brand-slate;
 $link-decoration: underline;
@@ -64,7 +72,46 @@ $blockquote-color: $brand-ink;
   --font-mono-ui: #{$font-mono-ui};
 }
 
+// Fluid root size: 17px at 1200px viewports, 20px from 1800px up. Everything
+// below is in rem, so type, column widths and spacing grow together on large
+// screens while the line length stays the same.
+:root { font-size: clamp(17px, calc(11px + 0.5vw), 20px); }
+
 html { -webkit-text-size-adjust: 100%; }
+
+/* ---------- Page grid ----------
+   Quarto lays pages out on a named-line CSS grid. This replaces its desktop
+   template with one page shape for every page, whether or not it has a table
+   of contents: a centered page of body + gap + margin, and the margin column is
+   always reserved so the body sits in the same place on every page. The line
+   names must stay in this order; Quarto's own rules place elements by them. */
+@media (min-width: 992px) {
+  body .page-columns,
+  body.fullcontent:not(.floating):not(.docked) .page-columns,
+  body.slimcontent:not(.floating):not(.docked) .page-columns,
+  body.listing:not(.floating):not(.docked) .page-columns {
+    grid-template-columns:
+      [screen-start] minmax($page-gutter, 1fr)
+      [screen-start-inset page-start page-start-inset body-start-outset body-start body-content-start] minmax(30rem, $page-body)
+      [body-content-end] $page-gap
+      [body-end body-end-outset page-end-inset] minmax(12rem, $page-margin)
+      [page-end screen-end-inset] minmax($page-gutter, 1fr)
+      [screen-end];
+  }
+  #quarto-margin-sidebar.sidebar.margin-sidebar { padding-left: 0; }
+}
+
+/* The navbar and footer share the page's left and right edges. */
+.navbar > .container-fluid {
+  max-width: $page-width + 2 * $page-gutter;
+  margin-inline: auto;
+  padding-inline: $page-gutter;
+}
+// Quarto sets the footer padding with `footer.footer .nav-footer`, so match that.
+footer.footer .nav-footer {
+  padding-left: max(#{$page-gutter}, calc((100% - #{$page-width}) / 2));
+  padding-right: max(#{$page-gutter}, calc((100% - #{$page-width}) / 2));
+}
 
 body {
   text-rendering: optimizeLegibility;
@@ -416,6 +463,37 @@ nav#TOC > ul.collapse { display: block !important; }
   border-left: 2px solid var(--c-accent);
   font-weight: 500;
 }
+
+/* ---------- Topic list beside the Notes listing ---------- */
+
+/* Quarto's own rules use the sidebar id, so these must too. */
+#quarto-margin-sidebar .quarto-listing-category-title {
+  font-family: var(--font-ui);
+  font-size: .66rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--c-ink-faint);
+  margin-bottom: .7rem;
+  cursor: default;
+}
+#quarto-margin-sidebar .quarto-listing-category {
+  font-family: var(--font-ui);
+  font-size: .78rem;
+  line-height: 1.45;
+}
+#quarto-margin-sidebar .quarto-listing-category .category {
+  padding: .26rem 0 .26rem .75rem;
+  border-left: 1px solid var(--c-rule);
+  color: var(--c-ink-soft);
+}
+#quarto-margin-sidebar .quarto-listing-category .category:hover { color: var(--c-ink); }
+#quarto-margin-sidebar .quarto-listing-category .category.active {
+  color: var(--c-link);
+  border-left: 2px solid var(--c-accent);
+  font-weight: 500;
+}
+#quarto-margin-sidebar .quarto-category-count { color: var(--c-ink-faint); }
 
 /* ---------- Footer ---------- */
 

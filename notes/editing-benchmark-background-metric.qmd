@@ -3,12 +3,9 @@ title: "What Background Preservation Actually Measures in Image-Editing Benchmar
 subtitle: "Reading DirectEdit's PIE-Bench numbers, with a 151-image check on SD3.5-medium"
 description: "DirectEdit's background-preservation score on PIE-Bench cannot isolate its inversion contribution, because the method pastes the source latent back outside the edit mask. A code reading, the paper's own no-mask row, and a four-condition measurement show where the number comes from and what a table would need in order to separate the two."
 date: 2026-09-22
-date-format: "MMMM D, YYYY"
-categories: [Analysis, Image Editing, Evaluation]
-lang: en
-toc: true
-toc-depth: 2
-number-sections: false
+post-type: Experiment
+image: /assets/site/social-card.png
+categories: [Editing, Evaluation]
 ---
 
 > DirectEdit reports a +10.67 dB jump in background PSNR on PIE-Bench. Its released code pastes the source latent back outside an edit mask at every step, so that column cannot separate paste quality from inversion quality. This note traces the mechanism, uses the paper's own no-mask row, and measures four conditions on SD3.5-medium to show what the score does and does not say.

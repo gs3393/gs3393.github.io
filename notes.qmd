@@ -9,6 +9,7 @@ listing:
   sort: "date desc"
   fields: [date, title, subtitle, description, categories, reading-time]
   date-format: "MMM D, YYYY"
+  categories: numbered
   template: _templates/notes-listing.ejs
   template-params:
     mode: grouped
@@ -19,7 +20,7 @@ listing:
     type: partial
 ---
 
-Notes are learning records. They are grouped by the kind of writing; topics appear as tags on each note.
+Notes are learning records. They are grouped by the kind of writing; topics appear as tags on each note and as a filter on the right.
 
 ::: {#notes-listing}
 :::

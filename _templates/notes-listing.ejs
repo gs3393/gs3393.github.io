@@ -2,21 +2,25 @@
 // One template for every list of notes.
 // The markup is emitted inside a single raw HTML block: listing templates are parsed as
 // Markdown, and indented HTML would otherwise turn into code blocks.
-//   template-params.mode = "grouped" : one section per post type (Notes page)
-//   template-params.mode = "flat"    : a single list with a type label per row (Home)
+//   template-params.mode = "grouped" : one flat list with a header row per kind (Notes page)
+//   template-params.mode = "flat"    : a single list with a kind label per row (Home)
+//   template-params.mode = "kinds"   : one card per kind that has at least one note
 // Post types are the human-readable `post-type` values in each note's front matter.
+// The list keeps Quarto's `.list` container and `metadataAttrs` so that topic
+// filtering keeps working; header rows carry an empty data-categories so a
+// filter simply hides them.
 const kinds = [
   { name: "Fundamentals", blurb: "Connected study notes on the ideas that foundational papers share." },
   { name: "Paper Review", blurb: "What a recent paper proposes, and what its results do and do not show." },
-  { name: "Experiment", blurb: "Reproductions and checks, including the ones that did not work." }
+  { name: "Experiment", blurb: "Reproductions and checks, including the ones that failed." }
 ];
 const mode = (templateParams && templateParams.mode) || "grouped";
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const known = kinds.map(k => k.name);
 
-const row = (item, showKind) => { %>
+const row = (item) => { %>
   <li class="note-row" <%= metadataAttrs(item) %>>
-    <% if (showKind && item["post-type"]) { %>
+    <% if (item["post-type"]) { %>
     <div class="note-kicker"><span class="type-label" data-type="<%- item["post-type"] %>"><%- item["post-type"] %></span></div>
     <% } %>
     <h3 class="no-anchor listing-title"><a href="<%- item.path %>" class="no-external"><%- item.title %></a></h3>
@@ -31,12 +35,19 @@ const row = (item, showKind) => { %>
     </p>
   </li>
 <% };
+
+const header = (kind, id) => { %>
+  <li class="note-group-head" id="<%- id %>" data-categories="">
+    <span class="type-label" data-type="<%- kind.name %>"><%- kind.name %></span>
+    <p class="note-group-blurb"><%- kind.blurb %></p>
+  </li>
+<% };
 %>
 
 ```{=html}
 <% if (mode === "flat") { %>
 <ul class="note-list list">
-<% for (const item of items) { row(item, true); } %>
+<% for (const item of items) { row(item); } %>
 </ul>
 <% } else if (mode === "kinds") { %>
 <div class="kind-grid">
@@ -50,29 +61,18 @@ const row = (item, showKind) => { %>
 <% } %>
 </div>
 <% } else { %>
+<ul class="note-list list">
 <% for (const kind of kinds) {
      const group = items.filter(i => i["post-type"] === kind.name);
-     if (group.length === 0) continue; %>
-<section class="note-group" id="<%- slug(kind.name) %>">
-  <div class="note-group-head">
-    <h2 class="no-anchor"><span class="type-label" data-type="<%- kind.name %>"><%- kind.name %></span></h2>
-    <p class="note-group-blurb"><%- kind.blurb %></p>
-  </div>
-  <ul class="note-list">
-  <% for (const item of group) { row(item, false); } %>
-  </ul>
-</section>
-<% } %>
-<% const rest = items.filter(i => !known.includes(i["post-type"]));
-   if (rest.length > 0) { %>
-<section class="note-group" id="other">
-  <div class="note-group-head">
-    <h2 class="no-anchor"><span class="type-label">Other</span></h2>
-  </div>
-  <ul class="note-list">
-  <% for (const item of rest) { row(item, true); } %>
-  </ul>
-</section>
-<% } %>
+     if (group.length === 0) continue;
+     header(kind, slug(kind.name));
+     for (const item of group) { row(item); }
+   }
+   const rest = items.filter(i => !known.includes(i["post-type"]));
+   if (rest.length > 0) {
+     header({ name: "Other", blurb: "" }, "other");
+     for (const item of rest) { row(item); }
+   } %>
+</ul>
 <% } %>
 ```

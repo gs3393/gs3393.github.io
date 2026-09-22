@@ -44,9 +44,17 @@ Shared blocks available in any note: `.algorithm-pair` with `.paper-algorithm`, 
 
 ```bash
 quarto render --output-dir _preview                 # never touches docs/
-python -m http.server 8765 --bind 127.0.0.1 --directory _preview
+node tools/serve-preview.mjs --dir _preview --port 8765
 node tools/qa-capture.mjs --base http://127.0.0.1:8765 --out _preview-assets/shots
 ```
+
+Serve the preview with `tools/serve-preview.mjs`, not `python -m http.server`: on this machine Python
+sends `.js` as `text/plain`, and browsers then refuse to run Quarto's module script, so the table of
+contents stops following the scroll position and reader mode and footnote tooltips disappear. The
+published site is unaffected.
+
+The email address on the About page comes from `_variables.yml`. It ships with a placeholder;
+`check-links.mjs` fails until a real address replaces it.
 
 `qa-capture.mjs` loads every page at 1360, 768 and 390 px with real device emulation, saves screenshots,
 and fails if a page overflows horizontally, has a MathJax error, or has a broken image.

@@ -21,15 +21,19 @@ listing:
       mode: kinds
 ---
 
+::::: {.column-page .home-top}
+
+:::: {.home-main}
+
 ::: {.home-hero}
 
 ```{=html}
 <img class="home-strip" src="assets/site/noise-to-order.svg" alt="" width="1200" height="132">
 ```
 
-[I am an AI/ML engineer working on generative AI products.]{.home-lead}
+[I am an AI/ML engineer on a generative AI product team.]{.home-lead}
 
-[This site collects what I study and build: connected notes on how image generation models work, close readings of recent papers, and experiments that test their claims.]{.home-sub}
+[This site collects what I study and build: connected notes on the mechanics of image generation models, close readings of recent papers, and experiments that test their claims.]{.home-sub}
 
 :::
 
@@ -40,7 +44,15 @@ listing:
 
 [[All notes →](notes.qmd)]{.note-more}
 
-[How the notes are organized]{.section-eyebrow style="display:block;margin-top:3.2rem"}
+::::
+
+:::: {.home-kinds}
+
+[How the notes are organized]{.section-eyebrow}
 
 ::: {#note-kinds}
 :::
+
+::::
+
+:::::

@@ -17,36 +17,31 @@
   color: var(--kicker-color, var(--c-ink-soft));
 }
 
-/* ---------- Note listing ---------- */
-
-.note-group { margin-top: 2.9rem; }
-.note-group:first-of-type { margin-top: 2.2rem; }
-.note-group-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: .3rem 1rem;
-  padding-bottom: .75rem;
-  border-bottom: 1px solid var(--c-rule);
-}
-.note-group-head h2 {
-  margin: 0 !important;
-  padding: 0 !important;
-  border: 0 !important;
-  font-size: inherit !important;
-  line-height: 1;
-}
-.note-group-blurb {
-  margin: 0;
-  font-size: .9rem;
-  line-height: 1.5;
-  color: var(--c-ink-soft);
-}
+/* ---------- Note listing ----------
+   One flat list. In grouped mode a header row precedes each kind so that the
+   topic filter (List.js) can still hide and show rows; a filtered list drops
+   the header rows, and the per-row kind label takes over. */
 
 .note-list {
   list-style: none;
   margin: 0;
   padding: 0 !important;
+}
+.note-group-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: .3rem 1rem;
+  margin: 2.9rem 0 0 !important;
+  padding-bottom: .75rem;
+  border-bottom: 1px solid var(--c-rule);
+}
+.note-group-head:first-child { margin-top: 1.6rem !important; }
+.note-group-blurb {
+  margin: 0;
+  font-size: .9rem;
+  line-height: 1.5;
+  color: var(--c-ink-soft);
 }
 .note-row {
   margin: 0 !important;
@@ -54,6 +49,8 @@
   border-bottom: 1px solid var(--c-rule);
 }
 .note-row .note-kicker { margin-bottom: .45rem; }
+.note-list:has(> .note-group-head) .note-row .note-kicker { display: none; }
+.note-row:has(+ .note-group-head) { border-bottom: 0; }
 main.content .note-row h3 {
   margin: 0 0 .3rem;
   padding: 0;
@@ -107,9 +104,30 @@ main.content .note-row h3 a:hover {
   font-size: .82rem;
 }
 
-/* ---------- Home ---------- */
+/* ---------- Home ----------
+   The top block spans body + margin: the introduction on the left, the three
+   kinds of notes stacked on the right, aligned with the page's margin column. */
 
-.home-hero { margin: 1.2rem 0 2.6rem; }
+.home-top {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 16rem;
+  column-gap: 3rem;
+  align-items: start;
+  margin: 1.2rem 0 0;
+}
+.home-main > .section-eyebrow { display: block; margin-top: 3rem; }
+.home-kinds { padding-top: 1.4rem; }
+.home-kinds .kind-grid {
+  grid-template-columns: 1fr;
+  gap: .8rem;
+  margin-top: .8rem;
+}
+@media (max-width: 991.98px) {
+  .home-top { grid-template-columns: 1fr; row-gap: 2rem; }
+  .home-kinds { padding-top: 0; }
+  .home-kinds .kind-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+}
+.home-hero { margin: 0; }
 .home-hero .home-strip {
   display: block;
   width: 100%;
@@ -163,6 +181,45 @@ main.content a.type-label:hover { text-decoration: underline; color: var(--kicke
 }
 @media (max-width: 720px) {
   .home-lead { font-size: 1.22rem; }
+}
+
+/* ---------- Contact card in the About margin ---------- */
+
+/* Quarto wraps the div as .column-margin > .contact-card, so style the inner one. */
+main.content .column-margin .contact-card {
+  font-family: var(--font-ui);
+  font-size: .8rem;
+  line-height: 1.55;
+  color: var(--c-ink);
+  padding: .95rem 1.05rem 1rem;
+  border: 1px solid var(--c-rule);
+  border-radius: 8px;
+  background: var(--c-plate);
+}
+main.content .column-margin.column-container > .contact-card { padding: .95rem 1.05rem 1rem; }
+main.content .contact-card p { margin: 0; }
+main.content .contact-card ul { padding-left: 0; }
+.contact-card .contact-name {
+  display: block;
+  font-family: var(--font-mono-ui);
+  font-weight: 500;
+  font-size: .9rem;
+  color: var(--c-slate);
+}
+.contact-card .contact-role {
+  display: block;
+  margin-top: .15rem;
+  color: var(--c-ink-soft);
+}
+.contact-card ul {
+  list-style: none;
+  margin: .8rem 0 0;
+  padding: 0;
+}
+.contact-card li { margin: 0 0 .3rem; }
+main.content .contact-card a { text-decoration-color: rgba(19, 107, 111, .25); }
+@media (max-width: 991.98px) {
+  main.content .column-margin.contact-card { margin: 1rem 0 1.6rem; }
 }
 
 /* ---------- Boxes used inside notes ---------- */

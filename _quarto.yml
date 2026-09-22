@@ -39,6 +39,10 @@ website:
       - text: "GitHub"
         href: https://github.com/gs3393
 
+language:
+  listing-page-field-categories: "Topics"
+  listing-page-category-all: "All"
+
 format:
   html:
     theme: [default, brand, styles/site.scss, styles/components.scss]
@@ -46,10 +50,6 @@ format:
       - _templates/title-block.html
     toc: true
     toc-title: "On this page"
-    grid:
-      body-width: 720px
-      margin-width: 260px
-      gutter-width: 2rem
     anchor-sections: true
     smooth-scroll: true
     link-external-newwindow: false
