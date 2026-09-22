@@ -2,6 +2,7 @@
   {
     "listing": "/notes.html",
     "items": [
+      "/notes/editing-benchmark-background-metric.html",
       "/notes/diffusion-foundations.html",
       "/notes/jit-fd-loss-analysis.html"
     ]
