@@ -30,8 +30,14 @@ function idsOf(file) {
 
 let checked = 0, external = 0;
 const problems = [];
+// Values that must never reach the published site (see _variables.yml).
+const placeholders = ["example.com", "REPLACE-ME"];
 for (const file of walk(root)) {
-  const html = readFileSync(file, "utf8").replace(/<script[\s\S]*?<\/script>/g, "");
+  const raw = readFileSync(file, "utf8");
+  for (const p of placeholders) {
+    if (raw.includes(p)) problems.push(`${relative(root, file)}: placeholder "${p}" is still in the page`);
+  }
+  const html = raw.replace(/<script[\s\S]*?<\/script>/g, "");
   for (const m of html.matchAll(/\s(?:href|src)="([^"]*)"/g)) {
     const raw = m[1].replace(/&amp;/g, "&");
     if (!raw || /^(https?:|mailto:|data:|javascript:|tel:)/i.test(raw)) { external++; continue; }
@@ -52,4 +58,4 @@ if (problems.length) {
   for (const p of [...new Set(problems)]) console.log("PROBLEM " + p);
   process.exit(1);
 }
-console.log("no broken local links, images, or anchors");
+console.log("no broken local links, images, anchors, or leftover placeholders");
