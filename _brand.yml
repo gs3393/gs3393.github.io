@@ -5,6 +5,7 @@ meta:
 color:
   palette:
     paper: "#FCFBF8"
+    desk: "#EFECE5"
     plate: "#FFFFFF"
     ink: "#1F2A30"
     slate: "#223942"

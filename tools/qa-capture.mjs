@@ -30,6 +30,7 @@ const fullPage = args.full === "true";
 const port = Number(args.port || 9333);
 
 const viewports = [
+  { name: "wide", width: 1920, height: 1400, scale: 1, mobile: false },
   { name: "desktop", width: 1360, height: 1700, scale: 1, mobile: false },
   { name: "tablet", width: 768, height: 1400, scale: 1, mobile: true },
   { name: "mobile", width: 390, height: 1400, scale: 2, mobile: true },

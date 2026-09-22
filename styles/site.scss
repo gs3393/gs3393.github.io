@@ -3,6 +3,8 @@
 // Site-wide tokens. Colors and font families come from _brand.yml;
 // the fallbacks below keep this file usable if the brand layer is absent.
 $brand-paper: #FCFBF8 !default;
+$brand-desk: #EFECE5 !default;
+$brand-sheet-edge: #DDD8CE !default;
 $brand-plate: #FFFFFF !default;
 $brand-ink: #1F2A30 !default;
 $brand-slate: #223942 !default;
@@ -32,6 +34,11 @@ $page-gap: 3rem;
 $page-margin: 16rem;
 $page-width: $page-body + $page-gap + $page-margin; // 59rem
 $page-gutter: 2rem;
+// The sheet: the page columns plus an inset on each side, drawn as a lighter
+// band on a slightly darker background so the space outside reads as desk,
+// not as an empty page.
+$sheet-pad: 2.5rem;
+$sheet-half: ($page-width + 2 * $sheet-pad) * 0.5; // 32rem
 
 $font-size-root: 18px;
 $headings-color: $brand-slate;
@@ -56,6 +63,7 @@ $blockquote-color: $brand-ink;
 
 :root {
   --c-paper: #{$brand-paper};
+  --c-desk: #{$brand-desk};
   --c-plate: #{$brand-plate};
   --c-ink: #{$brand-ink};
   --c-slate: #{$brand-slate};
@@ -72,12 +80,39 @@ $blockquote-color: $brand-ink;
   --font-mono-ui: #{$font-mono-ui};
 }
 
-// Fluid root size: 17px at 1200px viewports, 20px from 1800px up. Everything
-// below is in rem, so type, column widths and spacing grow together on large
-// screens while the line length stays the same.
-:root { font-size: clamp(17px, calc(11px + 0.5vw), 20px); }
+// Fluid root size: 17px at small desktops, 20.6px at 1920px, 22px from 2180px
+// up. Everything below is in rem, so type, column widths and spacing grow
+// together on large screens while the line length stays the same.
+:root { font-size: clamp(17px, calc(10px + 0.55vw), 22px); }
 
 html { -webkit-text-size-adjust: 100%; }
+
+/* ---------- Sheet ----------
+   On desktop the page is a centered band of paper on a desk-colored
+   background, with a hairline at each edge. The band is painted as a
+   background gradient on body, navbar and footer, so it needs no extra
+   markup and lines up with the page grid, which is centered the same way. */
+@mixin sheet-band {
+  background-color: $brand-desk;
+  background-image: linear-gradient(
+    to right,
+    $brand-desk 0,
+    $brand-desk calc(50% - #{$sheet-half} - 1px),
+    $brand-sheet-edge calc(50% - #{$sheet-half} - 1px),
+    $brand-sheet-edge calc(50% - #{$sheet-half}),
+    $brand-paper calc(50% - #{$sheet-half}),
+    $brand-paper calc(50% + #{$sheet-half}),
+    $brand-sheet-edge calc(50% + #{$sheet-half}),
+    $brand-sheet-edge calc(50% + #{$sheet-half} + 1px),
+    $brand-desk calc(50% + #{$sheet-half} + 1px)
+  );
+}
+@media (min-width: 992px) {
+  html { background: $brand-desk; }
+  body { @include sheet-band; }
+  .navbar { @include sheet-band; }
+  footer.footer .nav-footer { background-color: transparent; }
+}
 
 /* ---------- Page grid ----------
    Quarto lays pages out on a named-line CSS grid. This replaces its desktop

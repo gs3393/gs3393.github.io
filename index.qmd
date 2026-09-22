@@ -31,9 +31,9 @@ listing:
 <img class="home-strip" src="assets/site/noise-to-order.svg" alt="" width="1200" height="132">
 ```
 
-[I am an AI/ML engineer on a generative AI product team.]{.home-lead}
+[I'm an ML/AI engineer at an AI startup, building generative AI products.]{.home-lead}
 
-[This site collects what I study and build: connected notes on the mechanics of image generation models, close readings of recent papers, and experiments that test their claims.]{.home-sub}
+[This site is where I keep up with research on the side: notes on image generation, from the fundamentals to recent papers and small experiments.]{.home-sub}
 
 :::
 
