@@ -1,0 +1,138 @@
+---
+title: "What Background Preservation Actually Measures in Image-Editing Benchmarks"
+subtitle: "Reading DirectEdit's PIE-Bench numbers, with a 151-image check on SD3.5-medium"
+description: "DirectEdit's background-preservation score on PIE-Bench cannot isolate its inversion contribution, because the method pastes the source latent back outside the edit mask. A code reading, the paper's own no-mask row, and a four-condition measurement show where the number comes from and what a table would need in order to separate the two."
+date: 2026-09-22
+date-format: "MMMM D, YYYY"
+categories: [Analysis, Image Editing, Evaluation]
+lang: en
+toc: true
+toc-depth: 2
+number-sections: false
+---
+
+> DirectEdit reports a +10.67 dB jump in background PSNR on PIE-Bench. Its released code pastes the source latent back outside an edit mask at every step, so that column cannot separate paste quality from inversion quality. This note traces the mechanism, uses the paper's own no-mask row, and measures four conditions on SD3.5-medium to show what the score does and does not say.
+
+Paper: Desong Yang and Mang Ye, *DirectEdit: Step-Level Accurate Inversion for Flow-Based Image Editing*, ICML 2026 — [arXiv:2605.02417](https://arxiv.org/abs/2605.02417), [code](https://github.com/Tr1stesse/DirectEdit). Benchmark: Ju et al., *PnPInversion* / PIE-Bench — [arXiv:2310.01506](https://arxiv.org/abs/2310.01506).
+
+## The metric everyone reports
+
+Text-driven image editing asks a generative model to change one thing and leave everything else alone. Turn the cat into a tiger; keep the wallpaper, the floor, the window frame.
+
+That second half is genuinely hard. A diffusion or flow model regenerates the whole image, so the parts you never mentioned drift anyway. This is why *background preservation* became a headline metric. PIE-Bench, the benchmark almost every recent editing paper reports on, ships 700 images with mask annotations marking the region that is supposed to change. It then measures PSNR, LPIPS, MSE and SSIM between the source and the edit over the region outside that mask — the part that should have stayed put. (The exact averaging convention has a wrinkle I come back to at the end.)
+
+There is a natural way to read that column. A method with a more faithful inversion drifts less, so its background stays closer to the original, so its PSNR is higher. When a paper titled *Step-Level Accurate Inversion* posts its largest gain on that column, the reader connects the two. The paper itself is more careful than that — its Figure 1 attributes background preservation to the alignment *and* a separate feature-interaction mechanism — but the connection is easy to make and, I will argue, wrong for this column.
+
+I want to show why the background number of this method cannot be read as isolating its inversion contribution, what it does tell you instead, and what a table would need to contain for the isolation to be possible.
+
+## A number worth looking at
+
+DirectEdit (ICML 2026) reports a large jump on exactly this column. On FLUX.1-dev, background PSNR goes from FlowEdit's 21.96 dB to **32.63 dB**. In a field where papers fight over tenths of a decibel, +10.67 dB is not an increment.
+
+The paper's stated contribution is step-level inversion alignment: record the per-step residual of the inversion trajectory, then add it back during the forward pass so the editing branch is always evaluated on latents that match the inversion. No extra network evaluations. It is a neat idea.
+
+But alignment is not the only moving part. The paper ablates four: the alignment, attention feature injection, a mask-guided noise blending step, and the shape of the mask. The third one is where I want to look, and here the authors deserve credit, because they report what it is worth. Table 1 of the paper carries a row labelled `Ours (w/o mask)`:
+
+| FLUX.1-dev | Structure ↓ | bg-PSNR ↑ | bg-LPIPS ↓ |
+|---|---|---|---|
+| FlowEdit | 27.83 | 21.96 | 112.15 |
+| DirectEdit, no mask | 21.93 | 24.70 | 102.92 |
+| DirectEdit, full | 17.94 | **32.63** | 35.45 |
+
+Turning the mask on, with everything else in place, moves background PSNR by 7.93 dB. The configuration without it beats FlowEdit by 2.74 dB. Those are two effects measured inside one system, not two independent contributions — I come back to that — but they already say the mask is not a footnote.
+
+On SD3.5-medium the pattern is sharper. Without the mask, DirectEdit's background PSNR is 26.18 — *below* DNAEdit's 27.71, one of the baselines it outranks in the headline table. The full configuration reaches 31.82 and takes the top average rank; the no-mask configuration drops from rank 2.43 to 4.29.
+
+None of this is hidden. It is printed in the paper. The question I want to ask is not about this paper's honesty. It is about what the column can and cannot tell you once the source image is being pasted back into the result.
+
+## What the blending step actually does
+
+Reading [the released code](https://github.com/Tr1stesse/DirectEdit) makes the mechanism concrete. Two lines matter, both inside the editing loop.
+
+First, the source branch is not integrated forward. It is overwritten, every step, with the recorded inversion latent:
+
+```python
+prev_sample_src = gt_source_latent
+```
+
+Second, the blend uses that overwritten source branch as the background:
+
+```python
+prev_sample_tar = prev_sample_tar * latent_mask + prev_sample_src * (1 - latent_mask)
+```
+
+The paper specifies the same blend. Algorithm 1 writes it against the source branch — `Z_tar ← Z_src ⊙ (1−M) + Z_tar ⊙ M` — and the first line above is what makes that `Z_src` the recorded inversion latent rather than a forward-integrated one.[^alg]
+
+Follow the last iteration. The recorded inversion latent at the clean end of the trajectory is, by construction, the VAE encoding of the source image. So outside the mask, the final *latent* is not close to the source — it is the source latent. After decoding, the background pixels are a VAE round-trip of the source wherever the decoder's receptive field does not reach an edited cell; near the mask boundary the decoder mixes the two.
+
+Whatever the inversion did, whatever the residual re-injection contributed, none of it reaches the background latent. It was overwritten. That is the sentence the rest of this note rests on: for this method, the background column is measuring how well the source was pasted back, and cannot separate that from how well the trajectory was inverted.
+
+## So there is a reference point
+
+If the background latent is the source latent, the natural comparison is an image that was never edited at all: encode the source, decode it, score it with the same script. I will call that the *no-edit reference*. It is not a proven upper bound — the decoder is not local, and the code dilates the mask and downsamples it to latent resolution before blending, so pixels near the edit can land on either side of the reference — but it is the right number to put next to a masked method's score, and in the run below nothing exceeded it on any metric.
+
+The paper reports something adjacent in a different table: whole-image VAE reconstruction on PIE-Bench is 34.38 dB. That is a different measurement scope from the background column, so I re-measure the reference under the benchmark's own background convention below and get a different number.
+
+The reference is not reached by anything that happens to use a mask. It needs the thing being pasted to be the actual source, which here is what the first code line above buys. The paper's own ablation shows the failure mode: with plain Euler inversion and no stepwise correction, the mask is still applied, but the reference pasted into the background is a drifted reconstruction, and background PSNR collapses to 16.66 dB. So the components interact — the mask's effect depends on what it is given to paste.
+
+## Measuring it
+
+A derivation from source code is not a result, so I ran it. SD3.5-medium, 512², 30 steps, the repository's own hyperparameters and its unmodified evaluation script, on a 151-image subset of PIE-Bench stratified across all ten edit types. Four conditions, ~1.2 GPU-hours:
+
+- **no mask** — blending disabled.
+- **auto mask** — SAM2 prompted with a bounding box derived from the ground-truth mask, using the benchmark's category label to decide whether the box marks the object or the background. This is *not* the paper's mask path, which uses an MLLM to find the box; without an API key I gave SAM2 the right location and let it produce an approximate shape. Median IoU with the annotation is 0.94, so read this as "a good mask with imperfect edges," not as a test of automatic mask finding.
+- **GT mask** — the benchmark's own annotation, fed through the same dilation and downsampling the code applies to any mask.
+- **no-edit reference** — the source image encoded and decoded, *no editing at all*, scored by the same script.
+
+| Condition | Structure ↓ | bg-PSNR ↑ | bg-LPIPS ↓ | bg-SSIM ↑ | CLIP-edit ↑ |
+|---|---|---|---|---|---|
+| no mask | 17.22 | 26.13 | 68.24 | 88.84 | 22.53 |
+| auto mask | 8.76 | 33.94 | 13.58 | 94.25 | 22.24 |
+| GT mask | 8.73 | 35.01 | 10.16 | 94.70 | 22.39 |
+| **no-edit reference** | **0.55** | **35.77** | **9.28** | **94.94** | 20.23 |
+
+Background columns are averaged over the 120 images whose annotation leaves a background; the other 31 (style changes, mostly) have no unedited region to score. Structure and CLIP use all 151.
+
+The no-mask row tracks the paper's `Ours (w/o mask)` SD3.5 numbers closely: background PSNR 26.13 against 26.18, SSIM 88.84 against 88.75, and both CLIP scores within 0.06. LPIPS and MSE land within one point. Structure Distance is the outlier at 17.22 against 15.23, which I put down to the 151-image subset. That agreement is my positive control: the one configuration for which the paper publishes a number on this setup, reproduced end to end. It does not certify the paper's numbers, and it says nothing about whether my masks match theirs — but it makes a broken setup an unlikely explanation for the other three rows.
+
+Read the table as distance to the bottom row — the score of not editing — on each metric's own scale:
+
+| Metric | no mask → GT mask → no-edit reference | fraction of the gap closed |
+|---|---|---|
+| bg-PSNR | 26.13 → 35.01 → 35.77 | **92%** |
+| bg-LPIPS | 68.24 → 10.16 → 9.28 | **99%** |
+| bg-MSE | 33.82 → 5.49 → 5.10 | **99%** |
+| bg-SSIM | 88.84 → 94.70 → 94.94 | **96%** |
+| Structure Distance | 17.22 → 8.73 → 0.55 | 51% |
+
+Turning on the mask closes 92–99% of the distance from the no-mask row to the no-edit reference on each of the four background columns. That is a statement about the gap, not about proximity in absolute terms: on LPIPS the GT-mask row still sits 9.5% above the reference value, on MSE 7.6%, on PSNR 0.76 dB below. In the edited region CLIP drops by 0.14. The bottom row gives that number some scale — 0.14 is about six percent of the 2.3-point CLIP gap between the no-mask row and not editing — but a CLIP-score ratio is not an editing-success rate, and the no-edit value is a reference rather than a floor, since a wrong edit could score below it. The SAM2 masks — right location, approximate shape — close 81–93% of the same four gaps.
+
+The same tendency appears in every category that has a background to score. Per-category background PSNR under the GT mask lands within 1.6 dB of the reference for all nine, and within 0.5 dB for four of them; for pose changes the two are 32.41 and 32.46.
+
+Structure Distance closes about half the gap. It is computed over the whole image, edited region included, so pasting the background back cannot carry it all the way on its own. I did not run other methods under equalized masks, so I cannot say whether the range that remains on any of these columns is enough to separate methods; what I can say is that on the four background columns that range is small — 0.76 dB of PSNR between the GT-mask row and not editing — and that whatever lives inside it is the geometry of the paste as much as the quality of the edit.
+
+## So what should be reported
+
+I do not think the conclusion is that mask blending is cheating. Masks are a legitimate tool. DirectEdit's default mask path takes only the image and the two prompts, finds a box with an MLLM and a shape with SAM, so as a *system* it has the same inputs as FlowEdit and the comparison in Table 1 is a fair comparison of systems.
+
+The problem is what happens next: the background column of that system comparison gets read as evidence about the inversion algorithm. It cannot carry that weight, because for this method the background is the source pasted back. Two different questions need two different tables.
+
+1. **"Is this the best editing system for image-plus-text input?"** Compare full systems, mask path included, on all columns. Table 1 does this. Its background columns are scored outside the *benchmark's* mask, not the system's, so for a masked system they fold together several things at once: how much of the background was refilled with the source latent, how well the system's mask agreed with the annotation, and what the dilation, downsampling and decoding did at the seam. That is a legitimate system-level number. It is not a number about inversion.
+2. **"How much does the inversion algorithm contribute?"** Hold the mask condition fixed across methods — the same mask, or no mask — and compare again. Only then does a background difference say something about inversion. Today the only row of this kind is DirectEdit's own `w/o mask` line. Its 2.74 dB over FlowEdit is what remains of the *system* difference once blending is off; attention injection and the rest are still in it, so it is not the alignment's contribution either. The closest thing the paper offers to that is its own ablation, where swapping the alignment for stepwise correction inside the full configuration costs 1.51 dB of background PSNR and 11.3 points of Structure Distance. Neither number is 10.67.
+
+Two small additions make either table easier to read honestly. **Report the no-edit reference as a row** — one VAE round-trip shows the reader where not editing lands on each column. And **report where the mask came from and how much of the image it covers** — annotation, segmentation model, MLLM box — because in the run above, with the editing method held fixed, the mask condition alone moved background PSNR by nearly 9 dB.
+
+The average-rank column deserves its own look. Four of PIE-Bench's seven metrics sit on one axis, background preservation, and the table above shows those four move together once the source is pasted back. The question is not whether the rank is invalid but how much that four-to-one weighting drives it — and the paper's Table 1 contains enough to check, because it prints all seven columns for all fifteen rows. Re-ranking those rows as the paper does reproduces its average-rank column to within 0.14 (a tie in CLIP-whole). Collapsing the four background columns into one axis and averaging four ways instead of seven keeps DirectEdit-SD3.5 in first place, but moves the rest of the table: DirectEdit-FLUX falls from second to fifth, FlowEdit-SD3.5 rises from sixth to third, and the gap between DirectEdit-SD3.5 and its own no-mask variant narrows from about 1.9 rank points to 1.0. The weighting does not decide the winner here; it does decide most of what comes after.
+
+The background column of a masked method is, to a first approximation, a paste-quality score. Reading an inversion contribution out of it needs at least the row without the paste, and really needs an ablation that holds everything else fixed. DirectEdit, to its credit, publishes both.
+
+[^alg]: The appendix's Algorithm 2, a variant that drops the explicit reconstruction pass, writes the blend against `Z_inv` directly.
+
+## Limits of what I checked
+
+- SD3.5-medium only, 151 of 700 images, one seed. The FLUX numbers quoted above are the paper's, not mine.
+- I did not compare methods under equalized masks. Everything above concerns one method under four conditions; claims about whether the remaining range separates methods would need that second experiment.
+- A small bookkeeping note: I count ten edit categories because the benchmark's annotation file has ten (ids 0–9). The DirectEdit paper describes nine.
+- My auto masks are better than a real automatic pipeline would produce, since the box came from the annotation. They do score higher (33.94) than the paper's full configuration (31.82), but I cannot read that as evidence about mask quality: the subsets differ, and my GT-mask run scores higher still (35.01).
+- I did not re-measure what residual re-injection contributes on its own. The paper's FLUX ablation reports it: with the mask held on, swapping the alignment for the paper's simpler stepwise correction costs 1.51 dB of background PSNR and 11.3 points of Structure Distance. Those are conditional effects inside the full configuration, not independent contributions; the same appendix's Euler+attention+mask row (16.66 dB) already shows the components interact.
+- One quirk I checked and set aside: PIE-Bench's `psnr_unedit_part` zeroes the edit region in both images and then takes PSNR over the *whole* frame, so error-free pixels enter the denominator and inflate the value with mask area. Measured across my four conditions the inflation is a constant 2.13 dB, so it shifts all rows equally and does not affect any comparison above.
