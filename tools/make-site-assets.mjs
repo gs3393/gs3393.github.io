@@ -118,7 +118,7 @@ function socialCard(stripSvg) {
 </style></head>
 <body><div class="card">
   <div class="brand">gs3393</div>
-  <h1>Study notes on image generation models</h1>
+  <h1>Notes on image generation research</h1>
   <p>Fundamentals · Paper reviews · Experiments</p>
   <div class="strip">${stripSvg}</div>
 </div></body></html>

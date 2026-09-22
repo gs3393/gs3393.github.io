@@ -20,7 +20,7 @@ listing:
     type: partial
 ---
 
-Notes are learning records. They are grouped by the kind of writing; topics appear as tags on each note and as a filter on the right.
+Notes are grouped by kind. Topics are tags on each note, and the list on the right filters by them.
 
 ::: {#notes-listing}
 :::

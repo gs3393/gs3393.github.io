@@ -10,9 +10,9 @@
 // filtering keeps working; header rows carry an empty data-categories so a
 // filter simply hides them.
 const kinds = [
-  { name: "Fundamentals", blurb: "Connected study notes on the ideas that foundational papers share." },
-  { name: "Paper Review", blurb: "What a recent paper proposes, and what its results do and do not show." },
-  { name: "Experiment", blurb: "Reproductions and checks, including the ones that failed." }
+  { name: "Fundamentals", blurb: "The foundational papers, and how they connect." },
+  { name: "Paper Review", blurb: "A recent paper, and what its results actually support." },
+  { name: "Experiment", blurb: "Small runs to check a claim or a method. Failed ones included." }
 ];
 const mode = (templateParams && templateParams.mode) || "grouped";
 const slug = (s) => String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");

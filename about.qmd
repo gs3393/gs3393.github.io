@@ -1,43 +1,23 @@
 ---
 title: "About"
-description: "Why this site exists, what it contains, and how to reach me."
+description: "Who keeps these notes, and why."
 hide-description: true
 toc: false
 ---
 
 ::: {.column-margin .contact-card}
 [gs3393]{.contact-name}
-[AI/ML engineer · generative AI products]{.contact-role}
+[ML/AI engineer · generative AI]{.contact-role}
 
 - [Email](mailto:{{< var email >}})
 - [GitHub](https://github.com/gs3393)
 - [RSS feed](notes.xml)
 :::
 
-I am an AI/ML engineer at a company that builds generative AI products. My day-to-day is applied: model evaluation, research engineering, and product-oriented experiments. This site is the other half of that job, the slower reading that the applied part depends on.
+I have a master's degree in AI. These days I'm an ML/AI engineer at an AI startup, building generative AI products.
 
-## Why this site exists
+Building products is fun, and I like it. It also pulls me away from research, and I miss that. This site is where I keep the research side going: I read papers closely, run small analyses and side projects, and write down what I learned. Most of it is about image generation.
 
-I started it to fill gaps in concepts that had stayed uncertain and to rebuild my intuition for research in image generation. Using a model is not the same as understanding it, and the difference shows up exactly when something has to be changed rather than run.
+The notes are of three kinds. *Fundamentals* go back to the foundational papers and connect them. *Paper reviews* take a recent paper and look at what its results actually support. *Experiments* are small runs to check a claim or a method, including the ones that went nowhere. Topics are tags on each note.
 
-Writing is how I close that gap. Each note starts from a question I could not answer well, follows the original papers until I can, and keeps the parts I would want the next time the question comes up. The longer aim is to build and improve generation models rather than only apply them, so the fundamentals have to be solid, recent papers have to be read closely, and claims have to be checked against actual runs.
-
-## What is here
-
-Every note is one of three kinds.
-
-- **Fundamentals** connect the ideas that foundational papers share, in one notation.
-- **Paper reviews** explain what a recent paper proposes, and what its results do and do not show.
-- **Experiments** record reproductions and checks, including the ones that failed.
-
-Topics appear as tags on each note. The notes are learning records: they cover what I have actually studied and checked, not everything about a topic, and they say where I am unsure.
-
-## How this might help you
-
-If you are learning the same material, the notes try to do three things: connect ideas across papers instead of treating each one alone, separate what a paper shows from what it claims, and keep the partial and negative results rather than only the clean ones. Each note links the sources it relies on, so any step can be checked against the original.
-
-## Get in touch
-
-If a note helped, or if you found a mistake or have a question it left open, I would like to hear from you: [send me an email](mailto:{{< var email >}}). Corrections are the most useful message I can receive. A note that is wrong is worse than no note at all.
-
-New notes are announced through the [RSS feed](notes.xml). Code and figure sources are on [GitHub](https://github.com/gs3393).
+If a note was useful to you, or you find a mistake in one, I'd be glad to hear about it. [Email me](mailto:{{< var email >}}). New notes go out through the [RSS feed](notes.xml); code and figure sources are on [GitHub](https://github.com/gs3393).

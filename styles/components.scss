@@ -116,7 +116,11 @@ main.content .note-row h3 a:hover {
   margin: 1.2rem 0 0;
 }
 .home-main > .section-eyebrow { display: block; margin-top: 3rem; }
-.home-kinds { padding-top: 1.4rem; }
+.home-kinds {
+  padding-top: 1.4rem;
+  position: sticky;
+  top: 5rem;
+}
 .home-kinds .kind-grid {
   grid-template-columns: 1fr;
   gap: .8rem;
@@ -124,7 +128,7 @@ main.content .note-row h3 a:hover {
 }
 @media (max-width: 991.98px) {
   .home-top { grid-template-columns: 1fr; row-gap: 2rem; }
-  .home-kinds { padding-top: 0; }
+  .home-kinds { padding-top: 0; position: static; }
   .home-kinds .kind-grid { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
 }
 .home-hero { margin: 0; }
