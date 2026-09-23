@@ -29,7 +29,7 @@ Copy the starter that matches the kind of note from `_templates/note-*.qmd` to `
 |---|---|
 | `post-type` | Exactly one of `Fundamentals`, `Paper Review`, `Experiment`. Drives the label on the note and its section on the Notes page. A note with any other value is listed under "Other". |
 | `categories` | Topics only (`Diffusion`, `Flow Matching`, `Guidance`, `Architecture`, `Evaluation`, `Editing`, `Controllable Generation`, `Few-Step Generation`, `3D & Video`). Add a topic when a note needs it. |
-| `description` | One or two sentences. Used in lists, the RSS feed, and share cards. |
+| `description` | One or two sentences. Used in lists and share cards. |
 | `image` | Optional. Share cards need PNG or JPG; if the first figure is an SVG, point this at `/assets/site/social-card.png`. |
 | `draft: true` | Keep until the note is approved. With the default `draft-mode`, a draft renders as a blank page and gets no links from navigation, lists, or search; `quarto preview` still shows it. |
 

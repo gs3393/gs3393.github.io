@@ -25,17 +25,12 @@ website:
       - href: about.qmd
         text: About
     right:
-      - icon: rss
-        href: notes.xml
-        aria-label: RSS feed
       - icon: github
         href: https://github.com/gs3393
         aria-label: GitHub
   page-footer:
     left: "© 2026 gs3393"
     right:
-      - text: "RSS"
-        href: notes.xml
       - text: "GitHub"
         href: https://github.com/gs3393
 

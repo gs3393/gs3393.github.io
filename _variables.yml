@@ -1,4 +1,3 @@
 # Values referenced from pages with {{< var name >}}.
-# The email is a placeholder until the address to publish is decided;
-# tools/check-links.mjs refuses a render that still contains it.
-email: "REPLACE-ME@example.com"
+# tools/check-links.mjs refuses a render that still contains a placeholder address.
+email: "gnus3393@gmail.com"

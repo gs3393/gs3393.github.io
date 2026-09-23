@@ -1,6 +1,6 @@
 ---
 title: "About"
-description: "Who keeps these notes, and why."
+description: "Background, research interests, and the scope of this site."
 hide-description: true
 toc: false
 ---
@@ -11,13 +11,26 @@ toc: false
 
 - [Email](mailto:{{< var email >}})
 - [GitHub](https://github.com/gs3393)
-- [RSS feed](notes.xml)
 :::
 
-I have a master's degree in AI. These days I'm an ML/AI engineer at an AI startup, building generative AI products.
+I am an ML/AI engineer with a master's degree in artificial intelligence, currently working on generative AI product development at an AI startup.
 
-Building products is fun, and I like it. It also pulls me away from research, and I miss that. This site is where I keep the research side going: I read papers closely, run small analyses and side projects, and write down what I learned. Most of it is about image generation.
+## Research interests
 
-The notes are of three kinds. *Fundamentals* go back to the foundational papers and connect them. *Paper reviews* take a recent paper and look at what its results actually support. *Experiments* are small runs to check a claim or a method, including the ones that went nowhere. Topics are tags on each note.
+My research interests center on image generation. Although I find product development rewarding, its demands often limit the time available for sustained research. I maintain this site as a record of my independent study through detailed readings of research papers, technical analyses, and small-scale experiments. Writing these notes helps me consolidate my understanding and identify questions for further study.
 
-If a note was useful to you, or you find a mistake in one, I'd be glad to hear about it. [Email me](mailto:{{< var email >}}). New notes go out through the [RSS feed](notes.xml); code and figure sources are on [GitHub](https://github.com/gs3393).
+## Scope and organization
+
+Posts are organized into three categories:
+
+- **Fundamentals** examine foundational concepts and papers, with attention to the relationships between them.
+- **Paper reviews** discuss recent research, covering the problem formulation, methodology, and interpretation of results.
+- **Experiments** document focused evaluations of specific claims or methods, including inconclusive and unsuccessful attempts.
+
+Topic tags connect related material across these categories.
+
+## Contact
+
+For questions, corrections, or discussion of the material presented here, please contact me by [email](mailto:{{< var email >}}).
+
+Accompanying code and figure sources are available on [GitHub](https://github.com/gs3393).

@@ -1,7 +1,0 @@
-representation,original_50_step,fd_inception,fd_sim
-Inception,1.54,0.46,0.51
-ConvNeXt,3.49,2.57,1.09
-DINOv2,6.10,7.34,3.06
-MAE,8.07,15.28,1.01
-SigLIP,19.37,26.22,2.78
-CLIP,25.82,25.29,11.30

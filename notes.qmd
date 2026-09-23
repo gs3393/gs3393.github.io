@@ -13,11 +13,6 @@ listing:
   template: _templates/notes-listing.ejs
   template-params:
     mode: grouped
-  feed:
-    title: "gs3393 · Notes"
-    description: "Study notes, paper reviews, and experiments on image generation models."
-    items: 20
-    type: partial
 ---
 
 Notes are grouped by kind. Topics are tags on each note, and the list on the right filters by them.
