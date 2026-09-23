@@ -27,19 +27,42 @@
   margin: 0;
   padding: 0 !important;
 }
+/* Group headers: a real heading in the kind's color, with the dot and a
+   two-tone rule, so the sections read as sections and not as list text. */
 .note-group-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  gap: .3rem 1rem;
-  margin: 2.9rem 0 0 !important;
-  padding-bottom: .75rem;
-  border-bottom: 1px solid var(--c-rule);
+  display: block;
+  margin: 3.2rem 0 0 !important;
+  padding: 0 0 .8rem;
+  border-bottom: 2px solid var(--kicker-color, var(--c-rule));
 }
-.note-group-head:first-child { margin-top: 1.6rem !important; }
+.note-group-head:first-child { margin-top: 1.4rem !important; }
+main.content .note-group-title {
+  display: flex;
+  align-items: center;
+  gap: .6rem;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  font-family: var(--font-ui);
+  font-size: 1.28rem;
+  font-weight: 600;
+  letter-spacing: -.015em;
+  line-height: 1.2;
+  color: var(--kicker-color, var(--c-slate));
+}
+main.content .note-group-title::before {
+  content: "";
+  width: .62rem;
+  height: .62rem;
+  border-radius: 50%;
+  background: currentColor;
+  flex: none;
+}
 .note-group-blurb {
-  margin: 0;
-  font-size: .9rem;
+  margin: .4rem 0 0 !important;
+  padding-left: 1.22rem;
+  font-family: var(--font-ui);
+  font-size: .82rem;
   line-height: 1.5;
   color: var(--c-ink-soft);
 }

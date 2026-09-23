@@ -37,9 +37,9 @@ const row = (item) => { %>
 <% };
 
 const header = (kind, id) => { %>
-  <li class="note-group-head" id="<%- id %>" data-categories="">
-    <span class="type-label" data-type="<%- kind.name %>"><%- kind.name %></span>
-    <p class="note-group-blurb"><%- kind.blurb %></p>
+  <li class="note-group-head" id="<%- id %>" data-categories="" data-type="<%- kind.name %>">
+    <h2 class="note-group-title no-anchor"><%- kind.name %></h2>
+    <% if (kind.blurb) { %><p class="note-group-blurb"><%- kind.blurb %></p><% } %>
   </li>
 <% };
 %>
