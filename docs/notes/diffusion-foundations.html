@@ -1,0 +1,1912 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-09-18">
+<meta name="description" content="A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise.">
+
+<title>From Noise to Images – gs3393</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/site/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-9b36bde479e88d7d845adaafafc129ba.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-f931eb4ea337525074ba78c800d26bd1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-f7157752fec76fb827e72675ee800a39.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-f931eb4ea337525074ba78c800d26bd1.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="From Noise to Images – gs3393">
+<meta property="og:description" content="A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise.">
+<meta property="og:image" content="https://gs3393.github.io/notes/assets/diffusion-foundations/image-distribution.png">
+<meta property="og:site_name" content="gs3393">
+<meta property="og:image:alt" content="Small photographs of animals, flowers, birds, landscapes, and buildings scattered in loose groups on a white background.">
+<meta property="og:image:height" content="1024">
+<meta property="og:image:width" content="1536">
+<meta name="twitter:title" content="From Noise to Images – gs3393">
+<meta name="twitter:description" content="A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise.">
+<meta name="twitter:image" content="https://gs3393.github.io/notes/assets/diffusion-foundations/image-distribution.png">
+<meta name="twitter:image:alt" content="Small photographs of animals, flowers, birds, landscapes, and buildings scattered in loose groups on a white background.">
+<meta name="twitter:image-height" content="1024">
+<meta name="twitter:image-width" content="1536">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gs3393</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/gs3393"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#why-i-am-writing-this" id="toc-why-i-am-writing-this" class="nav-link active" data-scroll-target="#why-i-am-writing-this">Why I am writing this</a></li>
+  <li><a href="#what-a-diffusion-model-is-trying-to-learn" id="toc-what-a-diffusion-model-is-trying-to-learn" class="nav-link" data-scroll-target="#what-a-diffusion-model-is-trying-to-learn">What a diffusion model is trying to learn</a></li>
+  <li><a href="#the-forward-process-from-one-step-to-any-step" id="toc-the-forward-process-from-one-step-to-any-step" class="nav-link" data-scroll-target="#the-forward-process-from-one-step-to-any-step">The forward process: from one step to any step</a></li>
+  <li><a href="#learning-the-way-back" id="toc-learning-the-way-back" class="nav-link" data-scroll-target="#learning-the-way-back">Learning the way back</a></li>
+  <li><a href="#the-score-what-noise-prediction-learns-about-a-distribution" id="toc-the-score-what-noise-prediction-learns-about-a-distribution" class="nav-link" data-scroll-target="#the-score-what-noise-prediction-learns-about-a-distribution">The score: what noise prediction learns about a distribution</a></li>
+  <li><a href="#classifier-free-guidance-using-the-difference-a-condition-makes" id="toc-classifier-free-guidance-using-the-difference-a-condition-makes" class="nav-link" data-scroll-target="#classifier-free-guidance-using-the-difference-a-condition-makes">Classifier-free guidance: using the difference a condition makes</a></li>
+  <li><a href="#dit-building-the-denoiser-with-a-transformer" id="toc-dit-building-the-denoiser-with-a-transformer" class="nav-link" data-scroll-target="#dit-building-the-denoiser-with-a-transformer">DiT: building the denoiser with a Transformer</a></li>
+  <li><a href="#putting-the-generator-together" id="toc-putting-the-generator-together" class="nav-link" data-scroll-target="#putting-the-generator-together">Putting the generator together</a></li>
+  <li><a href="#appendix-optional-mathematical-connections" id="toc-appendix-optional-mathematical-connections" class="nav-link" data-scroll-target="#appendix-optional-mathematical-connections">Appendix: optional mathematical connections</a></li>
+  <li><a href="#appendix-translating-notation-across-the-papers" id="toc-appendix-translating-notation-across-the-papers" class="nav-link" data-scroll-target="#appendix-translating-notation-across-the-papers">Appendix: translating notation across the papers</a></li>
+  <li><a href="#references-and-figure-provenance" id="toc-references-and-figure-provenance" class="nav-link" data-scroll-target="#references-and-figure-provenance">References and figure provenance</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<p class="post-kicker" data-type="Fundamentals"><a href="../notes.html">Fundamentals</a></p>
+<h1 class="title">From Noise to Images</h1>
+<p class="subtitle lead">Connecting DDPM, score functions, classifier-free guidance, and DiT</p>
+</div>
+
+<div>
+  <div class="description">
+    A connected study of diffusion: the forward process, the denoising objective, the score, guidance, and the Transformer that predicts the noise.
+  </div>
+</div>
+
+<div class="post-meta">
+  <span class="date">September 18, 2026</span>
+  <ul class="post-topics" aria-label="Topics">
+      <li class="topic">Diffusion</li>
+      <li class="topic">Guidance</li>
+      <li class="topic">Architecture</li>
+    </ul>
+</div>
+
+
+</header>
+
+
+<section id="why-i-am-writing-this" class="level2">
+<h2 class="anchored" data-anchor-id="why-i-am-writing-this">Why I am writing this</h2>
+<p>I am writing this note to fill gaps in concepts that have remained uncertain and to rebuild my intuition for research in image generation. DDPM, score functions, classifier-free guidance, and Diffusion Transformers often appear together in a model, yet understanding each name separately does not automatically make their connections clear.</p>
+<p>The question I want to follow is: <strong>how does learning to predict noise become a way to generate an image, and where do guidance and the Transformer enter that process?</strong></p>
+<p>This is a study note that follows that question across several papers. We will begin with the overall process, derive the mathematics that makes training possible, and then assemble a class-conditional DiT generator. The equations use a single notation throughout. The first overview needs only the idea of a neural network trained from examples; the later sections introduce the probability and calculus as they become useful.</p>
+</section>
+<section id="what-a-diffusion-model-is-trying-to-learn" class="level2">
+<h2 class="anchored" data-anchor-id="what-a-diffusion-model-is-trying-to-learn">What a diffusion model is trying to learn</h2>
+<p>An image dataset contains many individual examples. Across them, there are recurring structures: objects have characteristic shapes, scenes have spatial relationships, and appearances vary with viewpoint, lighting, and context. A generative model aims to learn a distribution from which it can produce new examples with similar structure and variation.</p>
+<div id="fig-image-distribution" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Small photographs of animals, flowers, birds, landscapes, and buildings scattered in loose groups on a white background.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-image-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/image-distribution.png" class="img-fluid figure-img" alt="Small photographs of animals, flowers, birds, landscapes, and buildings scattered in loose groups on a white background.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-image-distribution-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: Images as samples from a distribution. The scattered arrangement suggests variety and recurring groups. These are AI-generated illustrative images; their positions are hand-directed composition, not a measured embedding or a real dataset.
+</figcaption>
+</figure>
+</div>
+<p>Thinking in terms of a distribution changes the goal. We want a procedure that can produce many plausible images, including different examples under the same condition. A single average image would not achieve that.</p>
+<p>Diffusion builds such a procedure around a deliberately easy operation: <strong>corrupt an image by adding a known amount of random noise</strong>. Repeating this operation gradually obscures the image. After enough corruption, the result is close to Gaussian noise, which is easy to sample.</p>
+<p>The difficult direction is the way back. A neural network learns from noisy examples at many corruption levels. In the DDPM formulation used here, it receives a noisy image and its noise level, and predicts the noise component used to construct that training example. The training target is available because we sampled the noise ourselves.</p>
+<div id="fig-noising" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Six images of a simple mountain scene progressively obscured by Gaussian noise, with a forward corruption arrow and a reverse generation arrow.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-noising-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/noising-process.svg" class="img-fluid figure-img" alt="Six images of a simple mountain scene progressively obscured by Gaussian noise, with a forward corruption arrow and a reverse generation arrow.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-noising-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: A forward noising trajectory, read from left to right. The lower arrow indicates the direction a learned generator must travel. The panels were computed from a synthetic illustration using the forward process; reading them backward is a conceptual illustration, not an actual model-generated reverse trajectory.
+</figcaption>
+</figure>
+</div>
+<p>A training iteration takes a real image, chooses a noise level, samples noise, constructs a noisy input, and adjusts the network to reduce its prediction error. Repeating this over the dataset teaches one network to work at many noise levels.</p>
+<p>At inference time, generation starts from newly sampled Gaussian noise. Unlike during training, there is no real image available as a reference: the model has to generate one using what it learned. The network predicts a denoising direction, a sampling rule uses that prediction to take a step toward a less noisy state, and the process repeats. An image emerges from the whole sequence.</p>
+<div id="fig-overview-algorithms" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-overview-algorithms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="algorithm-pair">
+<div class="paper-algorithm">
+<p><span class="algorithm-title"><strong>Algorithm 1</strong> · Training: one iteration</span></p>
+<p><strong>Given:</strong> training images and a noise-prediction network.</p>
+<ol type="1">
+<li>Sample a <strong>real image</strong> from the dataset.</li>
+<li>Choose a random noise level and draw Gaussian noise.</li>
+<li>Mix the image and noise at that level.</li>
+<li>Give the noisy image and its noise level to the network.</li>
+<li>Compare the predicted noise with the <strong>noise drawn in step 2</strong>.</li>
+<li><strong>Update the network weights</strong> to reduce this error.</li>
+</ol>
+<p><span class="algorithm-result">Repeat with new images, noise levels, and noise draws.</span></p>
+</div>
+<div class="paper-algorithm">
+<p><span class="algorithm-title"><strong>Algorithm 2</strong> · Inference: generate one image</span></p>
+<p><strong>Given:</strong> the trained network; no real reference image.</p>
+<ol type="1">
+<li>Start from <strong>new Gaussian noise</strong>.</li>
+<li><strong>For</strong> each noise level, from high to low:
+<ol type="a">
+<li>Predict noise from the current state and noise level.</li>
+<li>Use the prediction and the sampling rule to obtain the next, less noisy state.</li>
+</ol></li>
+<li><strong>Return</strong> the final image.</li>
+</ol>
+<p><span class="algorithm-result">The sample changes at each step; the network weights stay fixed.</span></p>
+</div>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-overview-algorithms-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: Training and inference at a glance. These are high-level versions of the DDPM procedures: training updates the network from a known noisy example, while inference repeatedly updates a sample using the trained network.
+</figcaption>
+</figure>
+</div>
+<p>Three parts of this process will become clearer as we go:</p>
+<ul>
+<li><strong>The diffusion formulation</strong> defines the corruption process, training objective, and reverse transitions.</li>
+<li><strong>Guidance</strong> combines predictions during generation to emphasize a condition.</li>
+<li><strong>The denoising network</strong> computes those predictions. DiT implements this network with a Transformer.</li>
+</ul>
+<p>The distinction lets us examine each part while keeping the complete generator in view. The probabilistic construction follows <a href="https://arxiv.org/html/2006.11239v2#S2">DDPM</a>.</p>
+</section>
+<section id="the-forward-process-from-one-step-to-any-step" class="level2">
+<h2 class="anchored" data-anchor-id="the-forward-process-from-one-step-to-any-step">The forward process: from one step to any step</h2>
+<section id="one-notation-for-the-whole-article" class="level3">
+<h3 class="anchored" data-anchor-id="one-notation-for-the-whole-article">One notation for the whole article</h3>
+<p>Let <span class="math inline">\(x_0 \in \mathbb R^d\)</span> be a clean data sample and <span class="math inline">\(x_t\)</span> its noisy version at discrete step <span class="math inline">\(t \in \{1,\ldots,T\}\)</span>. We flatten image coordinates conceptually when writing vectors; the implementation can retain an image-shaped tensor.</p>
+<p>We write <span class="math inline">\(p_{\mathrm{data}}(x_0)\)</span> for the data distribution, <span class="math inline">\(q\)</span> for the fixed forward process and its posteriors, and <span class="math inline">\(p_\theta\)</span> for the learned reverse model. The noisy data marginal will be called <span class="math inline">\(q_t\)</span>. Later, <span class="math inline">\(z_t\)</span> will explicitly denote a VAE latent, so that a pixel image and its compressed representation do not silently share a symbol.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Symbol</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\beta_t\)</span></td>
+<td style="text-align: left;">Variance of the fresh noise added at forward step <span class="math inline">\(t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\alpha_t=1-\beta_t\)</span></td>
+<td style="text-align: left;">Squared signal multiplier for that one step</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\bar\alpha_t=\prod_{j=1}^{t}\alpha_j\)</span></td>
+<td style="text-align: left;">Cumulative squared signal multiplier from step <span class="math inline">\(0\)</span> to <span class="math inline">\(t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(a_t=\sqrt{\bar\alpha_t}\)</span></td>
+<td style="text-align: left;">Cumulative signal amplitude</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\sigma_t=\sqrt{1-\bar\alpha_t}\)</span></td>
+<td style="text-align: left;">Cumulative forward-noise standard deviation</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\xi_t\)</span></td>
+<td style="text-align: left;">Independent Gaussian noise for one forward transition</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\epsilon\)</span></td>
+<td style="text-align: left;">Aggregate Gaussian noise in a direct sample of <span class="math inline">\(x_t\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\epsilon_\theta(x_t,t,c)\)</span></td>
+<td style="text-align: left;">Network prediction of that aggregate noise; <span class="math inline">\(c\)</span> is an optional condition</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(r_t\)</span></td>
+<td style="text-align: left;">Reverse-transition variance when we hold it fixed</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(s_t(x)\)</span></td>
+<td style="text-align: left;">Exact score of the noisy data marginal</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\gamma\)</span></td>
+<td style="text-align: left;">CFG scale in this article</td>
+</tr>
+</tbody>
+</table>
+<p>The two roles of noise need separate symbols. The one-step noise <span class="math inline">\(\xi_t\)</span> is newly drawn at each transition. The aggregate noise <span class="math inline">\(\epsilon\)</span> summarizes all the noise between <span class="math inline">\(0\)</span> and <span class="math inline">\(t\)</span> in a direct sampling formula. Also, <span class="math inline">\(\sigma_t^2\)</span> always means <strong>forward marginal variance</strong>, never reverse-transition variance.</p>
+</section>
+<section id="what-a-noise-schedule-controls" class="level3">
+<h3 class="anchored" data-anchor-id="what-a-noise-schedule-controls">What a noise schedule controls</h3>
+<p>Choose <span class="math inline">\(0&lt;\beta_t&lt;1\)</span> and define</p>
+<p><span id="eq-forward-step"><span class="math display">\[
+q(x_t\mid x_{t-1})
+=\mathcal N\!\left(\sqrt{\alpha_t}\,x_{t-1},\,\beta_t I\right),
+\qquad
+x_t=\sqrt{\alpha_t}\,x_{t-1}+\sqrt{\beta_t}\,\xi_t,
+\quad \xi_t\sim\mathcal N(0,I).
+\tag{1}\]</span></span></p>
+<p>The sequence <span class="math inline">\(\{\beta_t\}_{t=1}^T\)</span> is the <strong>noise schedule</strong>. The sequences <span class="math inline">\(\alpha_t\)</span> and <span class="math inline">\(\bar\alpha_t\)</span> describe the same choice in terms of the signal retained at one step and across all steps.</p>
+<p>The square roots matter: multiplying a random variable by a coefficient multiplies its variance by the coefficient squared. Here, <span class="math inline">\(\alpha_t+\beta_t=1\)</span>. If the input were already standard Gaussian, this operation would preserve that distribution. This does not make the original image distribution Gaussian; it explains the balance between attenuation and added noise.</p>
+<p>The original DDPM experiments used <span class="math inline">\(T=1000\)</span> with <span class="math inline">\(\beta_t\)</span> increasing linearly from <span class="math inline">\(10^{-4}\)</span> to <span class="math inline">\(0.02\)</span>. Even though <span class="math inline">\(\alpha_t\)</span> remains close to one at every step, its <strong>product</strong> can become very small. <a href="https://arxiv.org/html/2006.11239v2#S4">DDPM §4 and Appendix B</a></p>
+<div id="fig-schedule" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A linearly increasing beta curve and nonlinear cumulative signal and noise amplitude curves for 1,000 diffusion steps.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-schedule-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/noise-schedule.svg" class="img-fluid figure-img" alt="A linearly increasing beta curve and nonlinear cumulative signal and noise amplitude curves for 1,000 diffusion steps.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-schedule-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;4: The original DDPM linear schedule. Left: the variance of the noise added at each step. Right: the cumulative signal and noise amplitudes. A linear beta schedule does not produce a linear cumulative signal curve.
+</figcaption>
+</figure>
+</div>
+<p>At step 1000, <span class="math inline">\(\alpha_{1000}=0.98\)</span> still looks close to one. But this describes <strong>only the last step</strong>. The original image has been attenuated at every step, so its remaining signal depends on the product of all 1,000 factors:</p>
+<p><span class="math display">\[
+\bar\alpha_{1000}
+=\alpha_1\alpha_2\cdots\alpha_{1000}
+\approx4.04\times10^{-5}.
+\]</span></p>
+<p>As we will derive below, the original image is multiplied by <span class="math inline">\(\sqrt{\bar\alpha_{1000}}\approx0.00635\)</span>, while the accumulated noise is multiplied by <span class="math inline">\(\sqrt{1-\bar\alpha_{1000}}\approx0.99998\)</span>. After 1,000 steps, the image signal has almost entirely disappeared and the result is <strong>essentially pure Gaussian noise</strong>. The approximation is very close under the usual image scaling, although the signal coefficient is still slightly above zero.</p>
+</section>
+<section id="why-we-can-sample-any-timestep-directly" class="level3">
+<h3 class="anchored" data-anchor-id="why-we-can-sample-any-timestep-directly">Why we can sample any timestep directly</h3>
+<p>Suppose training asks for an image at noise level 500. Do we have to create <span class="math inline">\(x_1\)</span>, then <span class="math inline">\(x_2\)</span>, and so on, all the way to <span class="math inline">\(x_{500}\)</span>?</p>
+<p>We can get there in one step. The reason is that all the noise added along the way can be combined into <strong>one Gaussian noise term</strong>. We only need to know how much of the original image remains and how strong that combined noise should be.</p>
+<p>Start with just two steps. The first step gives</p>
+<p><span class="math display">\[
+x_1=\sqrt{\alpha_1}x_0+\sqrt{\beta_1}\xi_1.
+\]</span></p>
+<p>The second step shrinks this entire result and adds fresh noise. Substitute the expression for <span class="math inline">\(x_1\)</span>:</p>
+<p><span id="eq-expanded-forward"><span class="math display">\[
+\begin{aligned}
+x_2
+&amp;=\sqrt{\alpha_2}x_1+\sqrt{\beta_2}\xi_2\\
+&amp;=\sqrt{\alpha_2\alpha_1}x_0
+  +\sqrt{\alpha_2\beta_1}\xi_1
+  +\sqrt{\beta_2}\xi_2.
+\end{aligned}
+\tag{2}\]</span></span></p>
+<p>Read the last line as three pieces: the remaining original image, the noise from step 1 after it has also been shrunk, and the fresh noise from step 2.</p>
+<p>The original image has been multiplied by <span class="math inline">\(\sqrt{\alpha_1}\)</span> and then <span class="math inline">\(\sqrt{\alpha_2}\)</span>, leaving a total multiplier of <span class="math inline">\(\sqrt{\alpha_1\alpha_2}\)</span>.</p>
+<p>For the noise, use one fact: <strong>adding independent Gaussian noises gives another Gaussian, whose variance is the sum of their variances</strong>. Since <span class="math inline">\(\xi_1\)</span> and <span class="math inline">\(\xi_2\)</span> each have variance one per coordinate, the two noise terms have variances <span class="math inline">\(\alpha_2\beta_1\)</span> and <span class="math inline">\(\beta_2\)</span>. Their total is</p>
+<p><span class="math display">\[
+\begin{aligned}
+\alpha_2\beta_1+\beta_2
+&amp;=\alpha_2(1-\alpha_1)+(1-\alpha_2)\\
+&amp;=1-\alpha_1\alpha_2.
+\end{aligned}
+\]</span></p>
+<p>So we can sample <span class="math inline">\(x_2\)</span> by drawing a single <span class="math inline">\(\epsilon\sim\mathcal N(0,I)\)</span>:</p>
+<p><span class="math display">\[
+x_2=\sqrt{\alpha_1\alpha_2}\,x_0
++\sqrt{1-\alpha_1\alpha_2}\,\epsilon.
+\]</span></p>
+<p>We have replaced two separate noise draws and two transitions with one draw and one formula.</p>
+<p><strong>The same pattern continues at every step.</strong> To see why, suppose that after step <span class="math inline">\(t-1\)</span>, the image multiplier is <span class="math inline">\(\sqrt{\bar\alpha_{t-1}}\)</span> and the combined noise has variance <span class="math inline">\(1-\bar\alpha_{t-1}\)</span> per coordinate.</p>
+<p>At the next step, the image multiplier becomes</p>
+<p><span class="math display">\[
+\sqrt{\alpha_t}\sqrt{\bar\alpha_{t-1}}
+=\sqrt{\bar\alpha_t}.
+\]</span></p>
+<p>The old noise is also multiplied by <span class="math inline">\(\sqrt{\alpha_t}\)</span>, so its variance is multiplied by <span class="math inline">\(\alpha_t\)</span>. The fresh noise is independent of it and contributes variance <span class="math inline">\(\beta_t\)</span>. Calling the total noise variance per coordinate <span class="math inline">\(V_t\)</span>, we get</p>
+<p><span id="eq-forward-variance"><span class="math display">\[
+\begin{aligned}
+V_t
+&amp;=\alpha_t(1-\bar\alpha_{t-1})+\beta_t\\
+&amp;=\alpha_t-\alpha_t\bar\alpha_{t-1}+(1-\alpha_t)\\
+&amp;=1-\bar\alpha_t.
+\end{aligned}
+\tag{3}\]</span></span></p>
+<p>The first step already has this form, and one more step preserves it. That proves the pattern for every <span class="math inline">\(t\)</span>: the image multiplier is <span class="math inline">\(\sqrt{\bar\alpha_t}\)</span>, and all the accumulated noise is Gaussian with variance <span class="math inline">\(1-\bar\alpha_t\)</span>. We can therefore draw it in one go:</p>
+<p><span id="eq-direct-forward"><span class="math display">\[
+\boxed{x_t=a_t x_0+\sigma_t\epsilon
+=\sqrt{\bar\alpha_t}\,x_0+\sqrt{1-\bar\alpha_t}\,\epsilon,
+\qquad \epsilon\sim\mathcal N(0,I).}
+\tag{4}\]</span></span></p>
+<p>Equivalently,</p>
+<p><span class="math display">\[
+q(x_t\mid x_0)=\mathcal N(a_t x_0,\sigma_t^2 I).
+\]</span></p>
+<p>To create the noisy training example at step 500, look up <span class="math inline">\(\bar\alpha_{500}\)</span>, draw one Gaussian tensor <span class="math inline">\(\epsilon\)</span>, and apply <a href="#eq-direct-forward" class="quarto-xref">Equation&nbsp;4</a> to <span class="math inline">\(x_0\)</span>. There is no need to construct the preceding 499 states. This is the direct sampling formula in <a href="https://arxiv.org/html/2006.11239v2#S2">DDPM, Eq. (4)</a>.</p>
+<p>Both procedures give the same <strong>distribution of noisy images at the chosen timestep</strong>. A fresh direct draw will not reproduce the exact pixels of a previously sampled multi-step trajectory. For training, we need a sample at a randomly chosen noise level, so this direct route gives exactly what we need.</p>
+</section>
+<section id="from-individual-corrupted-images-to-a-noisy-distribution" class="level3">
+<h3 class="anchored" data-anchor-id="from-individual-corrupted-images-to-a-noisy-distribution">From individual corrupted images to a noisy distribution</h3>
+<p>So far, we have kept one original image <span class="math inline">\(x_0\)</span> fixed. Imagine corrupting it again and again, drawing fresh noise each time. We obtain a cloud of possible noisy versions around <span class="math inline">\(a_t x_0\)</span>. The Gaussian <span class="math inline">\(q(x_t\mid x_0)\)</span> describes that cloud.</p>
+<p>Now also change which original we draw. Each image contributes its own cloud, and the network encounters inputs from all of them. Their mixture is the <strong>noisy data distribution</strong> <span class="math inline">\(q_t\)</span>. The randomness comes from both the choice of image and the noise added to it.</p>
+<p>To make this visible, consider a toy dataset containing just three equally likely scalar values: <span class="math inline">\(-2\)</span>, <span class="math inline">\(0\)</span>, and <span class="math inline">\(2\)</span>. At a fixed noise level, each becomes a Gaussian centered at <span class="math inline">\(-2a_t\)</span>, <span class="math inline">\(0\)</span>, or <span class="math inline">\(2a_t\)</span>. The overall density is their average:</p>
+<p><span class="math display">\[
+q_t(x)=\frac13\left[q(x\mid x_0=-2)+q(x\mid x_0=0)+q(x\mid x_0=2)\right].
+\]</span></p>
+<div id="fig-noisy-mixture" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-noisy-mixture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="distribution-panels">
+<p><img src="assets/diffusion-foundations/mixture-low.svg" class="img-fluid figure-img" alt="Low noise: three narrow Gaussian components centered close to the three original values."></p>
+<p><img src="assets/diffusion-foundations/mixture-middle.svg" class="img-fluid figure-img" alt="Intermediate noise: the Gaussian components broaden and overlap as their centers contract toward zero."></p>
+<p><img src="assets/diffusion-foundations/mixture-high.svg" class="img-fluid figure-img" alt="High noise: the centers are close to zero and the mixture is close to a standard Gaussian."></p>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-noisy-mixture-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;5: The same three originals at increasing noise levels. Thin colored curves are each original’s contribution, including its weight of one third; the dark curve is their sum. Both the shrinking centers and the increasing noise spread matter. This is an analytic one-dimensional example, not an image embedding or a trained model.
+</figcaption>
+</figure>
+</div>
+<p>For a general data distribution, this weighted average becomes</p>
+<p><span id="eq-noisy-marginal"><span class="math display">\[
+q_t(x)=\int q(x\mid x_0)\,p_{\mathrm{data}}(x_0)\,dx_0.
+\tag{5}\]</span></span></p>
+<p>The integral gathers the contributions of possible originals, weighted by how often they occur. At <span class="math inline">\(t&gt;0\)</span>, <span class="math inline">\(q_t\)</span> describes <strong>noisy inputs at that particular time</strong>. It is different from both the clean distribution <span class="math inline">\(p_{\mathrm{data}}\)</span> and the Gaussian around one known original. We will return to these same three originals when explaining what a denoiser learns.</p>
+</section>
+</section>
+<section id="learning-the-way-back" class="level2">
+<h2 class="anchored" data-anchor-id="learning-the-way-back">Learning the way back</h2>
+<section id="what-is-known-during-training" class="level3">
+<h3 class="anchored" data-anchor-id="what-is-known-during-training">What is known during training?</h3>
+<p>If we know the Gaussian noise distribution, why do we need a network to predict noise? Knowing how to draw random values does not tell us which values were mixed into a particular input. The noisy image alone generally admits many possible combinations of an original and a noise draw.</p>
+<p>During training, we create that combination ourselves. We choose an image, choose a timestep, draw a noise tensor, and construct <span class="math inline">\(x_t=a_t x_0+\sigma_t\epsilon\)</span>. We keep the sampled <span class="math inline">\(\epsilon\)</span> as the target. The network receives <span class="math inline">\(x_t\)</span> and <span class="math inline">\(t\)</span>; the clean image and target noise are available to the training procedure, rather than being extra denoiser inputs.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Role</th>
+<th style="text-align: left;">Training</th>
+<th style="text-align: left;">Generation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Current noisy state</td>
+<td style="text-align: left;">Constructed from a known image and sampled noise</td>
+<td style="text-align: left;">Initially random; later produced by the sampler</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Denoiser input</td>
+<td style="text-align: left;"><span class="math inline">\(x_t,t\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(x_t,t\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Original image and target noise</td>
+<td style="text-align: left;">Available to construct the loss</td>
+<td style="text-align: left;">No reference original or ground-truth corruption noise</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">What changes</td>
+<td style="text-align: left;">Network parameters <span class="math inline">\(\theta\)</span></td>
+<td style="text-align: left;">The current sample <span class="math inline">\(x_t\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>A condition such as a class label will be added later. The distinction above stays the same: training has a target, while inference uses the learned prediction to continue a trajectory.</p>
+</section>
+<section id="how-does-predicting-noise-teach-generation" class="level3">
+<h3 class="anchored" data-anchor-id="how-does-predicting-noise-teach-generation">How does predicting noise teach generation?</h3>
+<p>The network predicts the noise used to construct a training input, and we compare that prediction with the sampled tensor using squared error. Repeating this over images, noise levels, and noise draws gives the familiar DDPM objective:</p>
+<p><span id="eq-simple-loss"><span class="math display">\[
+\boxed{
+\mathcal L_{\mathrm{simple}}
+=
+\mathbb E_{\substack{x_0\sim p_{\mathrm{data}},\,
+t\sim\mathcal U\{1,\ldots,T\}\\
+\epsilon\sim\mathcal N(0,I)}}
+\left[
+\left\|
+\epsilon-\epsilon_\theta(a_t x_0+\sigma_t\epsilon,t)
+\right\|^2
+\right].
+}
+\tag{6}\]</span></span></p>
+<p>The expectation describes what is averaged over. A minibatch gives a sampled estimate of this objective; repeated parameter updates reduce error across the training distribution. One iteration can sample <span class="math inline">\(x_t\)</span> directly using the forward formula. It does not need to generate a whole image or run through all earlier timesteps.</p>
+<p>There is a generative reason for this target. DDPM constructs generation from small reverse transitions. We can express the mean of each transition using a noise prediction, so learning the noise also learns where the next reverse step should be centered. The route from likelihood to the training loss is:</p>
+<div class="concept-route">
+<p>High probability for real data → a tractable likelihood bound → matching reverse distributions → fitting their means → predicting noise.</p>
+</div>
+<p>With a fixed reverse variance, the relevant Gaussian KL term becomes a weighted noise MSE. DDPM’s simplified objective then changes the weighting of noise levels. That final choice is part of the training design; it is not an exact algebraic identity with the full likelihood bound. <a href="https://arxiv.org/html/2006.11239v2#S3">DDPM §§3.2–3.4</a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation: from reverse distributions and the likelihood bound to noise MSE">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Derivation: from reverse distributions and the likelihood bound to noise MSE
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Generation starts from <span class="math inline">\(p(x_T)=\mathcal N(0,I)\)</span> and follows a learned chain:</p>
+<p><span class="math display">\[
+p_\theta(x_{0:T})=p(x_T)\prod_{t=1}^{T}p_\theta(x_{t-1}\mid x_t).
+\]</span></p>
+<p>For now, use a learned mean and a fixed reverse variance:</p>
+<p><span id="eq-reverse-model"><span class="math display">\[
+p_\theta(x_{t-1}\mid x_t)=\mathcal N\!\left(\mu_\theta(x_t,t),r_t I\right).
+\tag{7}\]</span></span></p>
+<p>The true reverse conditional <span class="math inline">\(q(x_{t-1}\mid x_t)\)</span> averages over unknown originals and need not be Gaussian for a finite step. Small forward steps motivate modeling the reverse transition by a Gaussian. During training, conditioning on the known <span class="math inline">\(x_0\)</span> gives a related posterior that is exactly Gaussian:</p>
+<p><span class="math display">\[
+q(x_{t-1}\mid x_t,x_0)
+=\mathcal N\!\left(\widetilde\mu_t(x_t,x_0),\widetilde\beta_t I\right),
+\]</span></p>
+<p>with</p>
+<p><span class="math display">\[
+\widetilde\beta_t
+=\frac{1-\bar\alpha_{t-1}}{1-\bar\alpha_t}\beta_t,
+\]</span></p>
+<p><span id="eq-posterior-mean"><span class="math display">\[
+\widetilde\mu_t(x_t,x_0)
+=
+\frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}x_0
++
+\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}x_t.
+\tag{8}\]</span></span></p>
+<p>Conditioning on <span class="math inline">\(x_0\)</span> makes this posterior tractable. During training, the clean example is known, so it supplies a target for the learned reverse transition. During generation, the model must operate using <span class="math inline">\(x_t\)</span> and <span class="math inline">\(t\)</span> alone. The Gaussian posterior comes from multiplying <span class="math inline">\(q(x_t\mid x_{t-1})\)</span> by <span class="math inline">\(q(x_{t-1}\mid x_0)\)</span> and completing the square; the algebra is in the appendix. <a href="https://arxiv.org/html/2006.11239v2#S2">DDPM, Eqs. (6)–(7)</a></p>
+<p>We would like to assign high probability to real data under <span class="math inline">\(p_\theta(x_0)\)</span>. Computing that probability requires integrating out the whole reverse trajectory. Introduce the known forward trajectory distribution <span class="math inline">\(q(x_{1:T}\mid x_0)\)</span>:</p>
+<p><span class="math display">\[
+\log p_\theta(x_0)
+=\log\mathbb E_{q(x_{1:T}\mid x_0)}
+\left[
+\frac{p_\theta(x_{0:T})}{q(x_{1:T}\mid x_0)}
+\right].
+\]</span></p>
+<p>Because log is concave, Jensen’s inequality gives a lower bound on log likelihood. Equivalently, it gives an upper bound on negative log likelihood:</p>
+<p><span class="math display">\[
+-\log p_\theta(x_0)
+\le
+\mathbb E_q
+\left[
+\log\frac{q(x_{1:T}\mid x_0)}{p_\theta(x_{0:T})}
+\right]
+=\mathcal L_{\mathrm{VLB}}(x_0).
+\]</span></p>
+<p>The right-hand side is the negative evidence lower bound. Factor the forward trajectory in reverse order, conditioned on <span class="math inline">\(x_0\)</span>:</p>
+<p><span class="math display">\[
+q(x_{1:T}\mid x_0)
+=q(x_T\mid x_0)
+\prod_{t=2}^{T}q(x_{t-1}\mid x_t,x_0).
+\]</span></p>
+<p>Taking the expected log ratio now separates the bound into</p>
+<p><span id="eq-vlb"><span class="math display">\[
+\begin{aligned}
+\mathcal L_{\mathrm{VLB}}(x_0)
+={}&amp;
+D_{\mathrm{KL}}\!\left(q(x_T\mid x_0)\,\|\,p(x_T)\right)\\
+&amp;+\sum_{t=2}^{T}\mathbb E_{q(x_t\mid x_0)}
+D_{\mathrm{KL}}\!\left(
+q(x_{t-1}\mid x_t,x_0)
+\,\|\,
+p_\theta(x_{t-1}\mid x_t)
+\right)\\
+&amp;-\mathbb E_{q(x_1\mid x_0)}\log p_\theta(x_0\mid x_1).
+\end{aligned}
+\tag{9}\]</span></span></p>
+<p>The first term compares the noisy endpoint to our Gaussian starting distribution. With a fixed schedule, it contains no trainable reverse-model parameters. The middle terms teach the reverse transitions. The last term handles reconstruction at the data endpoint.</p>
+<p>Focus on an interior transition, <span class="math inline">\(t\ge2\)</span>. Its target and prediction are both Gaussians. Holding <span class="math inline">\(r_t\)</span> fixed, the part of their KL that depends on the learned mean is</p>
+<p><span class="math display">\[
+\frac{1}{2r_t}
+\left\|
+\widetilde\mu_t(x_t,x_0)-\mu_\theta(x_t,t)
+\right\|^2.
+\]</span></p>
+<p>The other Gaussian KL terms depend on the variances. They are constant with respect to the mean parameters under this assumption. Thus fitting reverse distributions produces a squared-error objective for the reverse mean. This connects a likelihood-based generative objective to an ordinary supervised regression problem.</p>
+<p><strong>Writing the reverse mean as a noise prediction</strong></p>
+<p>From <a href="#eq-direct-forward" class="quarto-xref">Equation&nbsp;4</a>,</p>
+<p><span class="math display">\[
+x_0=\frac{x_t-\sqrt{1-\bar\alpha_t}\,\epsilon}{\sqrt{\bar\alpha_t}}.
+\]</span></p>
+<p>Substitute this expression into <a href="#eq-posterior-mean" class="quarto-xref">Equation&nbsp;8</a> and collect coefficients:</p>
+<p><span class="math display">\[
+\widetilde\mu_t(x_t,x_0)
+=\frac{1}{\sqrt{\alpha_t}}
+\left(
+x_t-\frac{\beta_t}{\sqrt{1-\bar\alpha_t}}\epsilon
+\right).
+\]</span></p>
+<p>This suggests predicting <span class="math inline">\(\epsilon\)</span> and defining the model’s mean through that prediction:</p>
+<p><span id="eq-noise-mean"><span class="math display">\[
+\boxed{
+\mu_\theta(x_t,t)
+=\frac{1}{\sqrt{\alpha_t}}
+\left(
+x_t-\frac{\beta_t}{\sigma_t}\epsilon_\theta(x_t,t)
+\right).
+}
+\tag{10}\]</span></span></p>
+<p>Under this parameterization, the mean-dependent KL term becomes</p>
+<p><span id="eq-weighted-noise-loss"><span class="math display">\[
+\frac{\beta_t^2}{2r_t\alpha_t(1-\bar\alpha_t)}
+\left\|\epsilon-\epsilon_\theta(x_t,t)\right\|^2.
+\tag{11}\]</span></span></p>
+<p>We have reached a noise-prediction loss from the reverse-process likelihood bound. The coefficient varies with <span class="math inline">\(t\)</span>. DDPM’s widely used simplified objective drops these particular weights and samples timesteps uniformly:</p>
+<p>This is the objective in <a href="#eq-simple-loss" class="quarto-xref">Equation&nbsp;6</a>.</p>
+<p>The simplified objective changes the relative importance of noise levels; it is not an algebraically identical rewriting of the full bound. The endpoint term in <a href="#eq-vlb" class="quarto-xref">Equation&nbsp;9</a> also has its own likelihood treatment. DDPM reported better sample quality with the simplified weighting. <a href="https://arxiv.org/html/2006.11239v2#S3">DDPM §§3.2–3.4</a></p>
+<p>The direct forward formula now has an immediate computational benefit. To evaluate one stochastic training term, we can jump straight from a clean sample to the selected noisy input.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-does-a-denoising-step-add-fresh-noise" class="level3">
+<h3 class="anchored" data-anchor-id="why-does-a-denoising-step-add-fresh-noise">Why does a denoising step add fresh noise?</h3>
+<p>The prediction determines the center of a distribution for the next state. An ancestral DDPM sampler draws the next state from that distribution:</p>
+<p><span id="eq-ddpm-update"><span class="math display">\[
+\begin{aligned}
+\mu_\theta(x_t,t)
+&amp;=\frac{1}{\sqrt{\alpha_t}}
+\left(x_t-\frac{\beta_t}{\sigma_t}\epsilon_\theta(x_t,t)\right),\\
+x_{t-1}&amp;=\mu_\theta(x_t,t)+\sqrt{r_t}\,\eta,
+\qquad \eta\sim\mathcal N(0,I).
+\end{aligned}
+\tag{12}\]</span></span></p>
+<p>The first line uses the prediction and schedule to compute the reverse mean. The second samples around it. The reverse variance <span class="math inline">\(r_t\)</span> controls the spread of possible next states; its square root scales a standard Gaussian draw.</p>
+<div id="fig-reverse-step" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Two Gaussian curves with the same mean and different widths, with a sampled next state marked on the horizontal axis.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-reverse-step-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/reverse-step.svg" class="img-fluid figure-img" alt="Two Gaussian curves with the same mean and different widths, with a sampled next state marked on the horizontal axis.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-reverse-step-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;6: A schematic one-dimensional reverse transition. Noise prediction determines the mean; reverse variance determines the spread; a fresh random draw selects the next state. The narrower curve shows what changing the variance would do while holding the mean fixed.
+</figcaption>
+</figure>
+</div>
+<p>Denoising describes the overall progression toward a less noisy distribution. Variety between generated images comes first from the random starting state <span class="math inline">\(x_T\)</span>; the fresh <span class="math inline">\(\eta\)</span> has a different job. The mean <span class="math inline">\(\mu_   heta\)</span> is a conditional average over the originals that could explain <span class="math inline">\(x_t\)</span>. In the three-value example, an observation lying between the clouds of <span class="math inline">\(2\)</span> and <span class="math inline">\(0\)</span> has a mean step that points between them. Keeping only the mean at every step would hand the next query a state that is less spread out than the noisy distribution <span class="math inline">\(q_{t-1}\)</span> the network was trained on, and repeated averaging would pull trajectories toward such in-between states. Drawing <span class="math inline">\(\eta\)</span> with the reverse variance <span class="math inline">\(r_t\)</span> keeps the state distributed like <span class="math inline">\(q_{t-1}\)</span>, so the next prediction receives an input at the noise level it expects and can commit toward one of the plausible originals. This is what preserving the uncertainty about the next state means here. The fresh <span class="math inline">\(\eta\)</span> is a new random draw, separate from the forward noise used in training. The usual DDPM algorithm omits it at the final step. Samplers that drop the random term, such as DDIM, use a different deterministic update rule rather than the mean above. <a href="https://arxiv.org/abs/2010.02502">DDIM</a></p>
+<p>We can also translate the same prediction into an estimate of a clean image:</p>
+<p><span id="eq-clean-estimate"><span class="math display">\[
+\widehat x_0(x_t,t)=\frac{x_t-\sigma_t\epsilon_\theta(x_t,t)}{a_t}.
+\tag{13}\]</span></span></p>
+<p>At high noise levels this estimate is uncertain. The sampler uses the prediction to take a step, then asks the network again at the new state and lower noise level. Understanding this repeated prediction requires looking at what MSE learns when several originals could explain an input.</p>
+</section>
+</section>
+<section id="the-score-what-noise-prediction-learns-about-a-distribution" class="level2">
+<h2 class="anchored" data-anchor-id="the-score-what-noise-prediction-learns-about-a-distribution">The score: what noise prediction learns about a distribution</h2>
+<section id="which-noise-should-the-network-predict-when-several-answers-are-possible" class="level3">
+<h3 class="anchored" data-anchor-id="which-noise-should-the-network-predict-when-several-answers-are-possible">Which noise should the network predict when several answers are possible?</h3>
+<p>Every training example comes with a particular target noise tensor. But the same noisy state could have arisen from different originals with different noise draws. A network that sees only <span class="math inline">\(x_t\)</span> and <span class="math inline">\(t\)</span> cannot distinguish those hidden histories.</p>
+<p>Return to our three-value dataset. At <span class="math inline">\(a_t=0.8\)</span> and <span class="math inline">\(\sigma_t=0.6\)</span>, suppose we observe <span class="math inline">\(x_t=1\)</span>. Each original gives a different possible explanation:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Possible original <span class="math inline">\(x_0\)</span></th>
+<th style="text-align: right;">Noise required: <span class="math inline">\((1-0.8x_0)/0.6\)</span></th>
+<th style="text-align: right;">Probability of this original given <span class="math inline">\(x_t=1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(-2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.33\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(0.01\%\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.67\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(29.13\%\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.00\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(70.86\%\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>All three originals are equally likely before observing the noisy value. After seeing it, an original of <span class="math inline">\(2\)</span> is the most plausible, but <span class="math inline">\(0\)</span> remains possible. An original of <span class="math inline">\(-2\)</span> would require a much more extreme noise draw. The weights come from evaluating their corruption Gaussians at the observed value and normalizing the results.</p>
+<p>MSE favors the probability-weighted average of these possible targets. Here that average noise is about <span class="math inline">\(-0.22\)</span>. This gives the general result:</p>
+<p><span id="eq-optimal-noise"><span class="math display">\[
+\epsilon^*(x,t)=\mathbb E[\epsilon\mid x_t=x].
+\tag{14}\]</span></span></p>
+<p>The star denotes the ideal predictor that minimizes the population MSE; a trained finite network approximates it. The average is over <strong>possible original-and-noise combinations consistent with the observed input</strong>, weighted by their conditional probabilities. It is not an average over all noise draws regardless of the input, and training does not explicitly enumerate these combinations.</p>
+</section>
+<section id="if-gaussian-noise-has-mean-zero-why-not-always-predict-zero" class="level3">
+<h3 class="anchored" data-anchor-id="if-gaussian-noise-has-mean-zero-why-not-always-predict-zero">If Gaussian noise has mean zero, why not always predict zero?</h3>
+<p>Zero is the average before seeing any input. Observing <span class="math inline">\(x_t\)</span> changes which noise draws are plausible, as the example above shows. The denoiser can use this information to predict a conditional average with lower expected squared error.</p>
+<p>There are two related averages here. The training objective averages errors over sampled images, timesteps, and noise draws. The function that minimizes that objective, at any given input, outputs the conditional average of its possible noise targets. This is how supervision on individual examples teaches a function defined over the noisy input distribution.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation: why squared error selects the conditional mean">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Derivation: why squared error selects the conditional mean
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Let <span class="math inline">\(m(x,t)=\mathbb E[\epsilon\mid x_t=x]\)</span>. For any prediction <span class="math inline">\(f(x,t)\)</span>, expand the conditional mean squared error:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\mathbb E[\|\epsilon-f\|^2\mid x_t=x]
+={}&amp;\mathbb E[\|\epsilon-m\|^2\mid x_t=x]\\
+&amp;+\|m-f\|^2.
+\end{aligned}
+\]</span></p>
+<p>The cross term vanishes because <span class="math inline">\(\mathbb E[\epsilon-m\mid x_t=x]=0\)</span>. The first term does not depend on <span class="math inline">\(f\)</span>, so the optimal predictor is</p>
+<p><span class="math display">\[
+\epsilon^*(x,t)=\mathbb E[\epsilon\mid x_t=x].
+\]</span></p>
+<p>Individual noise tensors are the supervised targets. Across the population, the regression function that minimizes MSE is their conditional mean. A finite, imperfectly trained network only approximates this optimum.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="how-does-this-become-a-score" class="level3">
+<h3 class="anchored" data-anchor-id="how-does-this-become-a-score">How does this become a score?</h3>
+<p>The score describes how log density changes when we move the current sample a little. At noise level <span class="math inline">\(t\)</span>, it is</p>
+<p><span class="math display">\[
+s_t(x)=\nabla_x\log q_t(x).
+\]</span></p>
+<p>For an image, this is a vector with one component per input coordinate. It points locally toward increasing log density in the distribution of noisy images at that time. The derivative is with respect to the input <span class="math inline">\(x\)</span>. Training instead uses <span class="math inline">\(\nabla_\theta\mathcal L\)</span> to change the network’s parameters.</p>
+<p>First imagine a single Gaussian cloud around a known original. A point to the right of its center has positive added noise. The density increases toward the left, so its score is negative. A point to the left has the opposite signs. For the full mixture, the score combines these directions using the same conditional weights as the noise-prediction example. Recall that example: <span class="math inline">\(a_t=0.8\)</span>, <span class="math inline">\(\sigma_t=0.6\)</span>, an observed value <span class="math inline">\(x_t=1\)</span>, and three equally likely originals. Each original’s cloud has its own center, its own required noise, and its own score at <span class="math inline">\(x=1\)</span>:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+<col style="width: 20%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Original <span class="math inline">\(x_0\)</span></th>
+<th style="text-align: right;">Cloud center <span class="math inline">\(a_t x_0\)</span></th>
+<th style="text-align: right;">Required noise</th>
+<th style="text-align: right;">Score of that cloud alone at <span class="math inline">\(x=1\)</span>: <span class="math inline">\(-(1-a_t x_0)/\sigma_t^2\)</span></th>
+<th style="text-align: right;">Weight given <span class="math inline">\(x_t=1\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(-2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(4.33\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-7.22\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(0.01\%\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(0\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.67\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-2.78\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(29.13\%\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;"><span class="math inline">\(2\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(1.6\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(-1.00\)</span></td>
+<td style="text-align: right;"><span class="math inline">\(+1.67\)</span></td>
+<td style="text-align: right;">about <span class="math inline">\(70.86\%\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Within each row, the score is <span class="math inline">\(-1/\sigma_t\)</span> times the noise. Averaging the noise column with these weights gives about <span class="math inline">\(-0.22\)</span>; averaging the score column with the same weights gives about <span class="math inline">\(+0.37\)</span>. The mixture score is that weighted average of the individual clouds’ scores.</p>
+<p>This gives the connection:</p>
+<p><span id="eq-noise-score"><span class="math display">\[
+\boxed{
+s_t(x)=-\frac{\epsilon^*(x,t)}{\sigma_t},
+\qquad
+s_\theta(x,t):=-\frac{\epsilon_\theta(x,t)}{\sigma_t}\approx s_t(x).
+}
+\tag{15}\]</span></span></p>
+<p>The minus sign reverses the direction of predicted noise, and <span class="math inline">\(\sigma_t\)</span> supplies the scale for that noise level. In the example above, with <span class="math inline">\(\sigma_t=0.6\)</span> and observed <span class="math inline">\(x_t=1\)</span>, the conditional mean noise of about <span class="math inline">\(-0.22\)</span> becomes a score of <span class="math inline">\(-(-0.22)/0.6\approx+0.37\)</span>: the mixture density is increasing to the right at <span class="math inline">\(x=1\)</span>. The most plausible original, <span class="math inline">\(2\)</span>, has its cloud centered at <span class="math inline">\(1.6\)</span>, to the right of the observation, and its <span class="math inline">\(71\%\)</span> weight outweighs the pull of the cloud centered at <span class="math inline">\(0\)</span>. Predicted noise points from a cloud’s center out to the observation; the score points from the observation back toward the centers. Subtracting the predicted noise, not moving along it, is the direction of increasing density.</p>
+<div id="fig-score" class="quarto-float quarto-figure quarto-figure-center anchored" alt="The density of the three-component Gaussian mixture above a plot of its score, with x equals one marked in both panels.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-score-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/score-field.svg" class="img-fluid figure-img" alt="The density of the three-component Gaussian mixture above a plot of its score, with x equals one marked in both panels.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-score-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;7: Density and score for the same three-original example at the intermediate noise level. At the marked input, the negative conditional mean noise corresponds to a positive score. A score can vanish at a local maximum or minimum, so it is a local derivative rather than a distance to an original.
+</figcaption>
+</figure>
+</div>
+<p>In practice, the network produces a noise prediction and we multiply it by <span class="math inline">\(-1/\sigma_t\)</span> to obtain a score estimate. We do not need to evaluate the normalized density <span class="math inline">\(q_t\)</span> or differentiate it during inference. Gaussian denoising supplies the connection between the regression target and the density’s derivative. <a href="https://arxiv.org/html/2006.11239v2#S3.SS2">DDPM §3.2</a>, <a href="https://arxiv.org/abs/1907.05600">Score-based generative modeling</a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation: the score of a mixture is a posterior-weighted average">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Derivation: the score of a mixture is a posterior-weighted average
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>For one known original image, the corruption Gaussian has score</p>
+<p><span class="math display">\[
+\nabla_x\log q(x\mid x_0)
+=-\frac{x-a_t x_0}{\sigma_t^2}.
+\]</span></p>
+<p>At a training sample <span class="math inline">\(x=a_t x_0+\sigma_t\epsilon\)</span>, this equals <span class="math inline">\(-\epsilon/\sigma_t\)</span>. That is the score of the Gaussian around one original. To obtain the score of the full noisy dataset, differentiate <a href="#eq-noisy-marginal" class="quarto-xref">Equation&nbsp;5</a>:</p>
+<p><span class="math display">\[
+\begin{aligned}
+\nabla_x\log q_t(x)
+&amp;=\frac{1}{q_t(x)}
+\int p_{\mathrm{data}}(x_0)\,\nabla_x q(x\mid x_0)\,dx_0\\
+&amp;=\int q(x_0\mid x)\,\nabla_x\log q(x\mid x_0)\,dx_0\\
+&amp;=-\frac{1}{\sigma_t}\mathbb E[\epsilon\mid x_t=x].
+\end{aligned}
+\]</span></p>
+<p>For this Gaussian corruption, differentiation and integration can be interchanged under the usual regularity conditions. Combining the result with <a href="#eq-optimal-noise" class="quarto-xref">Equation&nbsp;14</a> yields <a href="#eq-noise-score" class="quarto-xref">Equation&nbsp;15</a> for the optimal predictor.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-does-averaging-not-produce-the-same-blurry-image-every-time" class="level3">
+<h3 class="anchored" data-anchor-id="why-does-averaging-not-produce-the-same-blurry-image-every-time">Why does averaging not produce the same blurry image every time?</h3>
+<p>The average depends on the current input and noise level. Different initial random states lead to different predictions, and each sampling step changes the input to the next prediction.</p>
+<p>At high noise, many very different originals may be plausible. In fact, the ideal clean estimate in <a href="#eq-clean-estimate" class="quarto-xref">Equation&nbsp;13</a> is their conditional mean:</p>
+<p><span class="math display">\[
+\widehat x_0^{\,*}(x,t)
+=\frac{x+\sigma_t^2s_t(x)}{a_t}
+=\mathbb E[x_0\mid x_t=x].
+\]</span></p>
+<p>In the scalar example (<span class="math inline">\(a_t=0.8\)</span>, <span class="math inline">\(\sigma_t=0.6\)</span>, <span class="math inline">\(x_t=1\)</span>, score <span class="math inline">\(\approx+0.37\)</span>), this gives <span class="math inline">\(\widehat x_0^{\,*}\approx(1+0.36\times0.37)/0.8\approx1.42\)</span>. The same number comes from weighting the originals directly: about <span class="math inline">\(0.71\times2+0.29\times0\approx1.42\)</span>. The estimate lies between the two plausible originals, <span class="math inline">\(2\)</span> and <span class="math inline">\(0\)</span>, and equals neither. For images, such an average can indeed look ambiguous or blurry. A diffusion sampler uses the prediction to construct another state, then makes a new prediction at a lower noise level. Ancestral DDPM also samples fresh randomness along the way. The whole trajectory produces the final image.</p>
+<p>The update rule matters. Following the score uphill until reaching a density maximum would concentrate samples at peaks. Sampling the distribution requires the time-dependent dynamics, including their scaling and, for ancestral DDPM, their random terms. The continuous-time SDE and ODE connection is available in the appendix.</p>
+</section>
+</section>
+<section id="classifier-free-guidance-using-the-difference-a-condition-makes" class="level2">
+<h2 class="anchored" data-anchor-id="classifier-free-guidance-using-the-difference-a-condition-makes">Classifier-free guidance: using the difference a condition makes</h2>
+<section id="if-the-model-already-receives-a-condition-what-does-guidance-add" class="level3">
+<h3 class="anchored" data-anchor-id="if-the-model-already-receives-a-condition-what-does-guidance-add">If the model already receives a condition, what does guidance add?</h3>
+<p>A conditional denoiser receives a label <span class="math inline">\(c\)</span>, such as a dog breed, along with the noisy input and timestep. It learns a distribution appropriate to that condition. This distribution still includes varied poses, backgrounds, and less typical examples.</p>
+<p>Guidance lets us strengthen the influence of features that distinguish the condition while sampling. The useful comparison is between what the model predicts <strong>with and without the condition, at the same noisy state and timestep</strong>.</p>
+<p>In score language, this difference has a precise interpretation. Bayes’ rule gives</p>
+<p><span id="eq-bayes-guidance"><span class="math display">\[
+s_t(x,c)-s_t(x)=\nabla_x\log q_t(c\mid x),
+\qquad s_t(x,c)=\nabla_x\log q_t(x\mid c).
+\tag{16}\]</span></span></p>
+<p>The right-hand side points toward changes that make the condition more likely according to an ideal classifier of noisy inputs. Read the other way, the conditional score is a sum of two parts: <span class="math inline">\(s_t(x,c)=s_t(x)+\nabla_x\log q_t(c\mid x)\)</span>. The first part moves toward any plausible noisy image; the second moves toward images that look like <span class="math inline">\(c\)</span>. Scaling the conditional prediction by itself would also scale the first part. Subtracting the unconditional prediction isolates the part that the condition changes, which is the part guidance amplifies. Classifier guidance uses an explicit classifier for that part. CFG obtains the same direction from the two denoiser predictions. <a href="https://arxiv.org/html/2207.12598v1#S3">CFG §3</a></p>
+</section>
+<section id="how-can-one-network-provide-both-predictions" class="level3">
+<h3 class="anchored" data-anchor-id="how-can-one-network-provide-both-predictions">How can one network provide both predictions?</h3>
+<p>During training, we sometimes replace the condition with a learned null condition <span class="math inline">\(\varnothing\)</span>. Examples with their labels retained teach conditional behavior; examples with labels dropped teach unconditional behavior. The network parameters are shared, and both kinds of examples use the same noise-prediction loss.</p>
+<p>At inference, we evaluate that network twice for the same <span class="math inline">\(x_t,t\)</span>: once with <span class="math inline">\(c\)</span> and once with <span class="math inline">\(\varnothing\)</span>. The null input is familiar because it was part of training. The two evaluations can share a larger batch, but both predictions still have to be computed.</p>
+<div id="fig-cfg-evaluations" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A training path with random condition dropout, and an inference path branching into conditional and null evaluations of the same denoiser before a guided prediction and sampler.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cfg-evaluations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/cfg-evaluations.svg" class="img-fluid figure-img" alt="A training path with random condition dropout, and an inference path branching into conditional and null evaluations of the same denoiser before a guided prediction and sampler.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cfg-evaluations-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;8: Training teaches one network to work with a label or a null condition. At inference, the same noisy state goes through both condition settings; their predictions are combined before the sampler updates the state.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="what-does-the-guidance-scale-change" class="level3">
+<h3 class="anchored" data-anchor-id="what-does-the-guidance-scale-change">What does the guidance scale change?</h3>
+<p>We keep the convention that <span class="math inline">\(\gamma=1\)</span> is ordinary conditional sampling:</p>
+<p><span id="eq-cfg"><span class="math display">\[
+\boxed{
+\epsilon_{\mathrm{guided}}
+=\epsilon_\theta(x_t,t,\varnothing)
++\gamma\left[\epsilon_\theta(x_t,t,c)-\epsilon_\theta(x_t,t,\varnothing)\right].
+}
+\tag{17}\]</span></span></p>
+<p>Starting at the unconditional prediction, move along the difference toward the conditional prediction. With <span class="math inline">\(\gamma=0\)</span> we stay at the unconditional prediction; with <span class="math inline">\(\gamma=1\)</span> we reach the conditional one; with <span class="math inline">\(\gamma&gt;1\)</span> we continue beyond it. The result replaces the noise prediction in the sampler’s mean update. The same combination works for scores because both predictions share the factor <span class="math inline">\(-1/\sigma_t\)</span>.</p>
+<div id="fig-cfg" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Unconditional prediction at guidance scale zero, conditional prediction at scale one, and an extrapolated guided prediction at scale two.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-cfg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/cfg-vectors.svg" class="img-fluid figure-img" alt="Unconditional prediction at guidance scale zero, conditional prediction at scale one, and an extrapolated guided prediction at scale two.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-cfg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;9: CFG as a combination of prediction vectors at a fixed input and timestep. A scale greater than one extends beyond the conditional prediction. These are schematic prediction vectors, not image trajectories.
+</figcaption>
+</figure>
+</div>
+<p>The original CFG paper writes <span class="math inline">\((1+w)\epsilon_{\mathrm{cond}}-w\epsilon_{\mathrm{uncond}}\)</span>. Its <span class="math inline">\(w\)</span> is the extra guidance beyond the conditional prediction, so <span class="math inline">\(w=\gamma-1\)</span> in this article. <a href="https://arxiv.org/html/2207.12598v1#S3.SS2">CFG §3.2</a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Details: condition dropout, Bayes' rule, and the guided score">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Details: condition dropout, Bayes’ rule, and the guided score
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The training condition is replaced with probability <span class="math inline">\(p_{\mathrm{drop}}\)</span>:</p>
+<p><span class="math display">\[
+\widetilde c=\begin{cases}\varnothing,&amp;\text{with probability }p_{\mathrm{drop}},\\c,&amp;\text{otherwise}.\end{cases}
+\]</span></p>
+<p>The noise objective becomes <span class="math inline">\(\mathbb E[\|\epsilon-\epsilon_\theta(a_t x_0+\sigma_t\epsilon,t,\widetilde c)\|^2]\)</span>. Bayes’ rule gives</p>
+<p><span class="math display">\[
+\log q_t(x\mid c)=\log q_t(x)+\log q_t(c\mid x)-\log p(c).
+\]</span></p>
+<p>Differentiating with respect to <span class="math inline">\(x\)</span> removes <span class="math inline">\(\log p(c)\)</span> and gives <a href="#eq-bayes-guidance" class="quarto-xref">Equation&nbsp;16</a>. For exact scores at a fixed noise level,</p>
+<p><span class="math display">\[
+\begin{aligned}
+s_{\mathrm{guided}}&amp;=s_t(x)+\gamma[s_t(x,c)-s_t(x)]\\
+&amp;=\nabla_x\log\left[q_t(x)q_t(c\mid x)^\gamma\right].
+\end{aligned}
+\]</span></p>
+<p>This identity describes a vector field at one noise level. It does not by itself establish that the final samples follow the analogous reweighted clean density. A practical sampler also uses approximate network predictions and finite steps.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-not-make-guidance-as-strong-as-possible" class="level3">
+<h3 class="anchored" data-anchor-id="why-not-make-guidance-as-strong-as-possible">Why not make guidance as strong as possible?</h3>
+<p>Extra guidance changes the distribution being sampled. Emphasizing condition-distinguishing features can produce more recognizable examples while reducing variety or making compositions more stereotyped. In the original CFG experiments, moderate guidance improved FID in some settings, while stronger guidance raised Inception Score and worsened FID. Scale is a sampling choice with a tradeoff, rather than a guarantee of monotonically improving quality.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Paper results: what the CFG quality–diversity tradeoff looks like">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Paper results: what the CFG quality–diversity tradeoff looks like
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The CFG paper’s ImageNet<span class="math inline">\(64\times64\)</span> experiment illustrates why scale needs interpretation. FID compares distributions of real and generated image features (lower is better). Inception Score rewards confident classifier predictions together with class diversity across generated samples (higher is better). For the setting with condition-drop probability <span class="math inline">\(0.1\)</span>, its table reports:</p>
+<div id="tbl-cfg" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-cfg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: Selected results from the original CFG paper, Table 1. The table uses 50,000 generated samples per evaluation.
+</figcaption>
+<div aria-describedby="tbl-cfg-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: right;">Scale in this note, <span class="math inline">\(\gamma\)</span></th>
+<th style="text-align: right;">Original paper’s <span class="math inline">\(w\)</span></th>
+<th style="text-align: right;">FID ↓</th>
+<th style="text-align: right;">Inception Score ↑</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">0.0</td>
+<td style="text-align: right;">1.80</td>
+<td style="text-align: right;">53.71</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">1.1</td>
+<td style="text-align: right;">0.1</td>
+<td style="text-align: right;">1.55</td>
+<td style="text-align: right;">66.11</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">2.0</td>
+<td style="text-align: right;">1.0</td>
+<td style="text-align: right;">12.60</td>
+<td style="text-align: right;">170.10</td>
+</tr>
+</tbody>
+</table>
+</div>
+</figure>
+</div>
+<p>A little guidance improves FID in this setting. Stronger guidance greatly raises Inception Score while worsening FID. These metrics capture different aspects of generated samples; neither alone measures every aspect of quality, diversity, or condition adherence. The paper describes its strongly guided samples as showing less variety and more saturated colors alongside higher individual sample fidelity. This is an empirical tradeoff under those experimental settings, rather than a universal monotonic quality improvement. <a href="https://arxiv.org/html/2207.12598v1#S4">CFG §4, Table 1</a></p>
+</div>
+</div>
+</div>
+<p>We now have a target for training, an interpretation of the prediction as a score, and a way to combine conditional and unconditional predictions. DiT supplies the network that computes those predictions.</p>
+</section>
+</section>
+<section id="dit-building-the-denoiser-with-a-transformer" class="level2">
+<h2 class="anchored" data-anchor-id="dit-building-the-denoiser-with-a-transformer">DiT: building the denoiser with a Transformer</h2>
+<section id="where-does-diffusion-happen" class="level3">
+<h3 class="anchored" data-anchor-id="where-does-diffusion-happen">Where does diffusion happen?</h3>
+<p>The original DiT works on spatial latents from a pretrained, frozen VAE. A <span class="math inline">\(256\times256\times3\)</span> image is encoded as a <span class="math inline">\(32\times32\times4\)</span> latent. Training adds noise to that latent, and DiT learns to predict the noise. Generation starts from a random latent and ends by decoding the sampled latent into an image.</p>
+<p>Using <span class="math inline">\(\mathcal E\)</span> for the encoder and <span class="math inline">\(\mathcal D\)</span> for the decoder,</p>
+<p><span class="math display">\[
+z_0=\mathcal E(x_0),\qquad z_t=a_tz_0+\sigma_t\epsilon,
+\qquad \widehat x_0=\mathcal D(z_0).
+\]</span></p>
+<p>The encoder’s sampling convention and latent scaling are absorbed into <span class="math inline">\(\mathcal E\)</span> here, with the inverse scaling included in <span class="math inline">\(\mathcal D\)</span>. The same diffusion formulas now act on <span class="math inline">\(z\)</span> instead of pixels. Noise is added to the spatial latent <strong>before patchification</strong>, because the latent is where the diffusion process is defined. The forward corruption <span class="math inline">\(q(z_t\mid z_0)\)</span> has to be a fixed, known Gaussian so that <span class="math inline">\(z_t\)</span> can be sampled in closed form and the target <span class="math inline">\(\epsilon\)</span> is available; patchification is a learned projection inside the network, so noise added after it would not correspond to a fixed corruption of the latent. The reverse process runs in the same space: the sampler produces <span class="math inline">\(z_{t-1}\)</span> from <span class="math inline">\(z_t\)</span>, and the network’s output is unpatchified back to the latent shape before the next step or the final decoding. Patchification and unpatchification are the denoiser’s input and output layers, not part of the diffusion process. The VAE determines the representation and reconstruction quality; DiT learns generation within that space. <a href="https://arxiv.org/abs/2112.10752">Latent Diffusion Models</a>, <a href="https://arxiv.org/html/2212.09748v2#S3">DiT §3</a></p>
+</section>
+<section id="how-does-a-latent-become-transformer-tokens" class="level3">
+<h3 class="anchored" data-anchor-id="how-does-a-latent-become-transformer-tokens">How does a latent become Transformer tokens?</h3>
+<p>Divide the latent into non-overlapping patches of side length <span class="math inline">\(P\)</span>. Each patch becomes one token. The patch’s values are projected into a hidden vector of dimension <span class="math inline">\(D\)</span>, and a positional embedding records its spatial location. For a latent with shape <span class="math inline">\(H_z\times W_z\times C_z\)</span>,</p>
+<p><span class="math display">\[
+N=\frac{H_zW_z}{P^2},\qquad
+\text{values per patch}=P^2C_z.
+\]</span></p>
+<p>For our <span class="math inline">\(32\times32\times4\)</span> latent:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: right;">Patch side <span class="math inline">\(P\)</span></th>
+<th style="text-align: right;">Values per patch</th>
+<th style="text-align: right;">Token count <span class="math inline">\(N\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: right;">2</td>
+<td style="text-align: right;">16</td>
+<td style="text-align: right;">256</td>
+</tr>
+<tr class="even">
+<td style="text-align: right;">4</td>
+<td style="text-align: right;">64</td>
+<td style="text-align: right;">64</td>
+</tr>
+<tr class="odd">
+<td style="text-align: right;">8</td>
+<td style="text-align: right;">256</td>
+<td style="text-align: right;">16</td>
+</tr>
+</tbody>
+</table>
+<p>A patch’s input dimension and a token’s hidden dimension serve different roles. With <span class="math inline">\(P=2\)</span>, each 16-value patch is mapped to a <span class="math inline">\(D\)</span>-dimensional vector, giving a token matrix of shape <span class="math inline">\(256\times D\)</span>. Changing patch size changes how much spatial detail each token covers and how many tokens attention processes. The hidden width <span class="math inline">\(D\)</span> is a separate architecture choice. Here <span class="math inline">\(D\)</span> denotes width; the calligraphic <span class="math inline">\(\mathcal D\)</span> above denotes the decoder.</p>
+<div id="fig-dit" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Tensor shapes through VAE encoding, latent noising, patch projection, DiT blocks, and unpatchification, with the attention and MLP residual branches expanded below.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-dit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/diffusion-foundations/dit-architecture.svg" class="img-fluid figure-img" alt="Tensor shapes through VAE encoding, latent noising, patch projection, DiT blocks, and unpatchification, with the attention and MLP residual branches expanded below.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-dit-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;10: DiT’s data path with patch size two, followed by an expanded adaLN-Zero block. The noisy latent becomes 256 tokens; the output is reshaped into four noise channels and four reverse-variance parameter channels.
+</figcaption>
+</figure>
+</div>
+</section>
+<section id="what-do-timestep-and-class-information-do-inside-a-block" class="level3">
+<h3 class="anchored" data-anchor-id="what-do-timestep-and-class-information-do-inside-a-block">What do timestep and class information do inside a block?</h3>
+<p>The timestep tells DiT which noise level it is handling. The class tells it which conditional distribution to model. Their embeddings are added to form a context vector, <span class="math inline">\(u=e_t(t)+e_c(c)\)</span>. In an adaLN-Zero block, a small network turns this context into feature-wise controls for the attention and MLP branches.</p>
+<p>The <strong>shift</strong> moves normalized feature values, the <strong>scale adjustment</strong> changes their magnitude, and the <strong>gate</strong> controls how much the branch contributes to the residual update. These controls are shared across token positions within a block, while each token retains its own content and position.</p>
+<p>One branch can be read as</p>
+<p><span class="math display">\[
+h_{\mathrm{next}}=h+g\odot\operatorname{branch}\!\left((1+m)\odot\operatorname{LN}(h)+b\right).
+\]</span></p>
+<p>Here <span class="math inline">\(b,m,g\)</span> are shift, scale adjustment, and gate; <span class="math inline">\(\odot\)</span> denotes elementwise multiplication. At initialization, the gate is zero, so <span class="math inline">\(h_{\mathrm{next}}=h+0=h\)</span>. Attention and MLP weights can still be nonzero. As training changes the modulation parameters, the residual branches begin to contribute.</p>
+<p>This makes conditioning part of how features are processed throughout the denoiser. The original paper compared condition tokens, cross-attention, adaLN, and adaLN-Zero; adaLN-Zero performed best among these choices at the tested budget and was used for the main scaling experiments. <a href="https://arxiv.org/html/2212.09748v2#S3">DiT §3.2 and §5, Fig. 5</a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Block equations: the two adaLN-Zero residual branches">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Block equations: the two adaLN-Zero residual branches
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(h\in\mathbb R^{N\times D}\)</span>, each block’s context network produces six <span class="math inline">\(D\)</span>-dimensional vectors:</p>
+<p><span class="math display">\[
+(b_A,m_A,g_A,b_M,m_M,g_M)=F(u),\qquad
+\operatorname{mod}(h;b,m)=(1+m)\odot\operatorname{LN}(h)+b.
+\]</span></p>
+<p>They are broadcast across tokens, and the block computes</p>
+<p><span id="eq-adaln"><span class="math display">\[
+\begin{aligned}
+h'&amp;=h+g_A\odot\operatorname{Attention}(\operatorname{mod}(h;b_A,m_A)),\\
+h_{\mathrm{out}}&amp;=h'+g_M\odot\operatorname{MLP}(\operatorname{mod}(h';b_M,m_M)).
+\end{aligned}
+\tag{18}\]</span></span></p>
+<p>The final linear layer producing the modulation parameters is zero-initialized, which makes the gates zero and each block initially an identity. The final output projection is also zero-initialized in the authors’ <a href="https://github.com/facebookresearch/DiT/blob/main/models.py">implementation</a>. These choices do not set every attention or MLP weight to zero.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="why-does-dit-also-predict-variance" class="level3">
+<h3 class="anchored" data-anchor-id="why-does-dit-also-predict-variance">Why does DiT also predict variance?</h3>
+<p>Recall the reverse-step picture: the sampler needs both a center and a spread. Noise prediction supplies the center through the reverse-mean formula. Our earlier DDPM explanation fixed the spread <span class="math inline">\(r_t\)</span> in advance. The original DiT also learns parameters for a diagonal reverse variance, allowing that spread to depend on the current input and timestep.</p>
+<p>After the Transformer blocks, a final normalization and projection produce patch outputs, and unpatchification restores the spatial grid. With four latent channels, DiT outputs eight channels: <strong>four noise predictions and four reverse-variance parameters</strong>. The latter describe sampling spread. They are distinct from both the sampled noise tensor and the fixed forward noise schedule.</p>
+<p>Noise MSE supervises the noise output. Training the variance requires an additional objective that evaluates the reverse distribution, supplied by a variational-bound term. This is where the fuller likelihood derivation becomes useful again. <a href="https://arxiv.org/html/2212.09748v2#S3">DiT §3.1</a>, <a href="https://arxiv.org/abs/2102.09672">Improved DDPM</a></p>
+<div class="callout callout-style-default callout-note callout-titled" title="Implementation details: the variance loss and log-variance parameterization">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Implementation details: the variance loss and log-variance parameterization
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>DiT follows the learned-variance approach used in improved diffusion models. Noise prediction is trained by MSE, while a variational-bound term trains the variance. The paper applies a stop-gradient to the mean output inside the variance-bound term, and the released diffusion code detaches it accordingly, keeping that term from updating the mean prediction directly through its output. Shared network features still receive gradients through the variance prediction. <a href="https://arxiv.org/abs/2102.09672">Improved DDPM §3.1</a>, <a href="https://github.com/facebookresearch/DiT/blob/main/diffusion/gaussian_diffusion.py">DiT’s diffusion loss implementation</a></p>
+<p>For interior steps, the implementation parameterizes log variance using a per-coordinate output <span class="math inline">\(v_\theta\)</span>:</p>
+<p><span class="math display">\[
+\ell_\theta
+=f_\theta\log\beta_t+(1-f_\theta)\log\widetilde\beta_t,
+\qquad
+f_\theta=\frac{v_\theta+1}{2},
+\qquad
+\Sigma_\theta=\operatorname{diag}(\exp\ell_\theta).
+\]</span></p>
+<p>The output is interpreted as an interpolation parameter between two log-variance choices; the reference code does not clamp it to that interval. It also clips the posterior log variance at the endpoint to handle <span class="math inline">\(\widetilde\beta_1=0\)</span>. Those are implementation details beyond the fixed-<span class="math inline">\(r_t\)</span> derivation, and explain why a learned variance needs a training signal beyond noise MSE.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="what-grows-when-we-increase-resolution-or-reduce-patch-size" class="level3">
+<h3 class="anchored" data-anchor-id="what-grows-when-we-increase-resolution-or-reduce-patch-size">What grows when we increase resolution or reduce patch size?</h3>
+<p>Larger images can create more latent tokens without changing the trainable weights of the Transformer. More tokens still require more work: each token passes through projections and MLPs, and attention compares token pairs.</p>
+<p>At a fixed patch size and hidden width, doubling both latent spatial dimensions multiplies the token count by four. The two main kinds of computation then grow differently:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Work per block</th>
+<th style="text-align: left;">Approximate cost</th>
+<th style="text-align: left;">Effect of four times as many tokens</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Tokenwise projections and MLPs</td>
+<td style="text-align: left;"><span class="math inline">\(O(ND^2)\)</span></td>
+<td style="text-align: left;">About <span class="math inline">\(4\times\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Attention’s token-pair operations</td>
+<td style="text-align: left;"><span class="math inline">\(O(N^2D)\)</span></td>
+<td style="text-align: left;">About <span class="math inline">\(16\times\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The total increase depends on their relative costs. A common estimate for one Transformer block is about <span class="math inline">\(4ND(6D+N)\)</span> FLOPs: the tokenwise part, roughly <span class="math inline">\(24ND^2\)</span>, dominates while <span class="math inline">\(N\)</span> is much smaller than <span class="math inline">\(6D\)</span>, and attention, roughly <span class="math inline">\(4N^2D\)</span>, becomes comparable only when <span class="math inline">\(N\)</span> approaches <span class="math inline">\(6D\)</span>. For DiT-XL, <span class="math inline">\(D=1152\)</span>, so that crossover sits near <span class="math inline">\(6900\)</span> tokens. Quadrupling tokens from <span class="math inline">\(256\)</span> to <span class="math inline">\(1024\)</span> therefore multiplies the block cost by about <span class="math inline">\(4\times(6D+4N)/(6D+N)\approx4.4\)</span>, close to the tokenwise factor. The paper’s reported forward cost matches: DiT-XL/2 uses <span class="math inline">\(118.6\)</span> Gflops on the <span class="math inline">\(32\times32\times4\)</span> latent of a <span class="math inline">\(256\times256\)</span> image and <span class="math inline">\(524.6\)</span> Gflops on the <span class="math inline">\(64\times64\times4\)</span> latent of a <span class="math inline">\(512\times512\)</span> image, a ratio of about <span class="math inline">\(4.4\)</span>. <a href="https://arxiv.org/html/2212.09748v2#S5">DiT §5.1, Table 4</a> Halving patch size at fixed resolution also quadruples token count, while changing the input/output patch projections. Increasing depth or hidden width spends compute in another way, by enlarging the network itself.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Paper results: compute and sample quality in the original DiT experiments">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Paper results: compute and sample quality in the original DiT experiments
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The paper evaluates twelve combinations of model size and patch size at a common 400K-step training budget and finds lower FID as forward-pass compute increases across that family. Its longer-trained DiT-XL/2 reaches FID-50K 2.27 on class-conditional ImageNet <span class="math inline">\(256\times256\)</span> with CFG; the reported corresponding result without guidance is 9.62. The final score includes the training budget, VAE, sampler, and guidance configuration alongside the backbone. <a href="https://arxiv.org/html/2212.09748v2#S5">DiT §5 and §5.1, Table 2</a></p>
+</div>
+</div>
+</div>
+<p>DiT fills the noise-prediction role introduced by DDPM: latent patches, attention, and context-dependent modulation produce the prediction used by the loss and sampler. The choice of backbone can change while this role stays recognizable.</p>
+</section>
+</section>
+<section id="putting-the-generator-together" class="level2">
+<h2 class="anchored" data-anchor-id="putting-the-generator-together">Putting the generator together</h2>
+<section id="one-training-iteration" class="level3">
+<h3 class="anchored" data-anchor-id="one-training-iteration">One training iteration</h3>
+<p>The opening training algorithm now has concrete components: a frozen VAE supplies the latent, the forward formula supplies a noisy input and known target, condition dropout trains both CFG behaviors, and DiT predicts noise and reverse-variance parameters.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Encode: the VAE is fixed; only DiT is trained here.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>image, class_label <span class="op">=</span> sample_training_batch()</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="cf">with</span> no_grad():</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    z0 <span class="op">=</span> frozen_vae_encode_and_scale(image)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Forward process: sample one timestep and construct its input directly.</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> sample_uniform_timesteps(batch_size, low<span class="op">=</span><span class="dv">1</span>, high<span class="op">=</span>T)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>epsilon <span class="op">=</span> sample_standard_normal_like(z0)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>zt <span class="op">=</span> a[t] <span class="op">*</span> z0 <span class="op">+</span> sigma[t] <span class="op">*</span> epsilon</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co"># CFG training: sometimes remove the class condition.</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>condition <span class="op">=</span> randomly_replace_with_null(class_label, p_drop)</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>epsilon_pred, variance_params <span class="op">=</span> dit(zt, t, condition)</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co"># Noise MSE teaches the denoiser; the VB term teaches reverse variance.</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>noise_loss <span class="op">=</span> mean_squared_error(epsilon_pred, epsilon)</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>variance_loss <span class="op">=</span> variational_bound_term(</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    clean<span class="op">=</span>z0, noisy<span class="op">=</span>zt, timestep<span class="op">=</span>t,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    detached_noise_prediction<span class="op">=</span>stop_gradient(epsilon_pred),</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    variance_parameters<span class="op">=</span>variance_params,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>update_dit_parameters(noise_loss <span class="op">+</span> variance_weight <span class="op">*</span> variance_loss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Each batch contains sampled image–timestep–noise combinations. Their losses estimate the objective over the distribution, and the update changes <span class="math inline">\(\theta\)</span>. The full generation trajectory is not unrolled: <a href="#eq-direct-forward" class="quarto-xref">Equation&nbsp;4</a> gives <span class="math inline">\(z_t\)</span> from <span class="math inline">\(z_0\)</span> in a single step, so each iteration can draw any timestep and construct its input directly. That closed form, not the loss, is what lets training sample one timestep at a time. This is conceptual pseudocode; the variance-loss weighting and endpoint likelihood follow the chosen diffusion implementation.</p>
+</section>
+<section id="one-generated-image" class="level3">
+<h3 class="anchored" data-anchor-id="one-generated-image">One generated image</h3>
+<p>There is no reference image to encode and no target noise to compare against. The class condition is available, the model weights are fixed, and the loop updates the latent:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>z <span class="op">=</span> sample_standard_normal(latent_shape)</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> t <span class="kw">in</span> <span class="bu">range</span>(T, <span class="dv">0</span>, <span class="op">-</span><span class="dv">1</span>):</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="co"># CFG: two predictions for exactly the same state and timestep.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    eps_cond, var_cond <span class="op">=</span> dit(z, t, class_label)</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    eps_null, _ <span class="op">=</span> dit(z, t, null_condition)</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    eps_guided <span class="op">=</span> eps_null <span class="op">+</span> guidance_scale <span class="op">*</span> (eps_cond <span class="op">-</span> eps_null)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Reverse transition: compute its center and sampling spread.</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    mean <span class="op">=</span> (z <span class="op">-</span> beta[t] <span class="op">/</span> sigma[t] <span class="op">*</span> eps_guided) <span class="op">/</span> sqrt(alpha[t])</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    reverse_variance <span class="op">=</span> decode_learned_variance(var_cond, t)</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> t <span class="op">&gt;</span> <span class="dv">1</span>:</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> mean <span class="op">+</span> sqrt(reverse_variance) <span class="op">*</span> sample_standard_normal_like(z)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>:</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        z <span class="op">=</span> mean</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>image <span class="op">=</span> frozen_vae_unscale_and_decode(z)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The prediction has the score interpretation derived earlier, but this sampler directly uses its noise form. CFG changes the mean update through the guided noise prediction. The conditional variance prediction determines the spread, and the VAE decoder is used once the latent trajectory is complete.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="Reproduction notes: guidance channels and shorter sampling schedules">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Reproduction notes: guidance channels and shorter sampling schedules
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>This pseudocode guides all four noise channels and uses the conditional variance without guidance. It traverses every step of the displayed schedule. A shorter, respaced sampler must construct transitions for the selected timesteps; skipping loop indices while retaining the original one-step coefficients does not preserve that process.</p>
+<p>The released original DiT applies CFG to the first three of four noise channels in its reported configuration. Appendix A reports similar results with all four channels after changing the guidance scale. Reported evaluations use 250 DDPM sampling steps from a model trained with a 1,000-step schedule. These settings matter when reproducing its numbers. <a href="https://arxiv.org/html/2212.09748v2#A1">DiT Appendix A</a>, <a href="https://github.com/facebookresearch/DiT/blob/main/models.py">reference implementation</a></p>
+</div>
+</div>
+</div>
+</section>
+<section id="reading-the-complete-system" class="level3">
+<h3 class="anchored" data-anchor-id="reading-the-complete-system">Reading the complete system</h3>
+<p>The VAE defines the representation. The forward process creates noisy training examples with known targets. MSE learns a noise-prediction function whose ideal output is a conditional average, and Gaussian corruption connects that average to the noisy distribution’s score. DiT computes the prediction, CFG combines two condition settings, and the sampler uses those predictions to update the latent until it can be decoded.</p>
+<p>When returning to the equations, I want to be able to locate each of these roles: what is sampled, what is known, what the network predicts, and which part of the system changes during training or generation.</p>
+</section>
+</section>
+<section id="appendix-optional-mathematical-connections" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-optional-mathematical-connections">Appendix: optional mathematical connections</h2>
+<div class="callout callout-style-default callout-note callout-titled" title="Beyond discrete steps: reverse-time SDEs and the probability-flow ODE">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Beyond discrete steps: reverse-time SDEs and the probability-flow ODE
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The same idea survives when the discrete forward process is described by an SDE,</p>
+<p><span class="math display">\[
+dx=f(x,\tau)\,d\tau+g(\tau)\,dW_\tau,
+\]</span></p>
+<p>where <span class="math inline">\(\tau\)</span> denotes continuous time. If its marginal density is <span class="math inline">\(q_\tau\)</span>, the reverse-time SDE has drift</p>
+<p><span class="math display">\[
+f(x,\tau)-g(\tau)^2\nabla_x\log q_\tau(x),
+\]</span></p>
+<p>when integrated from larger to smaller <span class="math inline">\(\tau\)</span>. The corresponding probability-flow ODE has drift</p>
+<p><span class="math display">\[
+f(x,\tau)-\tfrac12 g(\tau)^2\nabla_x\log q_\tau(x).
+\]</span></p>
+<p>With the exact score and suitable regularity, these constructions share the forward process’s time marginals. Their individual paths differ. Approximate networks and numerical solvers introduce further differences. This is a useful connection to later ODE-based samplers: the learned score and the rule for integrating a trajectory are related but distinct choices. <a href="https://arxiv.org/abs/2011.13456">Score-Based Generative Modeling through SDEs, §3 and §4.3</a></p>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="Derivation: completing the square for the Gaussian posterior">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Derivation: completing the square for the Gaussian posterior
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>For <span class="math inline">\(t\ge2\)</span>, let <span class="math inline">\(y=x_{t-1}\)</span>. Conditioned on the clean image, the previous state and the next transition are</p>
+<p><span class="math display">\[
+q(y\mid x_0)=\mathcal N\!\left(\sqrt{\bar\alpha_{t-1}}x_0,
+(1-\bar\alpha_{t-1})I\right),
+\]</span></p>
+<p><span class="math display">\[
+q(x_t\mid y)=\mathcal N(\sqrt{\alpha_t}y,\beta_t I).
+\]</span></p>
+<p>Bayes’ rule says the posterior is proportional to their product. Keeping only the terms that depend on <span class="math inline">\(y\)</span>, its negative log density is</p>
+<p><span class="math display">\[
+\frac12\left[
+\frac{\|x_t-\sqrt{\alpha_t}y\|^2}{\beta_t}
++
+\frac{\|y-\sqrt{\bar\alpha_{t-1}}x_0\|^2}{1-\bar\alpha_{t-1}}
+\right].
+\]</span></p>
+<p>The coefficient of <span class="math inline">\(\|y\|^2\)</span>, or posterior precision, is</p>
+<p><span class="math display">\[
+A_t=\frac{\alpha_t}{\beta_t}
++\frac{1}{1-\bar\alpha_{t-1}}
+=\frac{1-\bar\alpha_t}{\beta_t(1-\bar\alpha_{t-1})}.
+\]</span></p>
+<p>The linear coefficient in the completed-square form is</p>
+<p><span class="math display">\[
+b_t=
+\frac{\sqrt{\alpha_t}}{\beta_t}x_t
++
+\frac{\sqrt{\bar\alpha_{t-1}}}{1-\bar\alpha_{t-1}}x_0.
+\]</span></p>
+<p>Thus the covariance is <span class="math inline">\(A_t^{-1}I=\widetilde\beta_t I\)</span>, and the mean is</p>
+<p><span class="math display">\[
+A_t^{-1}b_t
+=
+\frac{\sqrt{\alpha_t}(1-\bar\alpha_{t-1})}{1-\bar\alpha_t}x_t
++
+\frac{\sqrt{\bar\alpha_{t-1}}\beta_t}{1-\bar\alpha_t}x_0,
+\]</span></p>
+<p>which recovers <a href="#eq-posterior-mean" class="quarto-xref">Equation&nbsp;8</a>. At <span class="math inline">\(t=1\)</span>, conditioning on <span class="math inline">\(x_0\)</span> fixes the previous state exactly, and the variance degenerates to zero. That is why the data-endpoint likelihood is handled separately in the variational bound.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="appendix-translating-notation-across-the-papers" class="level2">
+<h2 class="anchored" data-anchor-id="appendix-translating-notation-across-the-papers">Appendix: translating notation across the papers</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">In this article</th>
+<th style="text-align: left;">In the source papers</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(a_t=\sqrt{\bar\alpha_t}\)</span></td>
+<td style="text-align: left;">DDPM uses <span class="math inline">\(\sqrt{\bar\alpha_t}\)</span>; CFG uses an <span class="math inline">\(\alpha\)</span> indexed by log-SNR for the cumulative signal amplitude. CFG’s <span class="math inline">\(\alpha\)</span> is not our one-step <span class="math inline">\(\alpha_t\)</span>.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\sigma_t=\sqrt{1-\bar\alpha_t}\)</span></td>
+<td style="text-align: left;">Cumulative noise standard deviation here. DDPM also uses a <span class="math inline">\(\sigma_t\)</span> symbol for a reverse standard deviation; we call its square <span class="math inline">\(r_t\)</span> to avoid a collision.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(s_t=\nabla_x\log q_t\)</span></td>
+<td style="text-align: left;">Score of the noisy marginal. Some sources use <span class="math inline">\(p_t\)</span> for this marginal; our <span class="math inline">\(p_\theta\)</span> is reserved for the learned generative model.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(\gamma\)</span></td>
+<td style="text-align: left;">CFG scale based at the unconditional prediction. The original CFG paper’s conditional-based extra scale is <span class="math inline">\(w=\gamma-1\)</span>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(b,m,g\)</span></td>
+<td style="text-align: left;">adaLN shift, scale adjustment, and residual gate. DiT’s original notation uses some of the same Greek letters as the diffusion schedule; they are separated here.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(z_t\)</span></td>
+<td style="text-align: left;">A noisy VAE latent. The diffusion formulas retain their form after replacing pixel-space <span class="math inline">\(x_t\)</span> with <span class="math inline">\(z_t\)</span>.</td>
+</tr>
+</tbody>
+</table>
+<p>The CFG paper’s log-SNR variable corresponds here to <span class="math inline">\(\lambda_t=\log(a_t^2/\sigma_t^2)\)</span>. In this DDPM forward-time convention, <span class="math inline">\(t\)</span> increases while the signal-to-noise ratio decreases. Following generation backward through <span class="math inline">\(t\)</span> therefore increases log-SNR.</p>
+</section>
+<section id="references-and-figure-provenance" class="level2">
+<h2 class="anchored" data-anchor-id="references-and-figure-provenance">References and figure provenance</h2>
+<ul>
+<li>Jonathan Ho, Ajay Jain, and Pieter Abbeel. <a href="https://arxiv.org/abs/2006.11239v2">Denoising Diffusion Probabilistic Models</a>, 2020.</li>
+<li>Yang Song and Stefano Ermon. <a href="https://arxiv.org/abs/1907.05600v3">Generative Modeling by Estimating Gradients of the Data Distribution</a>, 2019.</li>
+<li>Yang Song et al.&nbsp;<a href="https://arxiv.org/abs/2011.13456">Score-Based Generative Modeling through Stochastic Differential Equations</a>, 2021.</li>
+<li>Jonathan Ho and Tim Salimans. <a href="https://arxiv.org/abs/2207.12598v1">Classifier-Free Diffusion Guidance</a>, 2022.</li>
+<li>Alex Nichol and Prafulla Dhariwal. <a href="https://arxiv.org/abs/2102.09672">Improved Denoising Diffusion Probabilistic Models</a>, 2021.</li>
+<li>Robin Rombach et al.&nbsp;<a href="https://arxiv.org/abs/2112.10752">High-Resolution Image Synthesis with Latent Diffusion Models</a>, 2022.</li>
+<li>William Peebles and Saining Xie. <a href="https://arxiv.org/abs/2212.09748v2">Scalable Diffusion Models with Transformers</a>, 2023. <a href="https://github.com/facebookresearch/DiT">Official code</a>.</li>
+</ul>
+<p>The scattered-photo illustration was generated specifically for this draft with the built-in image-generation tool. Its images are synthetic. The other figures are original explanatory diagrams and analytic illustrations generated by the accompanying figure script. The noising panels are a computed forward process on a procedural image; the score plot uses a specified Gaussian mixture. They are not outputs from a trained diffusion model. Experimental numbers in the tables and discussion are attributed to the papers, rather than to experiments performed for this note.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/gs3393\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 gs3393</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/gs3393">
+<p>GitHub</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
