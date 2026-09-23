@@ -1,0 +1,4 @@
+# Never copy these into the rendered site.
+_preview/
+_preview-assets/
+tools/
