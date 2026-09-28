@@ -1,2 +1,3 @@
-# Public profile used for contact without exposing a personal email address.
-contact_url: "https://github.com/gs3393"
+# Values referenced from pages with {{< var name >}}.
+# tools/check-links.mjs refuses a render that still contains a placeholder address.
+email: "gnus3393@gmail.com"
