@@ -93,7 +93,7 @@ ul.task-list li input[type="checkbox"] {
     const options = {
       valueNames: ['listing-date','listing-title','listing-subtitle','listing-description','listing-categories','listing-reading-time',{ data: ['index'] },{ data: ['categories'] },{ data: ['listing-date-sort'] },{ data: ['listing-date-modified-sort'] },{ data: ['listing-file-modified-sort'] },{ data: ['listing-reading-time-sort'] },{ data: ['listing-word-count-sort'] }],
       
-      searchColumns: ["listing-project","listing-website","listing-language","listing-format","listing-engines","listing-_quarto-vars","listing-lang","listing-toc","listing-toc-depth","listing-number-sections","listing-date-format","listing-title","listing-subtitle","listing-description","listing-date","listing-post-type","listing-categories","listing-toc-expand","listing-resources","listing-path","listing-outputHref","listing-date-modified","listing-author","listing-filename","listing-file-modified","listing-reading-time","listing-word-count","listing-image"],
+      searchColumns: ["listing-project","listing-website","listing-language","listing-format","listing-engines","listing-_quarto-vars","listing-lang","listing-toc","listing-toc-depth","listing-number-sections","listing-date-format","listing-title","listing-subtitle","listing-description","listing-date","listing-post-type","listing-image","listing-categories","listing-path","listing-outputHref","listing-date-modified","listing-author","listing-filename","listing-file-modified","listing-reading-time","listing-word-count","listing-toc-expand","listing-resources"],
     };
 
     window['quarto-listings'] = window['quarto-listings'] || {};
@@ -204,7 +204,7 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Topics</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="QXJjaGl0ZWN0dXJl">Architecture <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RGlmZnVzaW9u">Diffusion <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RWRpdGluZw==">Editing <span class="quarto-category-count">(2)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(3)</span></div><div class="category" data-category="RmV3LVN0ZXAlMjBHZW5lcmF0aW9u">Few-Step Generation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R3VpZGFuY2U=">Guidance <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Topics</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(5)</span></div><div class="category" data-category="QXJjaGl0ZWN0dXJl">Architecture <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RGlmZnVzaW9u">Diffusion <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RWRpdGluZw==">Editing <span class="quarto-category-count">(2)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(4)</span></div><div class="category" data-category="RmV3LVN0ZXAlMjBHZW5lcmF0aW9u">Few-Step Generation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R3VpZGFuY2U=">Guidance <span class="quarto-category-count">(2)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -271,7 +271,23 @@ window.Quarto = {
     <p class="note-group-blurb">Small runs to check a claim or a method. Failed ones included.</p>
   </li>
 
-  <li class="note-row" data-index="2" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790521200000" data-listing-file-modified-sort="1790558351482" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3434">
+  <li class="note-row" data-index="2" data-categories="R3VpZGFuY2UlMkNFdmFsdWF0aW9u" data-listing-date-sort="1790521200000" data-listing-file-modified-sort="1790584595750" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="13" data-listing-word-count-sort="2420">
+    
+    <div class="note-kicker"><span class="type-label" data-type="Experiment">Experiment</span></div>
+    
+    <h3 class="no-anchor listing-title"><a href="./notes/cfgmp-sd35-remeasured.html" class="no-external">Give CFG-MP the Same Budget as CFG</a></h3>
+    <p class="note-subtitle listing-subtitle">CFG-MP re-measured on SD3.5-Medium and Large with paired bootstrap intervals: no GenEval gain at 60 NFE, lower preference scores with the demo settings, and the sampling-step count as the change that matters most</p>
+    <p class="note-desc listing-description">CFG-MP and CFG-MP+ (ICML 2026) on 553 GenEval prompts with SD3.5-Medium and Large, from the same noise as CFG at the same budget. The paper's three-point GenEval gain does not appear, HPSv2 goes the other way, and the guidance-scale sweep collapses earlier than CFG. Changing one knob at a time shows the sampling-step count is what moves the scores; the paper's appendix runs 20 to 30 steps, the released demo runs 10.</p>
+    <p class="note-meta">
+      <span class="listing-date">Sep 28, 2026</span>
+      <span class="sep" aria-hidden="true">·</span><span class="listing-reading-time">13 min</span>
+      
+      <span class="note-topics"><span class="topic">Guidance</span><span class="topic">Evaluation</span></span>
+      
+    </p>
+  </li>
+
+  <li class="note-row" data-index="3" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790521200000" data-listing-file-modified-sort="1790558401375" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3434">
     
     <div class="note-kicker"><span class="type-label" data-type="Experiment">Experiment</span></div>
     
@@ -287,7 +303,7 @@ window.Quarto = {
     </p>
   </li>
 
-  <li class="note-row" data-index="3" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790002800000" data-listing-file-modified-sort="1790558268463" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2795">
+  <li class="note-row" data-index="4" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790002800000" data-listing-file-modified-sort="1790558401375" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2795">
     
     <div class="note-kicker"><span class="type-label" data-type="Experiment">Experiment</span></div>
     
