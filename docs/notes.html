@@ -204,7 +204,7 @@ window.Quarto = {
 <!-- sidebar -->
 <!-- margin-sidebar -->
     <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
-    <h5 class="quarto-listing-category-title">Topics</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(3)</span></div><div class="category" data-category="QXJjaGl0ZWN0dXJl">Architecture <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RGlmZnVzaW9u">Diffusion <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RWRpdGluZw==">Editing <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(2)</span></div><div class="category" data-category="RmV3LVN0ZXAlMjBHZW5lcmF0aW9u">Few-Step Generation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R3VpZGFuY2U=">Guidance <span class="quarto-category-count">(1)</span></div></div></div>
+    <h5 class="quarto-listing-category-title">Topics</h5><div class="quarto-listing-category category-default"><div class="category" data-category="">All <span class="quarto-category-count">(4)</span></div><div class="category" data-category="QXJjaGl0ZWN0dXJl">Architecture <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RGlmZnVzaW9u">Diffusion <span class="quarto-category-count">(1)</span></div><div class="category" data-category="RWRpdGluZw==">Editing <span class="quarto-category-count">(2)</span></div><div class="category" data-category="RXZhbHVhdGlvbg==">Evaluation <span class="quarto-category-count">(3)</span></div><div class="category" data-category="RmV3LVN0ZXAlMjBHZW5lcmF0aW9u">Few-Step Generation <span class="quarto-category-count">(1)</span></div><div class="category" data-category="R3VpZGFuY2U=">Guidance <span class="quarto-category-count">(1)</span></div></div></div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
@@ -229,7 +229,7 @@ window.Quarto = {
     <p class="note-group-blurb">The foundational papers, and how they connect.</p>
   </li>
 
-  <li class="note-row" data-index="0" data-categories="RGlmZnVzaW9uJTJDR3VpZGFuY2UlMkNBcmNoaXRlY3R1cmU=" data-listing-date-sort="1789657200000" data-listing-file-modified-sort="1789965640819" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="40" data-listing-word-count-sort="7984">
+  <li class="note-row" data-index="0" data-categories="RGlmZnVzaW9uJTJDR3VpZGFuY2UlMkNBcmNoaXRlY3R1cmU=" data-listing-date-sort="1789657200000" data-listing-file-modified-sort="1790133183528" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="40" data-listing-word-count-sort="7984">
     
     <div class="note-kicker"><span class="type-label" data-type="Fundamentals">Fundamentals</span></div>
     
@@ -250,7 +250,7 @@ window.Quarto = {
     <p class="note-group-blurb">A recent paper, and what its results actually support.</p>
   </li>
 
-  <li class="note-row" data-index="1" data-categories="RXZhbHVhdGlvbiUyQ0Zldy1TdGVwJTIwR2VuZXJhdGlvbg==" data-listing-date-sort="1788620400000" data-listing-file-modified-sort="1789966374719" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1576">
+  <li class="note-row" data-index="1" data-categories="RXZhbHVhdGlvbiUyQ0Zldy1TdGVwJTIwR2VuZXJhdGlvbg==" data-listing-date-sort="1788620400000" data-listing-file-modified-sort="1790133183530" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="8" data-listing-word-count-sort="1576">
     
     <div class="note-kicker"><span class="type-label" data-type="Paper Review">Paper Review</span></div>
     
@@ -271,7 +271,23 @@ window.Quarto = {
     <p class="note-group-blurb">Small runs to check a claim or a method. Failed ones included.</p>
   </li>
 
-  <li class="note-row" data-index="2" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790002800000" data-listing-file-modified-sort="1790053304932" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2770">
+  <li class="note-row" data-index="2" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790521200000" data-listing-file-modified-sort="1790558351482" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="18" data-listing-word-count-sort="3434">
+    
+    <div class="note-kicker"><span class="type-label" data-type="Experiment">Experiment</span></div>
+    
+    <h3 class="no-anchor listing-title"><a href="./notes/equalized-mask-table.html" class="no-external">Give Every Method the Same Mask</a></h3>
+    <p class="note-subtitle listing-subtitle">Five editing methods on PIE-Bench with the mask condition held fixed, and one baseline row that turned out to depend on a save path</p>
+    <p class="note-desc listing-description">A follow-up to the background-preservation note: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit on 151 PIE-Bench images with SD3.5-medium, scored with no mask, with the ground-truth mask pasted back at every step, and with pixel compositing. Background columns compress into a narrow band, some differences remain, the average rank moves with the condition, and FlowAlign's row in the paper looks like an output-normalization effect.</p>
+    <p class="note-meta">
+      <span class="listing-date">Sep 28, 2026</span>
+      <span class="sep" aria-hidden="true">·</span><span class="listing-reading-time">18 min</span>
+      
+      <span class="note-topics"><span class="topic">Editing</span><span class="topic">Evaluation</span></span>
+      
+    </p>
+  </li>
+
+  <li class="note-row" data-index="3" data-categories="RWRpdGluZyUyQ0V2YWx1YXRpb24=" data-listing-date-sort="1790002800000" data-listing-file-modified-sort="1790558268463" data-listing-date-modified-sort="NaN" data-listing-reading-time-sort="14" data-listing-word-count-sort="2795">
     
     <div class="note-kicker"><span class="type-label" data-type="Experiment">Experiment</span></div>
     
