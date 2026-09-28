@@ -1,7 +1,8 @@
 [
   {
-    "listing": "/notes.html",
+    "listing": "/index.html",
     "items": [
+      "/notes/cfgmp-sd35-remeasured.html",
       "/notes/equalized-mask-table.html",
       "/notes/editing-benchmark-background-metric.html",
       "/notes/diffusion-foundations.html",
@@ -9,8 +10,9 @@
     ]
   },
   {
-    "listing": "/index.html",
+    "listing": "/notes.html",
     "items": [
+      "/notes/cfgmp-sd35-remeasured.html",
       "/notes/equalized-mask-table.html",
       "/notes/editing-benchmark-background-metric.html",
       "/notes/diffusion-foundations.html",
