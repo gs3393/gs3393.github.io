@@ -9,7 +9,6 @@ toc: false
 [gs3393]{.contact-name}
 [ML/AI engineer · generative AI]{.contact-role}
 
-- [Email](mailto:{{< var email >}})
 - [GitHub](https://github.com/gs3393)
 :::
 
@@ -31,6 +30,6 @@ Topic tags connect related material across these categories.
 
 ## Contact
 
-For questions, corrections, or discussion of the material presented here, please contact me by [email](mailto:{{< var email >}}).
+For questions, corrections, or discussion of the material presented here, please visit my [GitHub profile]({{< var contact_url >}}).
 
 Accompanying code and figure sources are available on [GitHub](https://github.com/gs3393).
