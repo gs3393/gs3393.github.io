@@ -1,15 +1,17 @@
 [
   {
-    "listing": "/index.html",
+    "listing": "/notes.html",
     "items": [
+      "/notes/equalized-mask-table.html",
       "/notes/editing-benchmark-background-metric.html",
       "/notes/diffusion-foundations.html",
       "/notes/jit-fd-loss-analysis.html"
     ]
   },
   {
-    "listing": "/notes.html",
+    "listing": "/index.html",
     "items": [
+      "/notes/equalized-mask-table.html",
       "/notes/editing-benchmark-background-metric.html",
       "/notes/diffusion-foundations.html",
       "/notes/jit-fd-loss-analysis.html"

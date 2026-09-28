@@ -102,7 +102,7 @@ Read the table as distance to the bottom row — the score of not editing — on
 | bg-SSIM | 88.84 → 94.70 → 94.94 | **96%** |
 | Structure Distance | 17.22 → 8.73 → 0.55 | 51% |
 
-Turning on the mask closes 92–99% of the distance from the no-mask row to the no-edit reference on each of the four background columns. That is a statement about the gap, not about proximity in absolute terms: on LPIPS the GT-mask row still sits 9.5% above the reference value, on MSE 7.6%, on PSNR 0.76 dB below. In the edited region CLIP drops by 0.14. The bottom row gives that number some scale — 0.14 is about six percent of the 2.3-point CLIP gap between the no-mask row and not editing — but a CLIP-score ratio is not an editing-success rate, and the no-edit value is a reference rather than a floor, since a wrong edit could score below it. The SAM2 masks — right location, approximate shape — close 81–93% of the same four gaps.
+Turning on the mask closes 92–99% of the distance from the no-mask row to the no-edit reference on each of the four background columns. That is a statement about the gap, not about proximity in absolute terms: on LPIPS the GT-mask row still sits 9.5% above the reference value, on MSE 7.7%, on PSNR 0.76 dB below. In the edited region CLIP drops by 0.14. The bottom row gives that number some scale — 0.14 is about six percent of the 2.3-point CLIP gap between the no-mask row and not editing — but a CLIP-score ratio is not an editing-success rate, and the no-edit value is a reference rather than a floor, since a wrong edit could score below it. The SAM2 masks — right location, approximate shape — close 81–93% of the same four gaps.
 
 The same tendency appears in every category that has a background to score. Per-category background PSNR under the GT mask lands within 1.6 dB of the reference for all nine, and within 0.5 dB for four of them; for pose changes the two are 32.41 and 32.46.
 
@@ -133,3 +133,7 @@ The background column of a masked method is, to a first approximation, a paste-q
 - My auto masks are better than a real automatic pipeline would produce, since the box came from the annotation. They do score higher (33.94) than the paper's full configuration (31.82), but I cannot read that as evidence about mask quality: the subsets differ, and my GT-mask run scores higher still (35.01).
 - I did not re-measure what residual re-injection contributes on its own. The paper's FLUX ablation reports it: with the mask held on, swapping the alignment for the paper's simpler stepwise correction costs 1.51 dB of background PSNR and 11.3 points of Structure Distance. Those are conditional effects inside the full configuration, not independent contributions; the same appendix's Euler+attention+mask row (16.66 dB) already shows the components interact.
 - One quirk I checked and set aside: PIE-Bench's `psnr_unedit_part` zeroes the edit region in both images and then takes PSNR over the *whole* frame, so error-free pixels enter the denominator and inflate the value with mask area. Measured across my four conditions the inflation is a constant 2.13 dB, so it shifts all rows equally and does not affect any comparison above.
+
+---
+
+*Follow-up (September 28, 2026): [Give Every Method the Same Mask](equalized-mask-table.html) builds the table this note asked for — five methods, three mask conditions, same 151 images.*
