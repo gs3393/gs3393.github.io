@@ -199,7 +199,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<p class="post-kicker" data-type="Experiment"><a href="../notes.html">Experiment</a></p>
+<p class="post-kicker" data-type="Legacy"><a href="../legacy.html">Legacy</a></p>
 <h1 class="title">What Background Preservation Actually Measures in Image-Editing Benchmarks</h1>
 <p class="subtitle lead">Reading DirectEdit’s PIE-Bench numbers, with a 151-image check on SD3.5-medium</p>
 </div>
@@ -222,6 +222,20 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Legacy — archived October 12, 2026
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This article is retained as a historical record. Its original framing is broader than the measurements support: the experiment varies mask conditions while keeping DirectEdit’s alignment and attention injection fixed, and does not measure their separate contributions. It is no longer included in the current notes.</p>
+<p><a href="../legacy.html">Browse the legacy archive</a>.</p>
+</div>
+</div>
 <blockquote class="blockquote">
 <p>DirectEdit reports a +10.67 dB jump in background PSNR on PIE-Bench. Its released code pastes the source latent back outside an edit mask at every step, so that column cannot separate paste quality from inversion quality. This note traces the mechanism, uses the paper’s own no-mask row, and measures four conditions on SD3.5-medium to show what the score does and does not say.</p>
 </blockquote>
@@ -846,6 +860,11 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     </div>
     <div class="nav-footer-right">
       <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../legacy.html">
+<p>Legacy</p>
+</a>
+  </li>  
     <li class="nav-item">
     <a class="nav-link" href="https://github.com/gs3393">
 <p>GitHub</p>

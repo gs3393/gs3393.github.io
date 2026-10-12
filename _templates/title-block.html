@@ -1,6 +1,8 @@
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-$if(post-type)$
+$if(legacy)$
+<p class="post-kicker" data-type="Legacy"><a href="/legacy.html">Legacy</a></p>
+$elseif(post-type)$
 <p class="post-kicker" data-type="$post-type$"><a href="/notes.html">$post-type$</a></p>
 $endif$
 $if(title)$

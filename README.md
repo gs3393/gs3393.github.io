@@ -32,6 +32,7 @@ Copy the starter that matches the kind of note from `_templates/note-*.qmd` to `
 | `description` | One or two sentences. Used in lists and share cards. |
 | `image` | Optional. Share cards need PNG or JPG; if the first figure is an SVG, point this at `/assets/site/social-card.png`. |
 | `draft: true` | Keep until the note is approved. With the default `draft-mode`, a draft renders as a blank page and gets no links from navigation, lists, or search; `quarto preview` still shows it. |
+| `legacy: true` | Archive a published note at its existing URL. Home and Notes exclude it; the Legacy page lists it. Add a visible archive notice and `search: false` to the note. |
 
 `lang`, `toc`, math rendering and similar options come from `notes/_metadata.yml`; a note only sets what differs.
 Do not rename or move a published note: its URL is the file path.
