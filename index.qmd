@@ -6,6 +6,8 @@ toc: false
 listing:
   - id: recent-notes
     contents: "notes/*.qmd"
+    exclude:
+      legacy: true
     sort: "date desc"
     max-items: 5
     fields: [date, title, subtitle, description, categories, reading-time]
@@ -15,6 +17,8 @@ listing:
       mode: flat
   - id: note-kinds
     contents: "notes/*.qmd"
+    exclude:
+      legacy: true
     fields: [title]
     template: _templates/notes-listing.ejs
     template-params:

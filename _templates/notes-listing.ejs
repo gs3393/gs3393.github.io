@@ -20,7 +20,9 @@ const known = kinds.map(k => k.name);
 
 const row = (item) => { %>
   <li class="note-row" <%= metadataAttrs(item) %>>
-    <% if (item["post-type"]) { %>
+    <% if (item.legacy) { %>
+    <div class="note-kicker"><span class="type-label" data-type="Legacy">Legacy</span></div>
+    <% } else if (item["post-type"]) { %>
     <div class="note-kicker"><span class="type-label" data-type="<%- item["post-type"] %>"><%- item["post-type"] %></span></div>
     <% } %>
     <h3 class="no-anchor listing-title"><a href="<%- item.path %>" class="no-external"><%- item.title %></a></h3>

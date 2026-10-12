@@ -1,0 +1,25 @@
+---
+title: "Legacy"
+description: "Earlier articles retained as historical records."
+hide-description: true
+lang: en
+toc: false
+listing:
+  id: legacy-listing
+  contents: "notes/*.qmd"
+  include:
+    legacy: true
+  sort: "date desc"
+  fields: [date, title, subtitle, description, categories, reading-time]
+  date-format: "MMM D, YYYY"
+  template: _templates/notes-listing.ejs
+  template-params:
+    mode: flat
+---
+
+These articles are archived and excluded from the current notes. Their original URLs remain available; each article explains its archive status.
+
+::: {#legacy-listing}
+:::
+
+[Current notes →](notes.qmd)

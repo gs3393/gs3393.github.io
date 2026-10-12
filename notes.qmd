@@ -6,6 +6,8 @@ toc: false
 listing:
   id: notes-listing
   contents: "notes/*.qmd"
+  exclude:
+    legacy: true
   sort: "date desc"
   fields: [date, title, subtitle, description, categories, reading-time]
   date-format: "MMM D, YYYY"
@@ -19,3 +21,5 @@ Notes are grouped by kind. Topics are tags on each note, and the list on the rig
 
 ::: {#notes-listing}
 :::
+
+[Legacy archive](legacy.qmd) — earlier articles retained as historical records.

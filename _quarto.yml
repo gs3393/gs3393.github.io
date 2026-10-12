@@ -31,6 +31,8 @@ website:
   page-footer:
     left: "© 2026 gs3393"
     right:
+      - text: "Legacy"
+        href: legacy.qmd
       - text: "GitHub"
         href: https://github.com/gs3393
 
