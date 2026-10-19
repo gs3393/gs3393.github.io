@@ -1,0 +1,673 @@
+{
+  "created_at_utc": "2026-10-13T06:42:38.985159+00:00",
+  "original_images": 700,
+  "background_evaluable_images": 556,
+  "conditions": {
+    "nomask": {
+      "ftedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 20.974195278142858,
+          "median": 17.07582
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 23.49880520559901,
+          "median": 23.07437801361084
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 90.03958464709024,
+          "median": 86.56668663024902
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 61.647854223573624,
+          "median": 49.26770459860563
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 86.33894354855414,
+          "median": 87.66221404075623
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 25.212637252807617,
+          "median": 25.18488121032715
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 21.788370710100445,
+          "median": 21.96147346496582
+        }
+      },
+      "flowedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 23.325487568285716,
+          "median": 20.869858
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 23.262764392139243,
+          "median": 22.450220108032227
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 88.97403570504694,
+          "median": 86.17239817976952
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 69.88063279167487,
+          "median": 56.88242148607969
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 85.62460761490486,
+          "median": 86.87400221824646
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 27.70160581588745,
+          "median": 27.557442665100098
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 24.053999487331936,
+          "median": 24.340359687805176
+        }
+      },
+      "flowalign": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 13.575572427571428,
+          "median": 9.4747405
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 27.395569307340992,
+          "median": 26.876224517822266
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 48.975495990175624,
+          "median": 37.95913979411125
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 29.35368636076746,
+          "median": 20.52946132607758
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 90.51641811141008,
+          "median": 92.6754504442215
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 26.654646058763777,
+          "median": 26.556862831115723
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 22.778933853421893,
+          "median": 22.91160297393799
+        }
+      },
+      "dnaedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 14.664222495999999,
+          "median": 12.4292135
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 26.58009250901586,
+          "median": 25.84255027770996
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 74.988308268023,
+          "median": 67.6344633102417
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 33.39169458194447,
+          "median": 26.046517305076122
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 89.43770710084078,
+          "median": 90.47851264476776
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 26.557275171279908,
+          "median": 26.613926887512207
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 23.092250056947982,
+          "median": 23.456039428710938
+        }
+      },
+      "directedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 15.202800788542856,
+          "median": 12.311712
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 26.17967136300725,
+          "median": 25.43270969390869
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 67.3804761036408,
+          "median": 60.72232127189636
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 34.04132010331091,
+          "median": 28.623929247260094
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 88.74551945453068,
+          "median": 90.46399891376495
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 26.138122677121842,
+          "median": 26.14009952545166
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 22.510426103728157,
+          "median": 22.69077491760254
+        }
+      }
+    },
+    "gtmask": {
+      "ftedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 9.363571194341429,
+          "median": 5.5665960000000005
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 34.86496514382122,
+          "median": 34.431129455566406
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 10.556053677450265,
+          "median": 9.018098004162312
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 6.2596480412424125,
+          "median": 3.6048537003807724
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 94.55875756500436,
+          "median": 96.10286056995392
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 24.682022992542812,
+          "median": 24.67189311981201
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 21.642636053902763,
+          "median": 21.89577865600586
+        }
+      },
+      "flowedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 13.391230606842857,
+          "median": 9.303430500000001
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 33.88316196331875,
+          "median": 33.65788650512695
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 12.030003994172304,
+          "median": 10.655566118657589
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 7.182197305437741,
+          "median": 4.307359049562365
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 94.17098672698728,
+          "median": 95.75835764408112
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 26.84371018409729,
+          "median": 26.837170600891113
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 24.02892349243164,
+          "median": 24.2790470123291
+        }
+      },
+      "flowalign": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 8.961026547688572,
+          "median": 5.66113265
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 34.75552196982953,
+          "median": 34.56026840209961
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 10.906407165565325,
+          "median": 9.374228306114674
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 6.3556178337962885,
+          "median": 3.499264275887981
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 94.32947244361151,
+          "median": 95.84744870662689
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 26.47766293798174,
+          "median": 26.520124435424805
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 23.075257019315448,
+          "median": 23.525378227233887
+        }
+      },
+      "dnaedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 7.659661125642857,
+          "median": 5.0081225
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 34.809277314933944,
+          "median": 34.442440032958984
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 10.685214183180008,
+          "median": 9.229470044374466
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 6.280965504194303,
+          "median": 3.595472371671349
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 94.36074465298825,
+          "median": 96.01647853851318
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 25.911766725267682,
+          "median": 25.98630142211914
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 22.978353435652597,
+          "median": 23.26692771911621
+        }
+      },
+      "directedit": {
+        "structure_distance": {
+          "n": 700,
+          "mean": 7.233183263977143,
+          "median": 4.43817675
+        },
+        "psnr_unedit_part": {
+          "n": 556,
+          "mean": 35.04547475910873,
+          "median": 34.78596115112305
+        },
+        "lpips_unedit_part": {
+          "n": 556,
+          "mean": 10.317303216848657,
+          "median": 8.811110630631447
+        },
+        "mse_unedit_part": {
+          "n": 556,
+          "mean": 6.085600183512711,
+          "median": 3.3220523619093
+        },
+        "ssim_unedit_part": {
+          "n": 556,
+          "mean": 94.29902125605577,
+          "median": 95.91121077537537
+        },
+        "clip_similarity_target_image": {
+          "n": 700,
+          "mean": 25.408181024278914,
+          "median": 25.473190307617188
+        },
+        "clip_similarity_target_image_edit_part": {
+          "n": 700,
+          "mean": 22.372382869039264,
+          "median": 22.589500427246094
+        }
+      }
+    }
+  },
+  "paired_changes": {
+    "ftedit": {
+      "structure_distance": {
+        "n": 700,
+        "mean": -11.610624083801428,
+        "median": -8.0081478,
+        "down": 543,
+        "up": 13,
+        "unchanged": 144
+      },
+      "psnr_unedit_part": {
+        "n": 556,
+        "mean": 11.366159938222212,
+        "median": 11.374505043029785,
+        "down": 0,
+        "up": 556,
+        "unchanged": 0
+      },
+      "lpips_unedit_part": {
+        "n": 556,
+        "mean": -79.48353096963997,
+        "median": -74.59135632961988,
+        "down": 556,
+        "up": 0,
+        "unchanged": 0
+      },
+      "mse_unedit_part": {
+        "n": 556,
+        "mean": -55.38820618233121,
+        "median": -43.97996453917585,
+        "down": 556,
+        "up": 0,
+        "unchanged": 0
+      },
+      "ssim_unedit_part": {
+        "n": 556,
+        "mean": 8.219814016450224,
+        "median": 7.318228483200073,
+        "down": 2,
+        "up": 554,
+        "unchanged": 0
+      },
+      "clip_similarity_target_image": {
+        "n": 700,
+        "mean": -0.5306142602648054,
+        "median": -0.09955501556396484,
+        "down": 368,
+        "up": 188,
+        "unchanged": 144
+      },
+      "clip_similarity_target_image_edit_part": {
+        "n": 700,
+        "mean": -0.14573465619768416,
+        "median": 0.0,
+        "down": 301,
+        "up": 255,
+        "unchanged": 144
+      }
+    },
+    "flowedit": {
+      "structure_distance": {
+        "n": 700,
+        "mean": -9.934256961442857,
+        "median": -7.971143249999999,
+        "down": 549,
+        "up": 7,
+        "unchanged": 144
+      },
+      "psnr_unedit_part": {
+        "n": 556,
+        "mean": 10.620397571179506,
+        "median": 10.735991477966309,
+        "down": 1,
+        "up": 555,
+        "unchanged": 0
+      },
+      "lpips_unedit_part": {
+        "n": 556,
+        "mean": -76.94403171087464,
+        "median": -72.42599781602621,
+        "down": 556,
+        "up": 0,
+        "unchanged": 0
+      },
+      "mse_unedit_part": {
+        "n": 556,
+        "mean": -62.698435486237145,
+        "median": -49.48003406752832,
+        "down": 555,
+        "up": 1,
+        "unchanged": 0
+      },
+      "ssim_unedit_part": {
+        "n": 556,
+        "mean": 8.54637911208242,
+        "median": 7.811090350151062,
+        "down": 2,
+        "up": 554,
+        "unchanged": 0
+      },
+      "clip_similarity_target_image": {
+        "n": 700,
+        "mean": -0.8578956317901612,
+        "median": -0.26567745208740234,
+        "down": 389,
+        "up": 167,
+        "unchanged": 144
+      },
+      "clip_similarity_target_image_edit_part": {
+        "n": 700,
+        "mean": -0.02507599490029471,
+        "median": 0.0,
+        "down": 297,
+        "up": 259,
+        "unchanged": 144
+      }
+    },
+    "flowalign": {
+      "structure_distance": {
+        "n": 700,
+        "mean": -4.614545879882857,
+        "median": -2.1700457500000003,
+        "down": 533,
+        "up": 23,
+        "unchanged": 144
+      },
+      "psnr_unedit_part": {
+        "n": 556,
+        "mean": 7.359952662488539,
+        "median": 7.0597944259643555,
+        "down": 1,
+        "up": 555,
+        "unchanged": 0
+      },
+      "lpips_unedit_part": {
+        "n": 556,
+        "mean": -38.069088824610304,
+        "median": -26.892567053437233,
+        "down": 556,
+        "up": 0,
+        "unchanged": 0
+      },
+      "mse_unedit_part": {
+        "n": 556,
+        "mean": -22.99806852697117,
+        "median": -14.441419334616512,
+        "down": 555,
+        "up": 1,
+        "unchanged": 0
+      },
+      "ssim_unedit_part": {
+        "n": 556,
+        "mean": 3.813054332201429,
+        "median": 2.826276421546936,
+        "down": 5,
+        "up": 551,
+        "unchanged": 0
+      },
+      "clip_similarity_target_image": {
+        "n": 700,
+        "mean": -0.17698312078203474,
+        "median": 0.0,
+        "down": 297,
+        "up": 258,
+        "unchanged": 145
+      },
+      "clip_similarity_target_image_edit_part": {
+        "n": 700,
+        "mean": 0.2963231658935547,
+        "median": 0.0,
+        "down": 252,
+        "up": 304,
+        "unchanged": 144
+      }
+    },
+    "dnaedit": {
+      "structure_distance": {
+        "n": 700,
+        "mean": -7.004561370357143,
+        "median": -5.1557677,
+        "down": 553,
+        "up": 3,
+        "unchanged": 144
+      },
+      "psnr_unedit_part": {
+        "n": 556,
+        "mean": 8.229184805918083,
+        "median": 8.23063850402832,
+        "down": 2,
+        "up": 554,
+        "unchanged": 0
+      },
+      "lpips_unedit_part": {
+        "n": 556,
+        "mean": -64.303094084843,
+        "median": -57.75387864559889,
+        "down": 552,
+        "up": 4,
+        "unchanged": 0
+      },
+      "mse_unedit_part": {
+        "n": 556,
+        "mean": -27.110729077750168,
+        "median": -21.083421306684613,
+        "down": 554,
+        "up": 2,
+        "unchanged": 0
+      },
+      "ssim_unedit_part": {
+        "n": 556,
+        "mean": 4.92303755214746,
+        "median": 4.178321361541748,
+        "down": 6,
+        "up": 550,
+        "unchanged": 0
+      },
+      "clip_similarity_target_image": {
+        "n": 700,
+        "mean": -0.6455084460122245,
+        "median": -0.15058040618896484,
+        "down": 387,
+        "up": 169,
+        "unchanged": 144
+      },
+      "clip_similarity_target_image_edit_part": {
+        "n": 700,
+        "mean": -0.113896621295384,
+        "median": 0.0,
+        "down": 317,
+        "up": 239,
+        "unchanged": 144
+      }
+    },
+    "directedit": {
+      "structure_distance": {
+        "n": 700,
+        "mean": -7.969617524565715,
+        "median": -5.961067475,
+        "down": 550,
+        "up": 6,
+        "unchanged": 144
+      },
+      "psnr_unedit_part": {
+        "n": 556,
+        "mean": 8.865803396101478,
+        "median": 8.997035026550293,
+        "down": 1,
+        "up": 555,
+        "unchanged": 0
+      },
+      "lpips_unedit_part": {
+        "n": 556,
+        "mean": -57.063172886792145,
+        "median": -50.29704549815506,
+        "down": 555,
+        "up": 1,
+        "unchanged": 0
+      },
+      "mse_unedit_part": {
+        "n": 556,
+        "mean": -27.9557199197982,
+        "median": -22.572620000573806,
+        "down": 555,
+        "up": 1,
+        "unchanged": 0
+      },
+      "ssim_unedit_part": {
+        "n": 556,
+        "mean": 5.553501801525089,
+        "median": 4.840138554573059,
+        "down": 4,
+        "up": 552,
+        "unchanged": 0
+      },
+      "clip_similarity_target_image": {
+        "n": 700,
+        "mean": -0.7299416528429303,
+        "median": -0.2693214416503906,
+        "down": 395,
+        "up": 161,
+        "unchanged": 144
+      },
+      "clip_similarity_target_image_edit_part": {
+        "n": 700,
+        "mean": -0.1380432346888951,
+        "median": 0.0,
+        "down": 317,
+        "up": 239,
+        "unchanged": 144
+      }
+    }
+  }
+}

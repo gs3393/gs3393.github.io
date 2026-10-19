@@ -1,0 +1,35 @@
+.mask-results {
+  overflow-x: auto;
+}
+
+.mask-results table {
+  width: 100%;
+}
+
+.mask-results td {
+  white-space: nowrap;
+}
+
+.mask-results .metric-change {
+  display: block;
+  font-size: .88em;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+main.content u {
+  text-underline-offset: .18em;
+}
+
+.save-policy {
+  overflow-x: auto;
+}
+
+.save-policy th:first-child,
+.save-policy td:first-child {
+  min-width: 9rem;
+}
+
+.save-policy td:not(:first-child) {
+  white-space: nowrap;
+}

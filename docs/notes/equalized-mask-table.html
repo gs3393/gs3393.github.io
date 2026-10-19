@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2026-09-28">
-<meta name="description" content="A follow-up to the background-preservation note: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit on 151 PIE-Bench images with SD3.5-medium, scored with no mask, with the ground-truth mask pasted back at every step, and with pixel compositing. Background columns compress into a narrow band, some differences remain, the average rank moves with the condition, and FlowAlign’s row in the paper looks like an output-normalization effect.">
+<meta name="description" content="Five image-editing methods on all 700 PIE-Bench images: how the same mask changes background preservation and CLIP-whole, and how FlowAlign’s output normalization affects its scores.">
 
-<title>Give Every Method the Same Mask – gs3393</title>
+<title>Does Masking Always Help? – gs3393</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -82,15 +82,45 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <style>html{ scroll-behavior: smooth; }</style>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
 
-<meta property="og:title" content="Give Every Method the Same Mask – gs3393">
-<meta property="og:description" content="A follow-up to the background-preservation note: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit on 151 PIE-Bench images with SD3.5-medium, scored with no mask, with the ground-truth mask pasted back at every step, and with pixel compositing. Background columns compress into a narrow band, some differences remain, the average rank moves with the condition, and FlowAlign’s row in the paper looks like an output-normalization effect.">
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<link rel="stylesheet" href="assets/equalized-mask-table/article.css">
+<meta property="og:title" content="Does Masking Always Help? – gs3393">
+<meta property="og:description" content="Five image-editing methods on all 700 PIE-Bench images: how the same mask changes background preservation and CLIP-whole, and how FlowAlign’s output normalization affects its scores.">
 <meta property="og:image" content="https://gs3393.github.io/assets/site/social-card.png">
 <meta property="og:site_name" content="gs3393">
 <meta property="og:image:height" content="630">
 <meta property="og:image:width" content="1200">
-<meta name="twitter:title" content="Give Every Method the Same Mask – gs3393">
-<meta name="twitter:description" content="A follow-up to the background-preservation note: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit on 151 PIE-Bench images with SD3.5-medium, scored with no mask, with the ground-truth mask pasted back at every step, and with pixel compositing. Background columns compress into a narrow band, some differences remain, the average rank moves with the condition, and FlowAlign’s row in the paper looks like an output-normalization effect.">
+<meta name="twitter:title" content="Does Masking Always Help? – gs3393">
+<meta name="twitter:description" content="Five image-editing methods on all 700 PIE-Bench images: how the same mask changes background preservation and CLIP-whole, and how FlowAlign’s output normalization affects its scores.">
 <meta name="twitter:image" content="https://gs3393.github.io/assets/site/social-card.png">
 <meta name="twitter:image-height" content="630">
 <meta name="twitter:image-width" content="1200">
@@ -149,15 +179,11 @@ ul.task-list li input[type="checkbox"] {
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#where-the-last-note-stopped" id="toc-where-the-last-note-stopped" class="nav-link active" data-scroll-target="#where-the-last-note-stopped">Where the last note stopped</a></li>
-  <li><a href="#what-the-same-mask-means-for-five-different-methods" id="toc-what-the-same-mask-means-for-five-different-methods" class="nav-link" data-scroll-target="#what-the-same-mask-means-for-five-different-methods">What “the same mask” means for five different methods</a></li>
-  <li><a href="#three-conditions-five-methods" id="toc-three-conditions-five-methods" class="nav-link" data-scroll-target="#three-conditions-five-methods">Three conditions, five methods</a></li>
-  <li><a href="#what-compresses-and-what-does-not" id="toc-what-compresses-and-what-does-not" class="nav-link" data-scroll-target="#what-compresses-and-what-does-not">What compresses, and what does not</a></li>
-  <li><a href="#the-ranking-depends-on-which-table-you-read" id="toc-the-ranking-depends-on-which-table-you-read" class="nav-link" data-scroll-target="#the-ranking-depends-on-which-table-you-read">The ranking depends on which table you read</a></li>
-  <li><a href="#what-the-alignment-buys-as-far-as-this-table-can-say" id="toc-what-the-alignment-buys-as-far-as-this-table-can-say" class="nav-link" data-scroll-target="#what-the-alignment-buys-as-far-as-this-table-can-say">What the alignment buys, as far as this table can say</a></li>
-  <li><a href="#one-baseline-row-that-does-not-look-like-the-method" id="toc-one-baseline-row-that-does-not-look-like-the-method" class="nav-link" data-scroll-target="#one-baseline-row-that-does-not-look-like-the-method">One baseline row that does not look like the method</a></li>
-  <li><a href="#how-to-read-a-table-like-this" id="toc-how-to-read-a-table-like-this" class="nav-link" data-scroll-target="#how-to-read-a-table-like-this">How to read a table like this</a></li>
-  <li><a href="#limits" id="toc-limits" class="nav-link" data-scroll-target="#limits">Limits</a></li>
+  <li><a href="#masks-in-training-free-t2i-image-editing" id="toc-masks-in-training-free-t2i-image-editing" class="nav-link active" data-scroll-target="#masks-in-training-free-t2i-image-editing">1. Masks in training-free T2I image editing</a></li>
+  <li><a href="#evaluation-setup" id="toc-evaluation-setup" class="nav-link" data-scroll-target="#evaluation-setup">2. Evaluation setup</a></li>
+  <li><a href="#score-changes" id="toc-score-changes" class="nav-link" data-scroll-target="#score-changes">3. Score changes</a></li>
+  <li><a href="#flowalign-per-image-normalization-lowered-background-scores" id="toc-flowalign-per-image-normalization-lowered-background-scores" class="nav-link" data-scroll-target="#flowalign-per-image-normalization-lowered-background-scores">4. FlowAlign: per-image normalization lowered background scores</a></li>
+  <li><a href="#data-and-references" id="toc-data-and-references" class="nav-link" data-scroll-target="#data-and-references">Data and references</a></li>
   </ul>
 </nav>
     </div>
@@ -167,18 +193,14 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
 <p class="post-kicker" data-type="Experiment"><a href="../notes.html">Experiment</a></p>
-<h1 class="title">Give Every Method the Same Mask</h1>
-<p class="subtitle lead">Five editing methods on PIE-Bench with the mask condition held fixed, and one baseline row that turned out to depend on a save path</p>
+<h1 class="title">Does Masking Always Help?</h1>
 </div>
 
-<div>
-  <div class="description">
-    A follow-up to the background-preservation note: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit on 151 PIE-Bench images with SD3.5-medium, scored with no mask, with the ground-truth mask pasted back at every step, and with pixel compositing. Background columns compress into a narrow band, some differences remain, the average rank moves with the condition, and FlowAlign’s row in the paper looks like an output-normalization effect.
-  </div>
-</div>
 
 <div class="post-meta">
   <span class="date">September 28, 2026</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="date-modified">Updated October 19, 2026</span>
   <ul class="post-topics" aria-label="Topics">
       <li class="topic">Editing</li>
       <li class="topic">Evaluation</li>
@@ -189,32 +211,132 @@ ul.task-list li input[type="checkbox"] {
 </header>
 
 
-<blockquote class="blockquote">
-<p>The previous note ended by asking for a table in which every method gets the same mask. This is that table: five methods, three mask conditions, 151 PIE-Bench images on SD3.5-medium. The background columns shrink to a narrow band, a few differences survive, and the average rank depends on which condition and which columns you read. Along the way, one baseline row in the paper turned out to match what the method’s official script does when it <em>saves</em> an image.</p>
-</blockquote>
-<p>Paper: Desong Yang and Mang Ye, <em>DirectEdit: Step-Level Accurate Inversion for Flow-Based Image Editing</em>, ICML 2026 — <a href="https://arxiv.org/abs/2605.02417">arXiv:2605.02417</a>. Benchmark: Ju et al., <em>PnPInversion</em> / PIE-Bench — <a href="https://arxiv.org/abs/2310.01506">arXiv:2310.01506</a>. Per-image results, code, figures and review records: <a href="https://github.com/gs3393/pie-bench-equalized-mask">gs3393/pie-bench-equalized-mask</a>.</p>
-<section id="where-the-last-note-stopped" class="level2">
-<h2 class="anchored" data-anchor-id="where-the-last-note-stopped">Where the last note stopped</h2>
-<p>The previous note argued that DirectEdit’s background-preservation score on PIE-Bench does not isolate its inversion contribution, because the method pastes the source latent back outside the edit mask. Holding the mask condition fixed across methods is a necessary control for comparing methods on that column; it is not, by itself, enough to isolate a component, which this note comes back to. I did not have that table. This note is that table.</p>
-<p>The scope is the same as before and worth stating before any number: SD3.5-medium at 512², a 151-image subset of PIE-Bench stratified across its ten edit types, one seed per method, and the benchmark’s ground-truth masks. Five methods: FTEdit, FlowEdit, FlowAlign, DNAEdit and DirectEdit — the five SD3.5 methods in DirectEdit’s Table 1, which lists them in six rows because DirectEdit appears with and without its mask. Three conditions each. About 3.5 GPU-hours of generation, counting the two DirectEdit runs carried over from the previous note and excluding evaluation and the auxiliary checks. Per-image results, the runner scripts, the subset ids and the figures are in a <a href="https://github.com/gs3393/pie-bench-equalized-mask">public repository</a>.</p>
+<section id="masks-in-training-free-t2i-image-editing" class="level2">
+<h2 class="anchored" data-anchor-id="masks-in-training-free-t2i-image-editing">1. Masks in training-free T2I image editing</h2>
+<p>Training-free T2I image editing (image editing hereafter) takes a source prompt describing the original image, a source image to edit, and a target prompt describing the desired result. It uses these inputs to generate a target image that reflects the target prompt, without training.</p>
+<p>In ordinary T2I inference, the task is to generate an image that matches the target prompt. In image editing, only the parts that differ between the source and target prompts should change; everything else should remain as it was in the source image. If I want to turn a lion into a tiger, but the zoo in the background also becomes a school, producing a tiger still misses the intended edit.</p>
+<p>This is why image-editing evaluation also asks how well the background was preserved. Background PSNR, LPIPS, MSE, and SSIM measure this. Here, the background means the area outside the region to be edited, and these metrics measure the image differences between the source and target in that area.</p>
+<p>Since inversion ODEs and FlowEdit, various approaches have tried to preserve the background, including methods that introduce masks. Using a mask is a fairly intuitive way to preserve it: specify the area to edit and keep the original outside it.</p>
+<p>PIE-Bench, a major evaluation benchmark, already provides ground-truth (GT) masks of the edit region. To keep comparisons fair, methods cannot simply use these GT masks and instead obtain pseudo masks. Some use an MLLM and a segmentation model to locate the region to modify; others use differences in activations obtained through CFG.</p>
+<p>Masking itself is not tied to a particular algorithm. The fact that one method uses a mask does not mean other methods cannot use one. This intuitive operation also translates into better scores. In the main quantitative result tables of papers that use masks, background PSNR, LPIPS, MSE, and SSIM are substantially better than those of methods without masks.</p>
+<p>Using a mask is not inherently unfair, provided it is not the GT mask. Yet masking that could also be applied to other algorithms is left out of earlier methods when they are compared. I think presenting these earlier algorithms as relatively worse than masked methods, simply because they were published earlier, reduces the value of the information readers get from the comparison.</p>
+<p>So in this post, I also apply masks to methods that originally did not use them and examine how their scores change.</p>
 </section>
-<section id="what-the-same-mask-means-for-five-different-methods" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-same-mask-means-for-five-different-methods">What “the same mask” means for five different methods</h2>
-<p>Each method carries a different variable through its loop, so “paste the source back” has to be defined per method. The rule I used: after each method’s own update step, replace the carried latent outside the mask with <em>the source trajectory’s latent at the same noise level</em>.</p>
-<ul>
-<li>DirectEdit, FTEdit and DNAEdit run in noise coordinates and keep a recorded inversion trajectory; they paste the recorded latent for that step.</li>
-<li>FlowEdit and FlowAlign carry a clean-coordinate latent that starts at the encoded source and accumulates the edit; they paste the encoded source itself.</li>
-</ul>
-<p>What this equalizes is the spatial constraint and its preprocessing — the same ground-truth mask, dilated by 3 pixels and downsampled to 64×64 the way DirectEdit’s code does it — not the intervention itself. Three methods restore their own inversion latent, two restore the encoded source, and each decodes through its own VAE path. Restoration is exact only where the processed latent mask is zero; dilation, bilinear downsampling and the decoder’s receptive field mean that pixels just outside the annotation are not copied verbatim. The columns are comparable across rows because every row is scored by the same evaluator on the same annotation, not because the five methods end at an identical background.</p>
-<p>The upstream code was not modified; each method’s loop was copied into a runner (DirectEdit’s is imported as-is) with one blending line added — and, because copying five codebases is never that clean, with a handful of other departures from the official scripts (resolution, dtype, a CFG-flag repair in one runner, per-image reseeding in three, the VAE encode mode, the output save path) that the report lists in full. These are adapted runs, not certified reproductions.</p>
-<p>Two more conditions bracket the intervention. <strong>No mask</strong> is each method as adapted, with no pasting. <strong>Pixel paste</strong> takes the no-mask output and composites it with the source in pixel space using the same mask the evaluator uses. That last one is not a method; it is a constructed control. Restoring the reference pixels outside the evaluation mask fixes its background scores by construction, and it says nothing about editing quality or how natural the boundary looks.</p>
+<section id="evaluation-setup" class="level2">
+<h2 class="anchored" data-anchor-id="evaluation-setup">2. Evaluation setup</h2>
+<section id="methods-and-data" class="level3">
+<h3 class="anchored" data-anchor-id="methods-and-data">Methods and data</h3>
+<p>I evaluated FTEdit, FlowEdit, FlowAlign, DNAEdit, and DirectEdit, the methods in the DirectEdit paper’s SD3.5 comparison. All used SD3.5-medium at 512×512 in fp16. I used the existing runners adapted from the official implementations for this setup, keeping each method’s hyperparameters the same with and without masking. Departures from the official runs are documented in the <a href="https://github.com/gs3393/pie-bench-equalized-mask#reproducing">runner code and reproduction notes</a>.</p>
+<p>The initial evaluation used 151 PIE-Bench images sampled across edit types. To check whether the CLIP-whole decrease observed there also appeared in the remaining images, I expanded it to <strong>all 700 PIE-Bench images</strong>. Five methods, each run with and without a mask, produced 7,000 output images. This gives 3,500 paired comparisons of masked and unmasked outputs for the same source, across 700 original images.</p>
 </section>
-<section id="three-conditions-five-methods" class="level2">
-<h2 class="anchored" data-anchor-id="three-conditions-five-methods">Three conditions, five methods</h2>
-<p>No mask:</p>
+<section id="which-mask-and-how-was-it-applied" class="level3">
+<h3 class="anchored" data-anchor-id="which-mask-and-how-was-it-applied">Which mask, and how was it applied?</h3>
+<p>To compare the preservation operation without differences in automatic mask estimation, I gave every method <strong>the same PIE-Bench GT edit-region mask</strong>. This experiment does not evaluate how accurately a method finds the edit region in practice.</p>
+<p>Applying a mask means <strong>pasting the source latent outside the mask immediately after each editing step’s update</strong>. A mask value of 1 keeps the edited latent; a value of 0 uses the source. The operation is applied element by element:</p>
+<p><span class="math display">\[
+z_{\mathrm{edit}} \leftarrow M \odot z_{\mathrm{edit}} + (1-M) \odot z_{\mathrm{source}}
+\]</span></p>
+<p><span class="math inline">\(M\)</span> is the edit-region mask, and <span class="math inline">\(\odot\)</span> denotes elementwise multiplication. Where the mask has a soft boundary, the two latents are mixed according to its value. This is the operation referred to as blending in this post.</p>
+<p>The methods carry different latents through their iterations, so I defined the source to paste as follows.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
+<col style="width: 30%">
+<col style="width: 30%">
+<col style="width: 40%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th>Source latent pasted at each step</th>
+<th style="text-align: right;">Seed</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FTEdit</td>
+<td>Source latent recorded during inversion at the corresponding timestep</td>
+<td style="text-align: right;">2024</td>
+</tr>
+<tr class="even">
+<td>FlowEdit</td>
+<td>VAE-encoded original image</td>
+<td style="text-align: right;">42</td>
+</tr>
+<tr class="odd">
+<td>FlowAlign</td>
+<td>VAE-encoded original image</td>
+<td style="text-align: right;">123</td>
+</tr>
+<tr class="even">
+<td>DNAEdit</td>
+<td>Source latent recorded during inversion at the corresponding timestep</td>
+<td style="text-align: right;">0</td>
+</tr>
+<tr class="odd">
+<td>DirectEdit</td>
+<td>Source latent recorded on the inversion/reconstruction path at the corresponding timestep</td>
+<td style="text-align: right;">2024</td>
+</tr>
+</tbody>
+</table>
+<p>FTEdit, DNAEdit, and DirectEdit use the source corresponding to the timestep. FlowEdit and FlowAlign use the same VAE-encoded source throughout the iterations. The no-mask condition omits only this pasting operation. Each method’s other mechanisms, including DirectEdit’s alignment and attention feature injection, remain enabled.</p>
+<p>Mask preprocessing follows DirectEdit’s code. I expanded the edit region of the 512×512 GT mask by 3 pixels around its boundary, then resized it to the 64×64 latent resolution with bilinear interpolation. Every method received the same mask and preprocessing.</p>
+<p>For <strong>144 of the 700 images, the GT mask covers the entire image</strong>. There is no background to paste back in these cases. For the remaining <strong>556 images, the mask covers only part of the image</strong>, and the source latent is pasted into the background outside it.</p>
+</section>
+<section id="metrics" class="level3">
+<h3 class="anchored" data-anchor-id="metrics">Metrics</h3>
+<p>I applied the original DirectEdit evaluator to all methods’ saved images. It extracts the edited 512×512 image on the right of each output file and compares it with the source image and target prompt.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>What it measures</th>
+<th>Better direction</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Background PSNR, LPIPS, MSE, SSIM</td>
+<td>Difference between source and output outside the GT edit region</td>
+<td>Higher PSNR and SSIM; lower LPIPS and MSE</td>
+</tr>
+<tr class="even">
+<td>Structure Distance</td>
+<td>Change in the relationships between spatial locations, measured through DINO feature similarities over the whole image</td>
+<td>Lower</td>
+</tr>
+<tr class="odd">
+<td>CLIP-whole</td>
+<td>Similarity between the whole output image and the full target prompt</td>
+<td>Higher</td>
+</tr>
+<tr class="even">
+<td>CLIP-edit</td>
+<td>Similarity between the output with only the GT edit region retained and the full target prompt</td>
+<td>Higher</td>
+</tr>
+</tbody>
+</table>
+<p>The background metrics zero the GT edit region in both images before scoring them. PSNR and MSE use the whole image size as their denominator, rather than the number of background pixels. Structure measures preservation of the overall structure rather than directly judging whether an edit was completed. CLIP-edit also compares an image with everything outside the region blacked out against the <strong>full</strong> target sentence; it is not scored against a sentence describing only that region.</p>
+<p>In the tables, Structure and LPIPS are scaled by <span class="math inline">\(10^3\)</span>, MSE by <span class="math inline">\(10^4\)</span>, and SSIM by <span class="math inline">\(10^2\)</span>. The background metrics are averaged over the 556 images with a background; Structure and both CLIP metrics use all 700 images.</p>
+<p>Each method used one fixed seed per image. FTEdit and DirectEdit outputs were generated on an A6000; FlowEdit, FlowAlign, and DNAEdit outputs on an H100. Within each method, the masked and unmasked conditions used the same hardware and settings. All scores were computed on an A6000. The experiment did not cover other seeds, backbones, or automatic masks.</p>
+</section>
+</section>
+<section id="score-changes" class="level2">
+<h2 class="anchored" data-anchor-id="score-changes">3. Score changes</h2>
+<section id="before-and-after-masking" class="level3">
+<h3 class="anchored" data-anchor-id="before-and-after-masking">Before and after masking</h3>
+<p>Within each table, the best value for each metric is <strong>bold</strong> and the second best is <u>underlined</u>, following the direction of its arrow. Parentheses in the masked table show <strong>masked − unmasked</strong>, calculated before rounding. <span style="color: #15803d">Increases are green</span> and <span style="color: #b91c1c">decreases are red</span>.</p>
+<p><strong>Without masking</strong></p>
+<div class="mask-results">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
 <col style="width: 12%">
 <col style="width: 12%">
 <col style="width: 12%">
@@ -226,72 +348,74 @@ ul.task-list li input[type="checkbox"] {
 <thead>
 <tr class="header">
 <th>Method</th>
-<th>Structure ↓</th>
-<th>bg-PSNR ↑</th>
-<th>bg-LPIPS ↓</th>
-<th>bg-MSE ↓</th>
-<th>bg-SSIM ↑</th>
-<th>CLIP-whole ↑</th>
-<th>CLIP-edit ↑</th>
+<th style="text-align: right;">Structure ↓</th>
+<th style="text-align: right;">bg-PSNR ↑</th>
+<th style="text-align: right;">bg-LPIPS ↓</th>
+<th style="text-align: right;">bg-MSE ↓</th>
+<th style="text-align: right;">bg-SSIM ↑</th>
+<th style="text-align: right;">CLIP-whole ↑</th>
+<th style="text-align: right;">CLIP-edit ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>FTEdit</td>
-<td>21.49</td>
-<td>23.61</td>
-<td>88.07</td>
-<td>59.58</td>
-<td>87.16</td>
-<td>25.14</td>
-<td>21.76</td>
+<td style="text-align: right;">20.97</td>
+<td style="text-align: right;">23.50</td>
+<td style="text-align: right;">90.04</td>
+<td style="text-align: right;">61.65</td>
+<td style="text-align: right;">86.34</td>
+<td style="text-align: right;">25.21</td>
+<td style="text-align: right;">21.79</td>
 </tr>
 <tr class="even">
 <td>FlowEdit</td>
-<td>24.48</td>
-<td>22.86</td>
-<td>90.80</td>
-<td>74.75</td>
-<td>85.73</td>
-<td><strong>27.52</strong></td>
-<td><strong>24.02</strong></td>
+<td style="text-align: right;">23.33</td>
+<td style="text-align: right;">23.26</td>
+<td style="text-align: right;">88.97</td>
+<td style="text-align: right;">69.88</td>
+<td style="text-align: right;">85.62</td>
+<td style="text-align: right;"><strong>27.70</strong></td>
+<td style="text-align: right;"><strong>24.05</strong></td>
 </tr>
 <tr class="odd">
 <td>FlowAlign</td>
-<td><strong>13.26</strong></td>
-<td><strong>27.32</strong></td>
-<td><strong>45.44</strong></td>
-<td><strong>26.85</strong></td>
-<td><strong>91.30</strong></td>
-<td>26.66</td>
-<td>22.67</td>
+<td style="text-align: right;"><strong>13.58</strong></td>
+<td style="text-align: right;"><strong>27.40</strong></td>
+<td style="text-align: right;"><strong>48.98</strong></td>
+<td style="text-align: right;"><strong>29.35</strong></td>
+<td style="text-align: right;"><strong>90.52</strong></td>
+<td style="text-align: right;"><u>26.65</u></td>
+<td style="text-align: right;">22.78</td>
 </tr>
 <tr class="even">
 <td>DNAEdit</td>
-<td>14.25</td>
-<td>26.48</td>
-<td>71.39</td>
-<td>33.05</td>
-<td>89.91</td>
-<td>26.45</td>
-<td>22.94</td>
+<td style="text-align: right;"><u>14.66</u></td>
+<td style="text-align: right;"><u>26.58</u></td>
+<td style="text-align: right;">74.99</td>
+<td style="text-align: right;"><u>33.39</u></td>
+<td style="text-align: right;"><u>89.44</u></td>
+<td style="text-align: right;">26.56</td>
+<td style="text-align: right;"><u>23.09</u></td>
 </tr>
 <tr class="odd">
 <td>DirectEdit</td>
-<td>17.22</td>
-<td>26.13</td>
-<td>68.24</td>
-<td>33.82</td>
-<td>88.84</td>
-<td>26.19</td>
-<td>22.53</td>
+<td style="text-align: right;">15.20</td>
+<td style="text-align: right;">26.18</td>
+<td style="text-align: right;"><u>67.38</u></td>
+<td style="text-align: right;">34.04</td>
+<td style="text-align: right;">88.75</td>
+<td style="text-align: right;">26.14</td>
+<td style="text-align: right;">22.51</td>
 </tr>
 </tbody>
 </table>
-<p>Everybody pastes the ground-truth mask:</p>
+</div>
+<p><strong>GT mask applied at every step</strong></p>
+<div class="mask-results">
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
+<col style="width: 9%">
 <col style="width: 12%">
 <col style="width: 12%">
 <col style="width: 12%">
@@ -303,178 +427,208 @@ ul.task-list li input[type="checkbox"] {
 <thead>
 <tr class="header">
 <th>Method</th>
-<th>Structure ↓</th>
-<th>bg-PSNR ↑</th>
-<th>bg-LPIPS ↓</th>
-<th>bg-MSE ↓</th>
-<th>bg-SSIM ↑</th>
-<th>CLIP-whole ↑</th>
-<th>CLIP-edit ↑</th>
+<th style="text-align: right;">Structure ↓</th>
+<th style="text-align: right;">bg-PSNR ↑</th>
+<th style="text-align: right;">bg-LPIPS ↓</th>
+<th style="text-align: right;">bg-MSE ↓</th>
+<th style="text-align: right;">bg-SSIM ↑</th>
+<th style="text-align: right;">CLIP-whole ↑</th>
+<th style="text-align: right;">CLIP-edit ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
 <td>FTEdit</td>
-<td>9.98</td>
-<td>34.85</td>
-<td>10.50</td>
-<td>5.69</td>
-<td><strong>95.06</strong></td>
-<td>24.71</td>
-<td>21.77</td>
+<td style="text-align: right;">9.36 <span class="metric-change metric-change-down" style="color: #b91c1c">(−11.61)</span></td>
+<td style="text-align: right;"><u>34.86</u> <span class="metric-change metric-change-up" style="color: #15803d">(+11.37)</span></td>
+<td style="text-align: right;"><u>10.56</u> <span class="metric-change metric-change-down" style="color: #b91c1c">(−79.48)</span></td>
+<td style="text-align: right;"><u>6.26</u> <span class="metric-change metric-change-down" style="color: #b91c1c">(−55.39)</span></td>
+<td style="text-align: right;"><strong>94.56</strong> <span class="metric-change metric-change-up" style="color: #15803d">(+8.22)</span></td>
+<td style="text-align: right;">24.68 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.53)</span></td>
+<td style="text-align: right;">21.64 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.15)</span></td>
 </tr>
 <tr class="even">
 <td>FlowEdit</td>
-<td>14.26</td>
-<td>33.58</td>
-<td>12.48</td>
-<td>6.83</td>
-<td>94.57</td>
-<td><strong>26.63</strong></td>
-<td><strong>23.94</strong></td>
+<td style="text-align: right;">13.39 <span class="metric-change metric-change-down" style="color: #b91c1c">(−9.93)</span></td>
+<td style="text-align: right;">33.88 <span class="metric-change metric-change-up" style="color: #15803d">(+10.62)</span></td>
+<td style="text-align: right;">12.03 <span class="metric-change metric-change-down" style="color: #b91c1c">(−76.94)</span></td>
+<td style="text-align: right;">7.18 <span class="metric-change metric-change-down" style="color: #b91c1c">(−62.70)</span></td>
+<td style="text-align: right;">94.17 <span class="metric-change metric-change-up" style="color: #15803d">(+8.55)</span></td>
+<td style="text-align: right;"><strong>26.84</strong> <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.86)</span></td>
+<td style="text-align: right;"><strong>24.03</strong> <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.03)</span></td>
 </tr>
 <tr class="odd">
 <td>FlowAlign</td>
-<td>9.03</td>
-<td>34.77</td>
-<td>10.64</td>
-<td>5.71</td>
-<td>94.79</td>
-<td>26.36</td>
-<td>22.96</td>
+<td style="text-align: right;">8.96 <span class="metric-change metric-change-down" style="color: #b91c1c">(−4.61)</span></td>
+<td style="text-align: right;">34.76 <span class="metric-change metric-change-up" style="color: #15803d">(+7.36)</span></td>
+<td style="text-align: right;">10.91 <span class="metric-change metric-change-down" style="color: #b91c1c">(−38.07)</span></td>
+<td style="text-align: right;">6.36 <span class="metric-change metric-change-down" style="color: #b91c1c">(−23.00)</span></td>
+<td style="text-align: right;">94.33 <span class="metric-change metric-change-up" style="color: #15803d">(+3.81)</span></td>
+<td style="text-align: right;"><u>26.48</u> <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.18)</span></td>
+<td style="text-align: right;"><u>23.08</u> <span class="metric-change metric-change-up" style="color: #15803d">(+0.30)</span></td>
 </tr>
 <tr class="even">
 <td>DNAEdit</td>
-<td><strong>7.72</strong></td>
-<td>34.72</td>
-<td>10.60</td>
-<td>5.72</td>
-<td>94.85</td>
-<td>25.79</td>
-<td>22.80</td>
+<td style="text-align: right;"><u>7.66</u> <span class="metric-change metric-change-down" style="color: #b91c1c">(−7.00)</span></td>
+<td style="text-align: right;">34.81 <span class="metric-change metric-change-up" style="color: #15803d">(+8.23)</span></td>
+<td style="text-align: right;">10.69 <span class="metric-change metric-change-down" style="color: #b91c1c">(−64.30)</span></td>
+<td style="text-align: right;">6.28 <span class="metric-change metric-change-down" style="color: #b91c1c">(−27.11)</span></td>
+<td style="text-align: right;"><u>94.36</u> <span class="metric-change metric-change-up" style="color: #15803d">(+4.92)</span></td>
+<td style="text-align: right;">25.91 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.65)</span></td>
+<td style="text-align: right;">22.98 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.11)</span></td>
 </tr>
 <tr class="odd">
 <td>DirectEdit</td>
-<td>8.73</td>
-<td><strong>35.01</strong></td>
-<td><strong>10.16</strong></td>
-<td><strong>5.49</strong></td>
-<td>94.70</td>
-<td>25.42</td>
-<td>22.39</td>
-</tr>
-<tr class="even">
-<td>no-edit reference</td>
-<td>0.55</td>
-<td>35.77</td>
-<td>9.28</td>
-<td>5.10</td>
-<td>94.94</td>
-<td>23.47</td>
-<td>20.23</td>
+<td style="text-align: right;"><strong>7.23</strong> <span class="metric-change metric-change-down" style="color: #b91c1c">(−7.97)</span></td>
+<td style="text-align: right;"><strong>35.05</strong> <span class="metric-change metric-change-up" style="color: #15803d">(+8.87)</span></td>
+<td style="text-align: right;"><strong>10.32</strong> <span class="metric-change metric-change-down" style="color: #b91c1c">(−57.06)</span></td>
+<td style="text-align: right;"><strong>6.09</strong> <span class="metric-change metric-change-down" style="color: #b91c1c">(−27.96)</span></td>
+<td style="text-align: right;">94.30 <span class="metric-change metric-change-up" style="color: #15803d">(+5.55)</span></td>
+<td style="text-align: right;">25.41 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.73)</span></td>
+<td style="text-align: right;">22.37 <span class="metric-change metric-change-down" style="color: #b91c1c">(−0.14)</span></td>
 </tr>
 </tbody>
 </table>
-<p>What the columns measure matters for everything that follows. Structure Distance is the mean squared difference between DINO self-similarity matrices of the whole source and the whole edited image. The four background metrics zero the annotated edit region in both images and then score the whole frame, so PSNR and MSE keep the whole-frame denominator, which is why their absolute values run high. CLIP-whole scores the target prompt against the whole edited image; CLIP-edit scores it against the edited image with the pixels outside the annotation zeroed — the edited region without its real surround, but including whatever the method left inside the annotation near the boundary. Scales follow the paper’s tables: Structure Distance and LPIPS ×10³, MSE ×10⁴, SSIM ×10². Background columns average the 120 images whose annotation leaves a background; the rest use all 151. The no-edit reference is the source encoded and decoded through DirectEdit’s VAE path, scored by the same script — a reference, not a bound; FTEdit’s SSIM lands above it.</p>
-<p>Pixel paste makes every background column identical across the five methods to the last decimal (PSNR infinite, LPIPS and MSE zero, SSIM 99.998), leaves CLIP-edit exactly where the no-mask row had it, and orders Structure Distance as DNAEdit 7.89, FlowAlign 9.22, DirectEdit 9.86, FTEdit 10.44, FlowEdit 14.11.</p>
-</section>
-<section id="what-compresses-and-what-does-not" class="level2">
-<h2 class="anchored" data-anchor-id="what-compresses-and-what-does-not">What compresses, and what does not</h2>
-<p>Between the no-mask and GT-mask tables, the spread of mean background PSNR across methods goes from 4.46 dB to 1.43 dB: four methods lie within 0.29 dB of one another, and FlowEdit sits 1.14–1.43 dB below those four. The other three background columns narrow on their own scales — LPIPS from a 45-point spread to 2.3, MSE from 48 to 1.3, SSIM from 5.6 to 0.5. Every method closes between 83% and 102% of its own distance to the no-edit reference on those four columns.</p>
-<p>Compression is not erasure. Some pairwise differences survive an image-paired bootstrap: DirectEdit’s background PSNR is 0.29 dB above DNAEdit’s with a 95% interval of [+0.13, +0.46], and it is 1.43 dB above FlowEdit’s. But the same comparison that was +2.52 dB against FTEdit without masks is +0.17 dB with them, interval crossing zero; and the DirectEdit–DNAEdit difference changes sign, from −0.35 dB without masks to +0.29 dB with them. These intervals are exploratory — pointwise, uncorrected for multiplicity, one seed — so read them as “detectable here,” not as settled, and not as a statement about whether the difference is visible.</p>
-<p>The three non-background columns keep between-method variation, and they shrink less, proportionally, than the four background columns: the spread across methods falls by about 42% for Structure Distance (11.2 to 6.5), about 19% for CLIP-whole (2.38 to 1.92), and about 4% for CLIP-edit (2.26 to 2.17). Differences on these columns are not comparable in size with one another or with the background columns. Averaged across all 151 images, pasting the mask changes CLIP-edit by between −0.15 (DNAEdit) and +0.29 (FlowAlign); individual images can lose five or six points, so this is a statement about means. Figure 1 is the largest single CLIP-edit decrease in the set, from 21.1 to 15.0, between FlowAlign runs without and with per-step blending. The two are separate generations, not one edit clipped by a mask: the masked run keeps more of the toy and renders the cloud differently. Which of those changes moved the score, the comparison does not isolate — CLIP-edit sees only the pixels inside the annotation in both conditions.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="assets/equalized-mask-table/fig1-clip-drop.png" class="img-fluid figure-img" alt="Four panels: a toy figure on a table; the same image with the table region tinted red; FlowAlign's edit placing the toy on a cloud without mask blending; the edit with mask blending, where more of the toy is preserved and the cloud is rendered differently."></p>
-<figcaption>Figure 1. Source, ground-truth mask, and FlowAlign without and with per-step GT-mask blending. CLIP-edit falls from 21.1 to 15.0; the two right-hand panels are separate generation conditions, not a pixel crop of one edit.</figcaption>
-</figure>
 </div>
-<p>Pasting also does things the averages hide. Figure 2 is a case where Structure Distance rose after the paste, from 7.9 to 12.2, while background PSNR reached 38.3 dB. The masked run preserves the figurine, which the unmasked run had distorted, but renders the cucumber differently, with a straight edge near the mask boundary. Which change drives the higher Structure Distance, the panels do not say. Structure Distance is not an editing-success score either: the no-edit reference — a VAE round-trip of the source, no edit at all — has the lowest mean of any condition, 0.55.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="assets/equalized-mask-table/fig2-seam.png" class="img-fluid figure-img" alt="Three panels: a figurine on a white table with the table region tinted red; FlowAlign's unmasked edit adding a cucumber and distorting the figurine; the masked edit preserving the figurine with a differently rendered cucumber and a straight edge near the mask boundary."></p>
-<figcaption>Figure 2. FlowAlign without and with per-step GT-mask blending on an edit that adds a cucumber. Structure Distance 7.9 → 12.2; background PSNR 38.3 dB in the masked run.</figcaption>
-</figure>
-</div>
+<p><strong>All five methods improved on the four background metrics and mean Structure Distance.</strong> Background PSNR rose by 11.37 dB for FTEdit, 10.62 dB for FlowEdit, 7.36 dB for FlowAlign, 8.23 dB for DNAEdit, and 8.87 dB for DirectEdit. FTEdit and FlowEdit, which originally did not use masks, both gained more than 10 dB from adding the same preservation operation.</p>
+<p>The spread in mean background PSNR across methods narrowed from 4.15 dB without masking to 1.17 dB with it. Four methods, excluding FlowEdit, fell within 34.76–35.05 dB. Forcing the background to stay close to the source had a clear effect.</p>
+<p>But the scores did not all improve together. Mean CLIP-whole fell for all five methods, with FlowAlign behaving differently from the other four in the distributions and confidence intervals below. CLIP-edit did not improve uniformly either. Better background preservation and changes in similarity to the target sentence need to be examined separately.</p>
 </section>
-<section id="the-ranking-depends-on-which-table-you-read" class="level2">
-<h2 class="anchored" data-anchor-id="the-ranking-depends-on-which-table-you-read">The ranking depends on which table you read</h2>
-<p>DirectEdit’s Table 1 summarizes each method with an average of its per-metric ranks. With ties averaged, here is how the five methods order under each condition, alongside the paper’s own SD3.5 rows for these five methods ranked the same way (its no-mask DirectEdit row left out):</p>
+<section id="how-much-did-clip-whole-fall" class="level3">
+<h3 class="anchored" data-anchor-id="how-much-did-clip-whole-fall">How much did CLIP-whole fall?</h3>
+<p>The change is <strong>masked score − unmasked score</strong> for the same source image.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
-<col style="width: 16%">
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
 </colgroup>
 <thead>
 <tr class="header">
-<th>Table</th>
-<th>1st</th>
-<th>2nd</th>
-<th>3rd</th>
-<th>4th</th>
-<th>5th</th>
+<th>Method</th>
+<th style="text-align: right;">Mean change, all 700</th>
+<th style="text-align: right;">Mean change, additional 549</th>
+<th style="text-align: right;">Down / up / unchanged, all 700</th>
+<th style="text-align: right;">Percentage down among the 556 images whose masks cover only part of the image</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>Paper, Table 1 SD3.5 rows for the five methods (only DirectEdit masked)</td>
-<td>DirectEdit 1.50</td>
-<td>DNAEdit 2.57</td>
-<td>FlowAlign 3.21</td>
-<td>FlowEdit 3.71</td>
-<td>FTEdit 4.00</td>
+<td>FTEdit</td>
+<td style="text-align: right;">−0.531</td>
+<td style="text-align: right;">−0.557</td>
+<td style="text-align: right;">368 / 188 / 144</td>
+<td style="text-align: right;">66.2%</td>
 </tr>
 <tr class="even">
-<td>Nobody pastes</td>
-<td>FlowAlign 1.43</td>
-<td>DNAEdit 2.29</td>
-<td>DirectEdit 3.14</td>
-<td>FlowEdit 3.86</td>
-<td>FTEdit 4.29</td>
+<td>FlowEdit</td>
+<td style="text-align: right;">−0.858</td>
+<td style="text-align: right;">−0.863</td>
+<td style="text-align: right;">389 / 167 / 144</td>
+<td style="text-align: right;">70.0%</td>
 </tr>
 <tr class="odd">
-<td>Everybody pastes the GT mask</td>
-<td>DirectEdit 2.43</td>
-<td>FlowAlign · DNAEdit 2.86</td>
-<td>—</td>
-<td>FTEdit 3.00</td>
-<td>FlowEdit 3.86</td>
+<td>FlowAlign</td>
+<td style="text-align: right;">−0.177</td>
+<td style="text-align: right;">−0.151</td>
+<td style="text-align: right;">297 / 258 / 145</td>
+<td style="text-align: right;">53.4%</td>
 </tr>
 <tr class="even">
-<td>GT mask, background columns removed</td>
-<td>FlowAlign · DNAEdit · FlowEdit 2.33</td>
-<td>—</td>
-<td>—</td>
-<td>DirectEdit 3.33</td>
-<td>FTEdit 4.67</td>
+<td>DNAEdit</td>
+<td style="text-align: right;">−0.646</td>
+<td style="text-align: right;">−0.639</td>
+<td style="text-align: right;">387 / 169 / 144</td>
+<td style="text-align: right;">69.6%</td>
 </tr>
 <tr class="odd">
-<td>Pixel paste</td>
-<td>DNAEdit 2.57</td>
-<td>FlowEdit · FlowAlign 2.71</td>
-<td>—</td>
-<td>DirectEdit 3.29</td>
-<td>FTEdit 3.71</td>
+<td>DirectEdit</td>
+<td style="text-align: right;">−0.730</td>
+<td style="text-align: right;">−0.717</td>
+<td style="text-align: right;">395 / 161 / 144</td>
+<td style="text-align: right;">71.0%</td>
 </tr>
 </tbody>
 </table>
-<p>On this subset DirectEdit ranks third without masking and first under GT-mask blending, 0.43 mean-rank points ahead of the tied runners-up. It ranks fourth when the four background metrics are left out of the GT-mask ranking, and fourth again in the separate pixel-compositing condition — which changes the evaluated images, Structure and CLIP-whole included, as well as tying the background columns. That is a statement about sensitivity: the order depends on the mask condition and on how much weight the background columns carry. It is not a finding about <em>why</em> the paper’s table orders the way it does — the paper used 700 images, MLLM-derived masks and the authors’ own runs, and this experiment does not reproduce that setup. The earlier draft of this note said more than that, and an external audit made me take it back.</p>
+<p>Among the <strong>556 images whose masks cover only part of the image</strong>, <strong>66.2–71.0%</strong> received a lower CLIP-whole score with masking in FTEdit, FlowEdit, DNAEdit, and DirectEdit. All four methods also showed a mean decrease on the remaining 549 images outside the initial 151.</p>
+<p>FlowAlign had 297 decreases and 258 increases, a more even split. Its mean change of −0.177 points was also smaller than those of the other four methods.</p>
+<p>The 99.5% confidence intervals, calculated by bootstrapping the per-image changes 20,000 times, were entirely below zero for those four methods. FlowAlign’s interval, [−0.383, +0.027], included zero.</p>
 </section>
-<section id="what-the-alignment-buys-as-far-as-this-table-can-say" class="level2">
-<h2 class="anchored" data-anchor-id="what-the-alignment-buys-as-far-as-this-table-can-say">What the alignment buys, as far as this table can say</h2>
-<p>The honest answer is that this table cannot isolate it. FTEdit is DirectEdit’s code ancestor and the natural comparison, but it is not “DirectEdit minus alignment”: the two differ in inversion scheme, in the AdaLN and attention injection ratios, in how the source branch is guided. With the mask equalized, DirectEdit’s LPIPS, MSE and CLIP-edit are better than FTEdit’s by amounts whose intervals exclude zero (−0.34, −0.20 and +0.62 on the paper’s scales), its PSNR is not distinguishable (+0.17 dB), and its SSIM is worse (−0.35). Its mean background PSNR is 0.29 dB above DNAEdit’s and 0.24 dB above FlowAlign’s — the second interval includes zero — and its CLIP scores are below both. The comparison with FlowEdit runs the same way, only larger: +1.43 dB of PSNR, −1.55 points of CLIP-edit. These are comparisons between configured systems. Attributing any of them to alignment would take a component ablation in this SD3.5 setup with everything else held fixed; the paper’s FLUX ablation illustrates that design but does not estimate these differences.</p>
-</section>
-<section id="one-baseline-row-that-does-not-look-like-the-method" class="level2">
-<h2 class="anchored" data-anchor-id="one-baseline-row-that-does-not-look-like-the-method">One baseline row that does not look like the method</h2>
-<p>While building the no-mask table, agreement with the paper’s SD3.5 rows varied by method and by metric: FTEdit and DirectEdit were close on most columns, DNAEdit and FlowEdit were off by more on some. FlowAlign stood out. The paper reports Structure 33.49 and background PSNR 24.06 for it — a Structure Distance worse than FlowEdit’s 23.13, which is odd for a method whose own paper claims better preservation than FlowEdit. Running FlowAlign’s released code on my subset gave 13.26 and 27.32, the best no-mask preservation of the five.</p>
-<p>The largest single factor I found is how the official script <em>saves</em> its output. <code>run_edit.py</code> writes the result with torchvision’s <code>save_image(..., normalize=True)</code>, which, absent an explicit range, rescales each image by its own minimum and maximum. That is a fine default for looking at pictures and a bad one for feeding PNGs to a PSNR evaluator: it changes the saved pixels, inside and outside the edit, while leaving the generation itself untouched. I re-ran the same 151 inputs with the same seeds and settings, changing only the runner’s output conversion to per-image min/max — the policy FlowAlign’s script selects; byte-for-byte equivalence to its saver was not tested — and scored the result:</p>
+<section id="how-much-of-the-mean-decrease-came-from-large-drops" class="level3">
+<h3 class="anchored" data-anchor-id="how-much-of-the-mean-decrease-came-from-large-drops">How much of the mean decrease came from large drops?</h3>
+<p><strong>Most of the mean decrease came from cases where CLIP-whole fell by more than 2 points.</strong> Depending on the method, these occurred in 76–143 of the 700 images. Removing them sharply reduced the mean decrease for the remaining images.</p>
+<p>In the table, <em>gross loss</em> is the sum of the decreases across images whose scores fell. <em>Net loss</em> subtracts the gains from images whose scores rose.</p>
 <table class="caption-top table">
 <colgroup>
-<col style="width: 12%">
+<col style="width: 15%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+<col style="width: 21%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Method</th>
+<th style="text-align: right;">Drops &gt;2 points, out of 700</th>
+<th style="text-align: right;">Share of gross loss</th>
+<th style="text-align: right;">Share of net loss</th>
+<th style="text-align: right;">Mean change after excluding these cases</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>FTEdit</td>
+<td style="text-align: right;">86</td>
+<td style="text-align: right;">58.6%</td>
+<td style="text-align: right;">85.6%</td>
+<td style="text-align: right;">−0.087</td>
+</tr>
+<tr class="even">
+<td>FlowEdit</td>
+<td style="text-align: right;">143</td>
+<td style="text-align: right;">73.3%</td>
+<td style="text-align: right;">91.1%</td>
+<td style="text-align: right;">−0.096</td>
+</tr>
+<tr class="odd">
+<td>FlowAlign</td>
+<td style="text-align: right;">76</td>
+<td style="text-align: right;">62.4%</td>
+<td style="text-align: right;">238.7%</td>
+<td style="text-align: right;">+0.275</td>
+</tr>
+<tr class="even">
+<td>DNAEdit</td>
+<td style="text-align: right;">99</td>
+<td style="text-align: right;">60.8%</td>
+<td style="text-align: right;">82.9%</td>
+<td style="text-align: right;">−0.129</td>
+</tr>
+<tr class="odd">
+<td>DirectEdit</td>
+<td style="text-align: right;">113</td>
+<td style="text-align: right;">63.0%</td>
+<td style="text-align: right;">81.2%</td>
+<td style="text-align: right;">−0.163</td>
+</tr>
+</tbody>
+</table>
+<p>For FTEdit, FlowEdit, DNAEdit, and DirectEdit, <strong>drops greater than 2 points accounted for 81.2–91.1% of the net loss</strong>. Without these cases, the mean decrease was 0.087–0.163 points, much smaller than the full-set decrease of 0.531–0.858 points.</p>
+<p>For FlowAlign, excluding the 76 drops greater than 2 points left a mean change of <strong>+0.275 points</strong>. Among the remaining images, gains outweighed losses. These gains offset the large drops, leaving an overall mean change of −0.177 points. This is why the large drops amount to 238.7% of the net loss.</p>
+<p>The same pattern appeared across all 3,500 method–image pairs. <strong>The 517 pairs with drops greater than 2 points (14.8%) accounted for 64.2% of gross loss and 94.8% of net loss.</strong> Excluding them reduced the mean change from <strong>−0.588 to −0.036 points</strong>.</p>
+<p>The five largest drops per method, 25 pairs in total, accounted for 7.3% of gross loss and 10.7% of net loss. <strong>The overall mean decrease was driven by 517 large drops across 256 original images.</strong></p>
+</section>
+</section>
+<section id="flowalign-per-image-normalization-lowered-background-scores" class="level2">
+<h2 class="anchored" data-anchor-id="flowalign-per-image-normalization-lowered-background-scores">4. FlowAlign: per-image normalization lowered background scores</h2>
+<p>FlowAlign’s official <code>run_edit.py</code> saves outputs with <code>save_image(..., normalize=True)</code>. With no range specified, it maps each image’s minimum to 0 and maximum to 1. This conversion applies to the whole image, so background pixels preserved during editing are transformed again when the image is saved.</p>
+<p>To measure the effect of the save policy, I reran <strong>the original 151 images without masking</strong>, using the same seeds and generation settings. One condition used a fixed input range of <span class="math inline">\([-1,1]\)</span> for every image; the other normalized by each image’s minimum and maximum, as the official script does. Background metrics are averaged over the 120 images with a background.</p>
+<div class="save-policy">
+<table class="caption-top table">
+<colgroup>
+<col style="width: 9%">
 <col style="width: 12%">
 <col style="width: 12%">
 <col style="width: 12%">
@@ -485,79 +639,51 @@ ul.task-list li input[type="checkbox"] {
 </colgroup>
 <thead>
 <tr class="header">
-<th>FlowAlign, 151 images</th>
-<th>Structure ↓</th>
-<th>bg-PSNR ↑</th>
-<th>bg-LPIPS ↓</th>
-<th>bg-MSE ↓</th>
-<th>bg-SSIM ↑</th>
-<th>CLIP-whole ↑</th>
-<th>CLIP-edit ↑</th>
+<th>FlowAlign save policy</th>
+<th style="text-align: right;">Structure ↓</th>
+<th style="text-align: right;">bg-PSNR ↑</th>
+<th style="text-align: right;">bg-LPIPS ↓</th>
+<th style="text-align: right;">bg-MSE ↓</th>
+<th style="text-align: right;">bg-SSIM ↑</th>
+<th style="text-align: right;">CLIP-whole ↑</th>
+<th style="text-align: right;">CLIP-edit ↑</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td>saved with a fixed [−1, 1] range</td>
-<td>13.26</td>
-<td>27.32</td>
-<td>45.44</td>
-<td>26.85</td>
-<td>91.30</td>
-<td>26.66</td>
-<td>22.67</td>
+<td>Fixed input range <span class="math inline">\([-1,1]\)</span></td>
+<td style="text-align: right;">13.26</td>
+<td style="text-align: right;">27.32</td>
+<td style="text-align: right;">45.44</td>
+<td style="text-align: right;">26.85</td>
+<td style="text-align: right;">91.30</td>
+<td style="text-align: right;">26.66</td>
+<td style="text-align: right;">22.67</td>
 </tr>
 <tr class="even">
-<td>saved with per-image min/max, as the official script does</td>
-<td>36.11</td>
-<td>24.81</td>
-<td>53.39</td>
-<td>45.66</td>
-<td>88.47</td>
-<td>26.60</td>
-<td>22.59</td>
-</tr>
-<tr class="odd">
-<td>the paper’s row (700 images)</td>
-<td>33.49</td>
-<td>24.06</td>
-<td>68.91</td>
-<td>54.29</td>
-<td>86.33</td>
-<td>25.64</td>
-<td>22.40</td>
+<td>Per-image min/max, the official save policy</td>
+<td style="text-align: right;">36.11</td>
+<td style="text-align: right;">24.81</td>
+<td style="text-align: right;">53.39</td>
+<td style="text-align: right;">45.66</td>
+<td style="text-align: right;">88.47</td>
+<td style="text-align: right;">26.60</td>
+<td style="text-align: right;">22.59</td>
 </tr>
 </tbody>
 </table>
-<p>Structure Distance rises from 13.3 to 36.1 against the paper’s 33.5; PSNR falls from 27.3 to 24.8 dB against 24.1; SSIM from 91.3 to 88.5 against 86.3. MSE moves about two thirds of the way toward the paper’s value and LPIPS about a third. The CLIP scores move a little — CLIP-whole from 26.66 to 26.60 and CLIP-edit from 22.67 to 22.59 on average, with individual images moving by up to about three points either way — because the saved pixels inside the edit change too. Figure 3 shows the effect on one image: the black background becomes dark grey and the mouse gets brighter, and background PSNR drops from 32.7 to 17.6 dB for an identical generation.</p>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="assets/equalized-mask-table/fig3-flowalign-save.png" class="img-fluid figure-img" alt="Three panels: a white mouse on a black background; FlowAlign's purple-mouse edit saved with a fixed range, black background preserved; the same edit saved with per-image min/max normalization, background turned dark grey and the mouse brighter."></p>
-<figcaption>Figure 3. One FlowAlign generation converted two ways. Left: source. Middle: saved with a fixed range. Right: saved with per-image min/max normalization, the policy the official script selects.</figcaption>
-</figure>
 </div>
-<p>In a 20-image check, generating at the script’s default 1024² and downsampling before scoring did not reproduce the paper’s means under either save mode; that does not rule out resolution effects in the authors’ setup. I have not seen the authors’ evaluation code and cannot say what they ran. What this establishes is that, in these adapted runs, the output normalization alone moves the preservation metrics a long way, and that several of the resulting means end up close to the paper’s row while others stay well off it. Whether the paper’s row was produced this way is unverified. If it was, it is an easy trap: “official recommended settings” includes the line that writes the file.</p>
-<p>What I can state from this experiment alone is narrower. Holding the other four methods fixed and re-scoring only FlowAlign’s outputs converted the two ways, FlowAlign is third in the five-method no-mask ranking when saved with per-image min/max (mean rank 2.86, behind DNAEdit at 1.71 and DirectEdit at 2.57) and first when saved with a fixed range (1.43). The save path alone moves it two places in my table.</p>
-<p>Two corrections to my own process belong here. My first attempt at the 1024² check saved the larger canvas as-is and let the evaluator crop its bottom-right 512² — a quarter of the edited image scored against the whole source — and I had written it up as a collapse before an adversarial review of the report caught it. And the 20-image pilot of the save-path test had a Structure Distance of 75, which looked like a mismatch until the full 151 images gave 36; the two sets differ in composition as well as size, so I do not know which of the two accounts for it.</p>
+<p><strong>Saving with per-image normalization made all four background metrics worse.</strong> Background PSNR fell by 2.51 dB, from 27.32 to 24.81 dB, while Structure Distance rose from 13.26 to 36.11. Only the save conversion changed; the generation settings stayed the same.</p>
+<p>Keeping the other four methods’ results fixed and changing only FlowAlign’s save policy also moved its overall position, based on the average of its per-metric ranks in the original 151-image comparison, <strong>from first to third</strong>. In this post’s full 700-image comparison, both FlowAlign conditions use the fixed input range <span class="math inline">\([-1,1]\)</span> for saving.</p>
 </section>
-<section id="how-to-read-a-table-like-this" class="level2">
-<h2 class="anchored" data-anchor-id="how-to-read-a-table-like-this">How to read a table like this</h2>
-<p>The previous note asked for a no-edit reference row and for the mask condition to be held fixed when reading background columns as evidence about an algorithm. What this table adds:</p>
+<section id="data-and-references" class="level2">
+<h2 class="anchored" data-anchor-id="data-and-references">Data and references</h2>
 <ul>
-<li>After masking, the background columns are a narrow band: four methods within 0.29 dB of PSNR, FlowEdit 1.1–1.4 dB below them. Whether differences of that size matter is a question about the use case, and the table cannot answer it. What the table can say is that an average over four such columns gives them four sevenths of the weight, so small differences there move the rank.</li>
-<li>The three non-background columns keep between-method variation, but none of them is a score for having edited well. Structure Distance is a whole-image similarity that the no-edit reference wins on average; CLIP-edit scores the target text against the edited region without its real surround; CLIP-whole mixes the two.</li>
-<li>“Official settings” reach all the way to the file writer. Before scoring a baseline’s PNGs, check that they are the pixels the method produced. In my five-method no-mask table, changing FlowAlign’s output normalization changes its rank from first to third, and it would have done so unnoticed if I had used the official script’s saver.</li>
-</ul>
-<p>Put in one sentence: in this setup, restoring the source through the same ground-truth mask shrank the between-method gaps on the background metrics substantially; some differences remained; and the average rank was sensitive to the mask condition and to which metrics were averaged. The comparison does not identify the effect of DirectEdit’s alignment on its own, nor the cause of the ranking in the paper.</p>
-</section>
-<section id="limits" class="level2">
-<h2 class="anchored" data-anchor-id="limits">Limits</h2>
-<ul>
-<li>151 images, one seed per method, SD3.5-medium, ground-truth masks. No automatic-mask condition was run with masks equalized, so this is an intervention experiment, not a leaderboard for image-plus-text systems.</li>
-<li>The five baseline runs are adapted, not official; the departures are listed in the report.</li>
-<li>The paired intervals are pointwise image bootstraps without seed replication or multiplicity correction. An interval that excludes zero says the difference is detectable on these images; it does not say it is visible or stable across seeds. An interval that includes zero does not say the methods are equal.</li>
-<li>The no-edit reference is one VAE path (DirectEdit’s); FTEdit and FlowAlign decode through their own, so the five methods do not end at a numerically identical reference image.</li>
-<li>The FlowAlign result establishes a save-path effect in my runs; it does not establish which script the authors ran.</li>
-<li>An earlier version of the measurement report was audited adversarially by a second model; that audit found the first 1024² check mis-scored and several overstatements, which were corrected. This note then went through a further interpretation-level review by the same kind of reviewer, whose findings are applied here. The audit records, the data and the code are in the <a href="https://github.com/gs3393/pie-bench-equalized-mask">public repository</a>.</li>
+<li>Full 700-image evaluation: <a href="assets/equalized-mask-table/full700/paired_all_metrics_changes.csv">per-image scores and paired changes for all seven metrics</a>, <a href="assets/equalized-mask-table/full700/all_metrics_summary.json">means and change counts</a>.</li>
+<li>CLIP analysis: <a href="assets/equalized-mask-table/full700/paired_clip_changes.csv">per-image changes and cohort labels</a>, <a href="assets/equalized-mask-table/full700/clip_summary.json">confidence intervals and distributions</a>, <a href="assets/equalized-mask-table/full700/large_drop_summary.json">large-drop shares</a>.</li>
+<li>Original 151-image evaluation, adapted runners, and FlowAlign save-policy check: <a href="https://github.com/gs3393/pie-bench-equalized-mask">gs3393/pie-bench-equalized-mask</a>.</li>
+<li>Desong Yang and Mang Ye, <em>DirectEdit: Step-Level Accurate Inversion for Flow-Based Image Editing</em>: <a href="https://arxiv.org/abs/2605.02417">arXiv:2605.02417</a>.</li>
+<li>Ju et al., <em>PnPInversion</em> / PIE-Bench: <a href="https://arxiv.org/abs/2310.01506">arXiv:2310.01506</a>.</li>
 </ul>
 
 
