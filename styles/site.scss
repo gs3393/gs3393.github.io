@@ -296,6 +296,37 @@ main.content h2 {
   padding-top: 0;
   border-top: 0;
 }
+/* Notes with number-sections: the h2 number becomes a small label above the title. */
+main.content h2 > .header-section-number {
+  display: block;
+  margin-bottom: .45rem;
+  font-family: var(--font-mono-ui);
+  font-size: .68rem;
+  font-weight: 500;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+  color: var(--c-ink-soft);
+}
+main.content h2 > .header-section-number::before { content: "Section "; }
+main.content h3 > .header-section-number {
+  margin-right: .2rem;
+  color: var(--c-ink-soft);
+  font-weight: 500;
+}
+/* Side-by-side code (::: {.code-compare layout-ncol=2}): keep both columns inside the text
+   column. Without min-width: 0 the long code lines stop the flex cells from shrinking. */
+main.content .code-compare .quarto-layout-row { gap: .75rem; }
+main.content .code-compare .quarto-layout-cell {
+  flex: 1 1 0 !important;
+  min-width: 0;
+  padding: 0 !important;
+}
+main.content .code-compare div.sourceCode { margin: 0; }
+main.content .code-compare pre { font-size: .66rem; overflow-x: auto; }
+@media (max-width: 1199.98px) {
+  main.content .code-compare .quarto-layout-row { flex-direction: column; }
+  main.content .code-compare .quarto-layout-cell { flex: none !important; width: 100%; }
+}
 main.content h3 {
   margin-top: 2.2rem;
   font-size: 1.16rem;
