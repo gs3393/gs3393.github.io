@@ -2,38 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://gs3393.github.io/notes/jit-fd-loss-analysis.html</loc>
-    <lastmod>2026-10-19T05:16:58.513Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/editing-benchmark-background-metric.html</loc>
-    <lastmod>2026-10-19T05:16:58.512Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/cfgmp-sd35-remeasured.html</loc>
-    <lastmod>2026-10-19T05:16:58.511Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/legacy.html</loc>
-    <lastmod>2026-10-19T05:16:58.473Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/about.html</loc>
-    <lastmod>2026-10-19T05:16:58.397Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/index.html</loc>
-    <lastmod>2026-10-19T05:16:58.473Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes.html</loc>
-    <lastmod>2026-10-19T05:16:58.474Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/diffusion-foundations.html</loc>
-    <lastmod>2026-10-19T05:16:58.511Z</lastmod>
+    <lastmod>2026-10-28T01:24:15.456Z</lastmod>
   </url>
   <url>
     <loc>https://gs3393.github.io/notes/equalized-mask-table.html</loc>
-    <lastmod>2026-10-19T05:21:30.884Z</lastmod>
+    <lastmod>2026-10-28T01:25:45.110Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/diffusion-foundations.html</loc>
+    <lastmod>2026-10-28T01:24:15.452Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes.html</loc>
+    <lastmod>2026-10-28T01:25:45.093Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/index.html</loc>
+    <lastmod>2026-10-28T01:25:45.092Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/about.html</loc>
+    <lastmod>2026-10-28T01:24:15.334Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/legacy.html</loc>
+    <lastmod>2026-10-28T01:25:45.093Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/cfgmp-sd35-remeasured.html</loc>
+    <lastmod>2026-10-28T01:24:15.451Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/editing-benchmark-background-metric.html</loc>
+    <lastmod>2026-10-28T01:25:45.108Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/flow-matching-fundamentals.html</loc>
+    <lastmod>2026-10-28T01:25:45.336Z</lastmod>
   </url>
 </urlset>

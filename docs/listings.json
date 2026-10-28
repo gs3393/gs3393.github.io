@@ -1,13 +1,18 @@
 [
   {
-    "listing": "/legacy.html",
+    "listing": "/notes.html",
     "items": [
-      "/notes/editing-benchmark-background-metric.html"
+      "/notes/flow-matching-fundamentals.html",
+      "/notes/cfgmp-sd35-remeasured.html",
+      "/notes/equalized-mask-table.html",
+      "/notes/diffusion-foundations.html",
+      "/notes/jit-fd-loss-analysis.html"
     ]
   },
   {
     "listing": "/index.html",
     "items": [
+      "/notes/flow-matching-fundamentals.html",
       "/notes/cfgmp-sd35-remeasured.html",
       "/notes/equalized-mask-table.html",
       "/notes/diffusion-foundations.html",
@@ -15,12 +20,9 @@
     ]
   },
   {
-    "listing": "/notes.html",
+    "listing": "/legacy.html",
     "items": [
-      "/notes/cfgmp-sd35-remeasured.html",
-      "/notes/equalized-mask-table.html",
-      "/notes/diffusion-foundations.html",
-      "/notes/jit-fd-loss-analysis.html"
+      "/notes/editing-benchmark-background-metric.html"
     ]
   }
 ]
