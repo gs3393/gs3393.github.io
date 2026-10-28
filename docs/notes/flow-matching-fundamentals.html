@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-10-28">
+<meta name="description" content="A sequel to From Noise to Images. Flow matching chooses a path from noise to data first, averages per-image velocities into one velocity field, and learns that average by regressing on the velocity of single noise–image pairs.">
+
+<title>Straight Paths from Noise to Images – gs3393</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/site/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-9b36bde479e88d7d845adaafafc129ba.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b43eaf97b61c213375c92ec0b3c4937e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-3d2ffaf1f42bc699642a17ab1adc01e7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-b43eaf97b61c213375c92ec0b3c4937e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+<meta property="og:title" content="Straight Paths from Noise to Images – gs3393">
+<meta property="og:description" content="A sequel to From Noise to Images. Flow matching chooses a path from noise to data first, averages per-image velocities into one velocity field, and learns that average by regressing on the velocity of single noise–image pairs.">
+<meta property="og:image" content="https://gs3393.github.io/assets/site/social-card.png">
+<meta property="og:site_name" content="gs3393">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta name="twitter:title" content="Straight Paths from Noise to Images – gs3393">
+<meta name="twitter:description" content="A sequel to From Noise to Images. Flow matching chooses a path from noise to data first, averages per-image velocities into one velocity field, and learns that average by regressing on the velocity of single noise–image pairs.">
+<meta name="twitter:image" content="https://gs3393.github.io/assets/site/social-card.png">
+<meta name="twitter:image-height" content="630">
+<meta name="twitter:image-width" content="1200">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gs3393</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/gs3393"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active" data-toc-expanded="99">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#sec-glance" id="toc-sec-glance" class="nav-link active" data-scroll-target="#sec-glance"><span class="header-section-number">1</span> Flow matching at a glance: what changes from diffusion</a></li>
+  <li><a href="#sec-one-image" id="toc-sec-one-image" class="nav-link" data-scroll-target="#sec-one-image"><span class="header-section-number">2</span> The easy case: a path and a velocity toward one image</a></li>
+  <li><a href="#sec-data" id="toc-sec-data" class="nav-link" data-scroll-target="#sec-data"><span class="header-section-number">3</span> From one image to the data: averaging paths and velocities</a></li>
+  <li><a href="#sec-training" id="toc-sec-training" class="nav-link" data-scroll-target="#sec-training"><span class="header-section-number">4</span> Training without computing the average</a></li>
+  <li><a href="#sec-code" id="toc-sec-code" class="nav-link" data-scroll-target="#sec-code"><span class="header-section-number">5</span> One training step and one generated image, in code</a></li>
+  <li><a href="#sec-choices" id="toc-sec-choices" class="nav-link" data-scroll-target="#sec-choices"><span class="header-section-number">6</span> What you can change after the basic form</a></li>
+  <li><a href="#appendix-notation-and-time-conventions-across-papers" id="toc-appendix-notation-and-time-conventions-across-papers" class="nav-link" data-scroll-target="#appendix-notation-and-time-conventions-across-papers">Appendix: notation and time conventions across papers</a></li>
+  <li><a href="#references-and-figure-provenance" id="toc-references-and-figure-provenance" class="nav-link" data-scroll-target="#references-and-figure-provenance">References and figure provenance</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<p class="post-kicker" data-type="Fundamentals"><a href="../notes.html">Fundamentals</a></p>
+<h1 class="title">Straight Paths from Noise to Images</h1>
+<p class="subtitle lead">Flow matching: a chosen path, the velocity field that follows it, and a regression target you can compute</p>
+</div>
+
+<div>
+  <div class="description">
+    A sequel to From Noise to Images. Flow matching chooses a path from noise to data first, averages per-image velocities into one velocity field, and learns that average by regressing on the velocity of single noise–image pairs.
+  </div>
+</div>
+
+<div class="post-meta">
+  <span class="date">October 28, 2026</span>
+  <ul class="post-topics" aria-label="Topics">
+      <li class="topic">Flow Matching</li>
+      <li class="topic">Diffusion</li>
+    </ul>
+</div>
+
+
+</header>
+
+
+<p>In the <a href="../notes/diffusion-foundations.html">previous note</a> I treated diffusion by first fixing a process that adds noise to an image and then learning to undo it. This note looks at the same generation problem from the side of flow matching. SD3 is trained on the straight path discussed here, so I needed this view before reading recent image generation models.</p>
+<section id="sec-glance" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="sec-glance"><span class="header-section-number">1</span> Flow matching at a glance: what changes from diffusion</h2>
+<p>The diffusion model in the previous note built the input at step <span class="math inline">\(t\)</span> by mixing noise into a clean image <span class="math inline">\(x_0\)</span>:</p>
+<p><span class="math display">\[
+x_t=a_t x_0+\sigma_t\epsilon,\qquad a_t=\sqrt{\bar\alpha_t},\quad \sigma_t=\sqrt{1-\bar\alpha_t},\quad \epsilon\sim\mathcal N(0,I).
+\]</span></p>
+<p>As <span class="math inline">\(t\)</span> grows, the image coefficient <span class="math inline">\(a_t\)</span> falls from 1 toward 0 and the noise coefficient <span class="math inline">\(\sigma_t\)</span> rises from 0 toward 1. The two always satisfy <span class="math inline">\(a_t^2+\sigma_t^2=1\)</span>. Fix one image and one noise draw and move <span class="math inline">\(t\)</span>: <span class="math inline">\(x_t\)</span> does not follow the straight line from <span class="math inline">\(x_0\)</span> to <span class="math inline">\(\epsilon\)</span>. It traces an arc in the plane spanned by the two vectors. The speed along the arc is not constant either; the noise schedule <span class="math inline">\(\beta_t\)</span> sets it interval by interval. Generation walks this process backward. DDPM also adds fresh noise at every step, so an actual generation trajectory is more jagged than this arc.</p>
+<div id="fig-arc-line" class="quarto-float quarto-figure quarto-figure-center anchored" alt="A quarter-circle arc and a straight line both joining an image point and a noise point, with unevenly spaced dots on the arc, evenly spaced dots on the line, and a dashed ray from the origin linking a point on the arc to a point on the line.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-arc-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/flow-matching-fundamentals/arc-and-line.svg" class="img-fluid figure-img" alt="A quarter-circle arc and a straight line both joining an image point and a noise point, with unevenly spaced dots on the arc, evenly spaced dots on the line, and a dashed ray from the origin linking a point on the arc to a point on the line.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-arc-line-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: The two paths for one image and one noise draw, drawn in the coefficients they put on the image and on the noise. The diffusion arc uses the DDPM linear schedule (<span class="math inline">\(\beta\)</span> from 0.0001 to 0.02 over 1,000 steps); its dots, one every 100 steps, bunch up near the noise end, so the speed along the arc is not constant. The flow matching line has a dot every 0.1 in <span class="math inline">\(t\)</span>. Dividing the diffusion point at step 300 by <span class="math inline">\(a_t+\sigma_t\)</span> lands on the line at <span class="math inline">\(t\approx0.45\)</span>.
+</figcaption>
+</figure>
+</div>
+<p>Flow matching reverses the order. Instead of first fixing a process that corrupts the image, it first chooses the path along which noise moves to an image. The simplest choice is a straight line. The time direction also changes: <span class="math inline">\(t=0\)</span> is noise and <span class="math inline">\(t=1\)</span> is the image. A sample moves along the line joining noise and image at a constant speed, so its velocity is the same at every time: image minus noise. On the diffusion arc the direction and speed change with time; on the straight path the training target comes out of one subtraction. <a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a> writes this path and velocity as equations.</p>
+<p>From this point of view, what the model learns is a velocity field. A velocity field assigns a velocity to every position in space at every time: a sample here moves in this direction at this speed. Starting from one point and moving a little at a time along these velocities gives one trajectory, and the motion of all starting points taken together is called a flow. Generation draws one Gaussian noise sample, places it at <span class="math inline">\(t=0\)</span>, and moves in small steps along the velocity the model gives until <span class="math inline">\(t=1\)</span>. Mathematically this is numerical integration of an ODE, and the same noise always arrives at the same image.</p>
+<p>The straight line, however, describes one fixed image and one fixed noise draw. During generation the model does not know which image it will arrive at. Many lines heading to different images can pass through one position in space, so the velocity used for generation is the average of the velocities of the lines through that position. When the position changes, the lines entering the average change too, so the actual generation trajectory that follows this average velocity bends. The training paths are straight, but the generation trajectories are not. The next two sections deal with this. <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> explains why following the average velocity still arrives at the designed distribution, and <a href="#sec-training" class="quarto-xref">Section&nbsp;4</a> explains why regressing on each pair’s velocity, without ever computing the average, still learns that average. The end of <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> shows why the bending means generation needs many steps.</p>
+<p>The trajectories differ in shape, but the two paths mix the same ingredients. Both mix an image and Gaussian noise in time-dependent proportions. Divide the arc point <span class="math inline">\(a_t x_0+\sigma_t\epsilon\)</span> by <span class="math inline">\(a_t+\sigma_t\)</span> and it becomes exactly the point on the straight line whose image fraction is <span class="math inline">\(a_t/(a_t+\sigma_t)\)</span>. The difference between diffusion and flow matching is therefore the scale and the speed at which they pass through the same mixtures. What the model predicts can also be converted between noise and velocity. What flow matching brings is less a new principle than a way of exposing choices. Choosing a straight path makes the training target simple, and the path shape, the weight each time gets in training, the prediction target and the sampler each appear as a choice that can be made separately. <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a> lays out these choices.</p>
+<p>Flow matching does not require the source distribution to be Gaussian, but this note only covers the case that starts from Gaussian noise.</p>
+</section>
+<section id="sec-one-image" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="sec-one-image"><span class="header-section-number">2</span> The easy case: a path and a velocity toward one image</h2>
+<p>First, the notation changes. From this section on I follow the flow matching convention: <span class="math inline">\(x_0\)</span> is the starting noise and <span class="math inline">\(x_1\)</span> is the image. In the previous note and in <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a>, <span class="math inline">\(x_0\)</span> was the clean image, so the meaning is reversed. Time <span class="math inline">\(t\)</span> runs continuously from 0 to 1, and generation goes from <span class="math inline">\(t=0\)</span> to <span class="math inline">\(t=1\)</span>.</p>
+<p>Let us turn the velocity field described in words in <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> into an equation. Write <span class="math inline">\(u_t(x)\)</span> for the velocity a sample at position <span class="math inline">\(x\)</span> at time <span class="math inline">\(t\)</span> should follow. Over a very short time <span class="math inline">\(h\)</span> the velocity barely changes, so the sample moves by <span class="math inline">\(h\)</span> times that velocity:</p>
+<p><span class="math display">\[
+x_{t+h}\approx x_t+h\,u_t(x_t).
+\]</span></p>
+<p>Chaining these steps gives the trajectory of one sample. As <span class="math inline">\(h\to0\)</span> the relation becomes exact as the ODE</p>
+<p><span class="math display">\[
+\frac{dx_t}{dt}=u_t(x_t).
+\]</span></p>
+<p>The ODE says that the velocity at the current position is the rate of change of position. Once the velocity field is fixed, each starting point has one trajectory. Write <span class="math inline">\(\psi_t(x_0)\)</span> for the position at time <span class="math inline">\(t\)</span> of the sample that started at <span class="math inline">\(x_0\)</span>. <span class="math inline">\(\psi_t\)</span> is the function that takes a starting point and returns its position at time <span class="math inline">\(t\)</span>, and this function is called the flow. The velocity field sets the direction of motion at each instant; the flow records, for each starting point, where that motion has taken it.</p>
+<p>Generation computes <span class="math inline">\(\psi_1\)</span>. Draw a noise <span class="math inline">\(x_0\)</span>, solve the ODE to <span class="math inline">\(t=1\)</span>, and you get <span class="math inline">\(\psi_1(x_0)\)</span>. For this to work as an image generator, one plausible result is not enough. When many noise draws are each carried by <span class="math inline">\(\psi_1\)</span>, the arrival points must form the same distribution as the data. The goal is therefore a velocity field <span class="math inline">\(u_t\)</span> that carries noise from <span class="math inline">\(\mathcal N(0,I)\)</span> to the data distribution. Finding such a <span class="math inline">\(u_t\)</span> for the whole dataset at once is hard, so we start with the case where the destination image is fixed.</p>
+<p>Pick one destination image <span class="math inline">\(x_1\)</span> and choose the straight line from noise <span class="math inline">\(x_0\)</span> to <span class="math inline">\(x_1\)</span> as the path:</p>
+<p><span class="math display">\[
+x_t=(1-t)\,x_0+t\,x_1.
+\]</span></p>
+<p>At <span class="math inline">\(t=0\)</span> it is the noise itself, and at <span class="math inline">\(t=1\)</span> it reaches <span class="math inline">\(x_1\)</span> whatever noise it started from. Following one noise draw, the sample moves along the line at a constant speed. Now look at all noise draws at once. Since <span class="math inline">\(x_0\sim\mathcal N(0,I)\)</span>, the samples at time <span class="math inline">\(t\)</span> form the distribution</p>
+<p><span class="math display">\[
+x_t\sim\mathcal N\!\left(t\,x_1,\;(1-t)^2 I\right).
+\]</span></p>
+<p>The mean moves along a straight line from the origin to <span class="math inline">\(x_1\)</span>, and the standard deviation shrinks steadily from 1 to 0. The noise cloud slides toward <span class="math inline">\(x_1\)</span> while contracting, until it becomes a single point at <span class="math inline">\(t=1\)</span>. This distribution, defined at every time, is called the conditional probability path for image <span class="math inline">\(x_1\)</span> and written <span class="math inline">\(p_t(x\mid x_1)\)</span>.</p>
+<div id="fig-conditional-path" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three pairs of concentric circles whose centers move from the origin toward a point labeled x1 and whose radii shrink, with grey lines from scattered noise points to x1.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-conditional-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/flow-matching-fundamentals/conditional-path.svg" class="img-fluid figure-img" alt="Three pairs of concentric circles whose centers move from the origin toward a point labeled x1 and whose radii shrink, with grey lines from scattered noise points to x1.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-conditional-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;2: The conditional probability path toward one image <span class="math inline">\(x_1\)</span>, in two dimensions. Circles mark one standard deviation of <span class="math inline">\(\mathcal N(t\,x_1,(1-t)^2I)\)</span> at <span class="math inline">\(t=0\)</span>, <span class="math inline">\(0.5\)</span> and <span class="math inline">\(0.9\)</span>. Grey lines join seven noise draws to <span class="math inline">\(x_1\)</span>; each sample moves along its own line at a constant speed.
+</figcaption>
+</figure>
+</div>
+<p>Differentiating the path in time gives the velocity:</p>
+<p><span class="math display">\[
+\frac{dx_t}{dt}=x_1-x_0.
+\]</span></p>
+<p>This is the “image minus noise” of <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a>. But it is written in terms of the starting noise <span class="math inline">\(x_0\)</span>. A velocity field must decide the velocity from the current position and time alone, so <span class="math inline">\(x_0\)</span> has to be rewritten in terms of the current position. Solving the path for <span class="math inline">\(x_0\)</span> gives <span class="math inline">\(x_0=(x_t-t\,x_1)/(1-t)\)</span>, and substituting it gives</p>
+<p><span class="math display">\[
+u_t(x\mid x_1)=\frac{x_1-x}{1-t}.
+\]</span></p>
+<p>The formula reads as it looks. From the current position, head toward <span class="math inline">\(x_1\)</span> at a speed equal to the remaining distance divided by the remaining time. So from anywhere, the sample reaches <span class="math inline">\(x_1\)</span> exactly at <span class="math inline">\(t=1\)</span>. Conversely, solving the ODE with this velocity field reproduces the straight path we chose. In other words, this velocity field generates the conditional probability path <span class="math inline">\(p_t(x\mid x_1)\)</span>.</p>
+<p>We wrote the same velocity in two forms because they are used differently later. The pair form <span class="math inline">\(x_1-x_0\)</span> can be computed from a single noise–image pair, so it becomes the training target in <a href="#sec-training" class="quarto-xref">Section&nbsp;4</a>. The position form <span class="math inline">\((x_1-x)/(1-t)\)</span> answers the question “where should a sample passing through this position go?”, which is what <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> needs when it averages the velocities of several images at one position.</p>
+</section>
+<section id="sec-data" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="sec-data"><span class="header-section-number">3</span> From one image to the data: averaging paths and velocities</h2>
+<p><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a> fixed the destination image. Now we draw that image from the data. The distribution symbols used in this section are below; <span class="math inline">\(q\)</span> denotes the data distribution and <span class="math inline">\(p\)</span> denotes distributions along the path from noise to data.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Symbol</th>
+<th style="text-align: left;">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(q(x_1)\)</span></td>
+<td style="text-align: left;">The data distribution: the probability density of drawing image <span class="math inline">\(x_1\)</span> from the data. This is what the generative model ultimately has to imitate.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(p_t(x\mid x_1)\)</span></td>
+<td style="text-align: left;">The conditional probability path (<a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a>): the density of a time-<span class="math inline">\(t\)</span> sample at position <span class="math inline">\(x\)</span>, given that the destination image is <span class="math inline">\(x_1\)</span>.</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(p_t(x)\)</span></td>
+<td style="text-align: left;">The marginal probability path: the density of a time-<span class="math inline">\(t\)</span> sample at position <span class="math inline">\(x\)</span>, without fixing the destination image.</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(p(x_1\mid x_t=x)\)</span></td>
+<td style="text-align: left;">The probability that a sample at position <span class="math inline">\(x\)</span> at time <span class="math inline">\(t\)</span> was heading to image <span class="math inline">\(x_1\)</span>.</td>
+</tr>
+</tbody>
+</table>
+<p>A time-<span class="math inline">\(t\)</span> sample is made in this order: draw an image <span class="math inline">\(x_1\)</span> from the data <span class="math inline">\(q\)</span>, draw a noise <span class="math inline">\(x_0\)</span>, and mix them at point <span class="math inline">\(t\)</span> on the straight line of <a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a>. The distribution <span class="math inline">\(p_t(x)\)</span> of samples made this way combines the conditional path of each image, weighted by the probability of drawing that image:</p>
+<p><span class="math display">\[
+p_t(x)=\int p_t(x\mid x_1)\,q(x_1)\,dx_1.
+\]</span></p>
+<p>Check the two ends of this path. At <span class="math inline">\(t=0\)</span> every image’s cloud is the same <span class="math inline">\(\mathcal N(0,I)\)</span> at the origin, so the mixture is <span class="math inline">\(\mathcal N(0,I)\)</span>. At <span class="math inline">\(t=1\)</span> each cloud has shrunk to its own image, so the mixture is the data distribution <span class="math inline">\(q\)</span>. In between, as many clouds as there are images move from the origin toward their own images while shrinking, and they overlap. This mixture is the marginal probability path <span class="math inline">\(p_t(x)\)</span> connecting the noise distribution and the data distribution.</p>
+<div id="fig-marginal-path" class="quarto-float quarto-figure quarto-figure-center anchored" alt="Three square panels at t equals 0, 0.5 and 0.9. A single central blob splits into three blobs that move toward three orange dots and shrink; arrows first converge on the center, then on the individual dots.">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-marginal-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<img src="assets/flow-matching-fundamentals/marginal-path.svg" class="img-fluid figure-img" alt="Three square panels at t equals 0, 0.5 and 0.9. A single central blob splits into three blobs that move toward three orange dots and shrink; arrows first converge on the center, then on the individual dots.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-marginal-path-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;3: The marginal probability path for three equally likely data points in two dimensions (orange). Shading is the density <span class="math inline">\(p_t(x)\)</span>; arrows show the direction of the average velocity <span class="math inline">\(u_t(x)\)</span> and are all drawn at the same length. At <span class="math inline">\(t=0\)</span> every arrow points toward the data mean <span class="math inline">\((0.20, 0.23)\)</span>. By <span class="math inline">\(t=0.9\)</span> most arrows point at a single data point.
+</figcaption>
+</figure>
+</div>
+<p>Next is the velocity that makes samples follow this path. Take one sample at position <span class="math inline">\(x\)</span> at time <span class="math inline">\(t\)</span>. Which image’s cloud did it come from? If several clouds cover that position, there are several answers. The probability <span class="math inline">\(p(x_1\mid x_t=x)\)</span> that each image is the answer follows from Bayes’ rule: multiply <span class="math inline">\(p_t(x\mid x_1)\)</span>, how densely that image’s cloud covers <span class="math inline">\(x\)</span>, by <span class="math inline">\(q(x_1)\)</span>, the probability of drawing that image, and divide by the total density <span class="math inline">\(p_t(x)\)</span>:</p>
+<p><span class="math display">\[
+p(x_1\mid x_t=x)=\frac{p_t(x\mid x_1)\,q(x_1)}{p_t(x)}.
+\]</span></p>
+<p>Since we cannot settle on a single destination, we set the velocity at that position to the per-image velocities averaged with these probabilities:</p>
+<p><span class="math display">\[
+u_t(x)=\int u_t(x\mid x_1)\,p(x_1\mid x_t=x)\,dx_1.
+\]</span></p>
+<p>The average uses the position form <span class="math inline">\((x_1-x)/(1-t)\)</span> from <a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a>. Because it is in position form, we can hold <span class="math inline">\(x\)</span> fixed and compare image candidates at the same position. And given the position <span class="math inline">\(x_t=x\)</span>, <span class="math inline">\((x_1-x)/(1-t)\)</span> equals <span class="math inline">\(x_1-x_0\)</span>, so the same velocity can also be written in pair form:</p>
+<p><span class="math display">\[
+u_t(x)=\mathbb E\left[x_1-x_0\mid x_t=x\right].
+\]</span></p>
+<p>How this average changes with time shows what it does. Near <span class="math inline">\(t=0\)</span> all clouds overlap almost completely near the origin. At any position, <span class="math inline">\(p(x_1\mid x_t=x)\)</span> is then close to the data distribution <span class="math inline">\(q(x_1)\)</span>, and the velocity points toward the mean of the whole dataset. At <span class="math inline">\(t=0\)</span> it is exactly <span class="math inline">\(u_0(x)=\mathbb E[x_1]-x\)</span>. As <span class="math inline">\(t\)</span> approaches 1 the clouds shrink until almost only one covers a given position, and the velocity points straight at that image. Early in generation samples move toward the rough center of the data; later they narrow in on particular images.</p>
+<p>But does averaging the velocities this way keep the path <span class="math inline">\(p_t(x)\)</span> we designed? The groups heading to different images move at different velocities, and binding them to one velocity seems as if it should break something. Take a case with only two images, A and B. Suppose 100 particles are near position <span class="math inline">\(x\)</span> at time <span class="math inline">\(t\)</span>, 30 heading to A and 70 heading to B. The A particles move at <span class="math inline">\(v_A\)</span> and the B particles at <span class="math inline">\(v_B\)</span>. How the particle distribution around here changes in the next instant does not depend on which group each particle belongs to. It depends only on how much the particles move in total, and in which direction, and that total is <span class="math inline">\(30\,v_A+70\,v_B\)</span>. Now ignore the groups and move all 100 at one velocity <span class="math inline">\(v\)</span>. For the total to match, <span class="math inline">\(100\,v=30\,v_A+70\,v_B\)</span>, so <span class="math inline">\(v=0.3\,v_A+0.7\,v_B\)</span>. The 0.3 and 0.7 are exactly <span class="math inline">\(p(x_1\mid x_t=x)\)</span>. If the velocity is set this way at every position and time, the particle distribution changes exactly as it would if each group moved separately. So it follows <span class="math inline">\(p_t(x)\)</span> at every time.</p>
+<p>What matches is the shape of the distribution formed by all the particles. A single particle is a different story. A particle that was heading to A now also moves at <span class="math inline">\(0.3\,v_A+0.7\,v_B\)</span>, so it leaves its original straight line, and nothing guarantees it arrives at A. Still, the distribution of all particles is <span class="math inline">\(p_t(x)\)</span> at every time and <span class="math inline">\(q\)</span> at <span class="math inline">\(t=1\)</span>, and that is all generation needs. The end of <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> returns to what this bending means for the number of generation steps. One more note: this is not the only velocity field that produces the same <span class="math inline">\(p_t(x)\)</span>. The average velocity built here is one way to realize the marginal path from the conditional paths we chose.</p>
+<p>The last problem is computation. The average needs <span class="math inline">\(p(x_1\mid x_t=x)\)</span> over the whole dataset at every position, and that cannot be computed. <a href="#sec-training" class="quarto-xref">Section&nbsp;4</a> shows why the model learns this average without computing it.</p>
+</section>
+<section id="sec-training" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="sec-training"><span class="header-section-number">4</span> Training without computing the average</h2>
+<p><a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> fixed the velocity field <span class="math inline">\(u_t(x)\)</span> used for generation. Now we train a neural network <span class="math inline">\(u^\theta_t(x)\)</span> to output it. <span class="math inline">\(\theta\)</span> denotes the network weights, and the network takes position <span class="math inline">\(x\)</span> and time <span class="math inline">\(t\)</span> as input. The most direct way is to reduce the squared error to the target velocity. This loss is called the FM loss:</p>
+<p><span class="math display">\[
+\mathcal L_{\mathrm{FM}}(\theta)=\mathbb E_{t\sim\mathcal U[0,1],\;x_t\sim p_t}\left\|u^\theta_t(x_t)-u_t(x_t)\right\|^2.
+\]</span></p>
+<p>The problem is the target <span class="math inline">\(u_t(x_t)\)</span>. As the end of <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> showed, computing it needs <span class="math inline">\(p(x_1\mid x_t=x)\)</span> over the whole dataset at every position. So in place of the average we put the velocity of a single pair in the target. This loss is called the CFM loss:</p>
+<p><span class="math display">\[
+\mathcal L_{\mathrm{CFM}}(\theta)=\mathbb E_{t\sim\mathcal U[0,1],\;x_1\sim q,\;x_0\sim\mathcal N(0,I)}\left\|u^\theta_t(x_t)-(x_1-x_0)\right\|^2,\qquad x_t=(1-t)\,x_0+t\,x_1.
+\]</span></p>
+<p>This loss can be computed. Draw an image from the data, a noise and a time, and the input <span class="math inline">\(x_t\)</span> and the target <span class="math inline">\(x_1-x_0\)</span> follow immediately. CFM stands for conditional flow matching: the target has been replaced by the velocity given a fixed image <span class="math inline">\(x_1\)</span>, the conditional velocity of <a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a>.</p>
+<p>But this target is not the velocity generation needs, because pairs passing through the same position have different targets. Go back to the example from <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a>. Of the training pairs passing through position <span class="math inline">\(x\)</span>, 30% are heading to A with target <span class="math inline">\(v_A\)</span> and 70% to B with target <span class="math inline">\(v_B\)</span>. The network sees only <span class="math inline">\((x,t)\)</span>, so it cannot tell the two cases apart and can give only one output <span class="math inline">\(v\)</span> at this position. The average error at this position is</p>
+<p><span class="math display">\[
+0.3\,\|v-v_A\|^2+0.7\,\|v-v_B\|^2.
+\]</span></p>
+<p>Setting its derivative with respect to <span class="math inline">\(v\)</span> to zero gives the minimizing output <span class="math inline">\(v=0.3\,v_A+0.7\,v_B\)</span>, the same average velocity that <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> needed to keep the distribution. In general, when targets are scattered, the value that minimizes squared error is their mean. So even when trained with a different target for each pair, the network converges to output, at each position, the mean of the targets, <span class="math inline">\(u_t(x)=\mathbb E[x_1-x_0\mid x_t=x]\)</span>.</p>
+<p>The relation between the two losses can be stated more precisely. At one position, let <span class="math inline">\(m\)</span> be the mean of the targets and <span class="math inline">\(s\)</span> the average squared distance of the targets from <span class="math inline">\(m\)</span> (their variance). The mean squared error of an output <span class="math inline">\(v\)</span> splits into <span class="math inline">\(\|v-m\|^2+s\)</span>. The first term is the error the FM loss measures; the second is how spread out the targets were to begin with, and has nothing to do with the network. The CFM loss is therefore the FM loss plus a constant that does not depend on <span class="math inline">\(\theta\)</span>, and the two losses have the same gradient. Using the computable loss instead of the uncomputable one gives the network the same training signal.</p>
+<p>Because of this constant, the CFM loss does not go down to 0 in real training. As long as several pairs pass through one position, the targets are spread out, and even a perfect model is left with an error equal to that spread. The loss value mixes the model’s error with an irreducible spread in the targets, so its size alone says little about how well the model has learned.</p>
+<p>Noise prediction in the previous note worked by the same logic. One noisy image could come from many combinations of images and noise, so the model learned not one target noise but <a href="../notes/diffusion-foundations.html#which-noise-should-the-network-predict-when-several-answers-are-possible">the average of the noises possible at that position</a>, and that average led to the score. In flow matching the quantity being averaged changes from noise to velocity.</p>
+<p>Here <span class="math inline">\(t\)</span> was drawn uniformly between 0 and 1. How often to draw each time is a separate choice that changes the weight of each time in the loss; <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a> covers it. <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> turns what we have so far into code for one training step and one generation.</p>
+</section>
+<section id="sec-code" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="sec-code"><span class="header-section-number">5</span> One training step and one generated image, in code</h2>
+<p>Here is the material so far as pseudocode. The code looks the same with VAE latents in place of images, so the data is simply called <code>x1</code>. The section numbers in the comments mark where each line comes from.</p>
+<section id="one-training-step" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="one-training-step"><span class="header-section-number">5.1</span> One training step</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> sample_data_batch()                  <span class="co"># §3: draw images from the data q</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> sample_standard_normal_like(x1)      <span class="co"># §2: starting noise</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> sample_uniform(batch_size, <span class="fl">0.0</span>, <span class="fl">1.0</span>)  <span class="co"># §4: t ~ U[0, 1], one per sample</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>xt <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> t) <span class="op">*</span> x0 <span class="op">+</span> t <span class="op">*</span> x1                <span class="co"># §2: a point on the straight path</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> x1 <span class="op">-</span> x0                          <span class="co"># §2: pair-form velocity = §4: CFM target</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> model(xt, t)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> mean_squared_error(pred, target)   <span class="co"># §4: CFM loss</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>update_parameters(loss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>The target uses the pair form <span class="math inline">\(x_1-x_0\)</span>. It has the same value as the position form <span class="math inline">\((x_1-x)/(1-t)\)</span> but no division, so it is simpler. The path formula gives <span class="math inline">\(x_t\)</span> at any <span class="math inline">\(t\)</span> directly, so training never has to follow a trajectory from noise to image. Because training never solves the ODE, this is called simulation-free training.</p>
+<p>Put this next to the diffusion training code from the previous note. To make the comparison easier I removed the VAE, the condition dropout for CFG and the variance term from that code. Each side keeps its own note’s notation, so <code>x0</code> on the left is the image and <code>x0</code> on the right is the noise.</p>
+<div class="code-compare quarto-layout-panel" data-layout-ncol="2">
+<div class="quarto-layout-row">
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Diffusion (previous note)</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> sample_data_batch()</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>epsilon <span class="op">=</span> sample_standard_normal_like(x0)</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> sample_uniform_timesteps(batch_size, <span class="dv">1</span>, T)</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>xt <span class="op">=</span> a[t] <span class="op">*</span> x0 <span class="op">+</span> sigma[t] <span class="op">*</span> epsilon</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> epsilon</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> model(xt, t)</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> mean_squared_error(pred, target)</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>update_parameters(loss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+<div class="quarto-layout-cell" style="flex-basis: 50.0%;justify-content: flex-start;">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Flow matching (this note)</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>x1 <span class="op">=</span> sample_data_batch()</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>x0 <span class="op">=</span> sample_standard_normal_like(x1)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>t <span class="op">=</span> sample_uniform(batch_size, <span class="fl">0.0</span>, <span class="fl">1.0</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>xt <span class="op">=</span> (<span class="dv">1</span> <span class="op">-</span> t) <span class="op">*</span> x0 <span class="op">+</span> t <span class="op">*</span> x1</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>target <span class="op">=</span> x1 <span class="op">-</span> x0</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>pred <span class="op">=</span> model(xt, t)</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>loss <span class="op">=</span> mean_squared_error(pred, target)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>update_parameters(loss)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<p>Line by line, only three lines differ. Time is drawn as a real number between 0 and 1 instead of an integer timestep from 1 to <span class="math inline">\(T\)</span>. The image–noise mixing ratio is computed directly as <span class="math inline">\(t\)</span> and <span class="math inline">\(1-t\)</span> instead of being read from the schedule tables <code>a[t]</code> and <code>sigma[t]</code>; this line is where the arc and the line of <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> differ. The target changes from noise to velocity. The rest is the same: draw data and noise, build the input in one step, and regress with MSE. Diffusion training could draw a single timestep and build its noisy input directly because of the same simulation-free property.</p>
+<p>Both models take <span class="math inline">\(t\)</span> as input. In flow matching this is because the velocity field changes with time, as <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> showed: at the same position it points toward the center of the data early on and toward a particular image later. <span class="math inline">\(t\)</span> can be fed in the same way the DiT in the previous note received its timestep.</p>
+</section>
+<section id="one-generated-image" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="one-generated-image"><span class="header-section-number">5.2</span> One generated image</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>x <span class="op">=</span> sample_standard_normal(data_shape)    <span class="co"># t = 0: noise</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>h <span class="op">=</span> <span class="fl">1.0</span> <span class="op">/</span> num_steps</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(num_steps):</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    t <span class="op">=</span> k <span class="op">*</span> h</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    x <span class="op">=</span> x <span class="op">+</span> h <span class="op">*</span> model(x, t)               <span class="co"># §2: x_{t+h} ≈ x_t + h·u_t(x_t)</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>                                          <span class="co"># §4: model output ≈ average velocity u_t(x)</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>sample <span class="op">=</span> x                                <span class="co"># t = 1: approximately a sample from the data distribution</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>There is no destination image <span class="math inline">\(x_1\)</span> during generation. The model looks only at the current position and time and outputs the average velocity it learned in <a href="#sec-training" class="quarto-xref">Section&nbsp;4</a>. As <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> showed, following this velocity exactly keeps the distribution of samples at <span class="math inline">\(p_t(x)\)</span> at every time, so they arrive at the data distribution at <span class="math inline">\(t=1\)</span>. The loop follows it only approximately, in finite steps; the last paragraph of this section shows how much that matters.</p>
+<p>The only randomness in this loop is the first noise draw; no fresh noise is added inside the loop. The DDPM sampler in the previous note added fresh noise at every step and used a predicted variance to set its size. Neither appears here. This is how “the same noise always arrives at the same image” from <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> shows up in code. Training never solves the ODE; only generation does.</p>
+<p>The update <code>x + h * model(x, t)</code> writes out the small step of <a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a> directly. It is Euler’s method, the simplest ODE solver. One Euler step assumes the current velocity holds until the next time. But as <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> showed, the average velocity changes with position and time, so generation trajectories bend, and the larger the step, the farther it strays from the true trajectory. Take the extreme of a single step (<span class="math inline">\(h=1\)</span>). The velocity at <span class="math inline">\(t=0\)</span> is <span class="math inline">\(u_0(x)=\mathbb E[x_1]-x\)</span>, so <span class="math inline">\(x_0+u_0(x_0)=\mathbb E[x_1]\)</span>: every noise draw lands on the mean of the data. This happens even if the model has learned the average velocity exactly. So although the training path is straight, generation needs many steps. The error in a generated result contains both the error from the model learning the wrong velocity and the error from steps that are too large. Other solvers, class and text conditions, and CFG are covered in <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a>.</p>
+</section>
+</section>
+<section id="sec-choices" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="sec-choices"><span class="header-section-number">6</span> What you can change after the basic form</h2>
+<p>So far we used the simplest setup as it is: start from a standard Gaussian, join noise and image with a straight line, draw <span class="math inline">\(t\)</span> uniformly, predict the velocity, and generate with Euler. This section goes through what can be changed in that setup, one choice at a time, along with the line of the <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> code that each choice changes. Because each choice changes a different line, it becomes visible that they can be made independently.</p>
+<section id="path-shape" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="path-shape"><span class="header-section-number">6.1</span> Path shape</h3>
+<p>Generalizing the straight path gives a path that mixes noise and image with time-dependent coefficients <span class="math inline">\(\alpha_t\)</span> and <span class="math inline">\(\sigma_t\)</span>:</p>
+<p><span class="math display">\[
+x_t=\alpha_t\,x_1+\sigma_t\,x_0.
+\]</span></p>
+<p>The target velocity is the time derivative of this formula, where <span class="math inline">\(\dot\alpha_t\)</span> and <span class="math inline">\(\dot\sigma_t\)</span> are the time derivatives of the coefficients:</p>
+<p><span class="math display">\[
+\text{target velocity}=\dot\alpha_t\,x_1+\dot\sigma_t\,x_0.
+\]</span></p>
+<p>Setting <span class="math inline">\(\alpha_t=t\)</span> and <span class="math inline">\(\sigma_t=1-t\)</span> gives the <span class="math inline">\(x_1-x_0\)</span> used so far. Choosing them instead so that <span class="math inline">\(\alpha_t^2+\sigma_t^2=1\)</span> gives the diffusion arc of <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a>, with only the time direction reversed. So diffusion enters as one of these choices. As <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> showed, the two paths pass through the same mixtures at different scales and speeds. Using that correspondence, a velocity field trained on one path can even be converted, after training, into the velocity field of another path. In code, the <code>xt</code> and <code>target</code> lines change.</p>
+</section>
+<section id="which-times-to-train-on-more-often" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="which-times-to-train-on-more-often"><span class="header-section-number">6.2</span> Which times to train on more often</h3>
+<p><a href="#sec-training" class="quarto-xref">Section&nbsp;4</a> drew <span class="math inline">\(t\)</span> uniformly between 0 and 1. Drawing some interval more often gives the errors in that interval more weight in the loss. The path stays the same; only the per-time weight in the loss changes. SD3 used logit-normal sampling: draw <span class="math inline">\(u\)</span> from a normal distribution and set <span class="math inline">\(t=\mathrm{sigmoid}(u)\)</span>. This draws middle times more often than the two ends. As <a href="#sec-data" class="quarto-xref">Section&nbsp;3</a> showed, near <span class="math inline">\(t=0\)</span> the velocity points toward the data mean, and near <span class="math inline">\(t=1\)</span> it narrows to one image. The middle interval between the two can be seen as the one with the most to learn. After comparing 61 training setups, SD3 reported the straight path combined with logit-normal(0, 1) as the most stable combination across conditions. In code, the one line that draws <code>t</code> changes.</p>
+</section>
+<section id="what-to-predict" class="level3" data-number="6.3">
+<h3 data-number="6.3" class="anchored" data-anchor-id="what-to-predict"><span class="header-section-number">6.3</span> What to predict</h3>
+<p>The model does not have to output the velocity directly. On the straight path, given <span class="math inline">\(x_t\)</span> and a time <span class="math inline">\(0&lt;t&lt;1\)</span>, knowing any one of the velocity, the image and the noise determines the other two:</p>
+<p><span class="math display">\[
+x_1=x_t+(1-t)\,u,\qquad x_0=x_t-t\,u.
+\]</span></p>
+<p>So the model can predict the image (<span class="math inline">\(x_1\)</span>) or the noise (<span class="math inline">\(x_0\)</span>), and the prediction can be converted to a velocity during generation. Noise prediction is the same as the epsilon prediction of the previous note. On Gaussian paths the score is proportional to the noise prediction, so the noise and score of the previous note and the velocity of this note are all connected by one-line formulas.</p>
+<p>Changing the prediction target leaves the correct answer at each position pointing at the same thing, but changes the units of the loss. For example, the velocity error equals the image-prediction error divided by <span class="math inline">\(1-t\)</span>. So the same MSE weights times differently. The conversions also break down at the ends: near <span class="math inline">\(t=1\)</span> an image prediction gives the velocity only through division by <span class="math inline">\(1-t\)</span>, and near <span class="math inline">\(t=0\)</span> a noise prediction gives it only through division by <span class="math inline">\(t\)</span>, where <span class="math inline">\(x_t\)</span> is still the noise itself. Since generation starts at <span class="math inline">\(t=0\)</span>, a noise-predicting model needs separate handling there. In code, the <code>target</code> line changes, and the generation loop gets one more conversion to velocity.</p>
+</section>
+<section id="conditions-and-cfg" class="level3" data-number="6.4">
+<h3 data-number="6.4" class="anchored" data-anchor-id="conditions-and-cfg"><span class="header-section-number">6.4</span> Conditions and CFG</h3>
+<p>To generate according to a class or a text <span class="math inline">\(y\)</span>, feed <span class="math inline">\(y\)</span> to the model as well. The training code stays the same, and the model learns <span class="math inline">\(\mathbb E[x_1-x_0\mid x_t=x,y]\)</span>, the average velocity given the condition. As in the previous note, replacing <span class="math inline">\(y\)</span> with an empty condition <span class="math inline">\(\varnothing\)</span> with some probability during training lets one model learn both the conditional and the unconditional velocity. During generation the two are mixed:</p>
+<p><span class="math display">\[
+\tilde u_t(x\mid y)=u_t(x\mid\varnothing)+\gamma\left(u_t(x\mid y)-u_t(x\mid\varnothing)\right).
+\]</span></p>
+<p>This has the same form as the CFG formula applied to noise prediction in the previous note, with the same guidance scale <span class="math inline">\(\gamma\)</span>; the only difference is that the quantity being mixed is velocity instead of noise. Exactly what distribution the samples come from when they follow this mixed velocity is still not known, though. In code, training gets a line that drops the condition, and generation gets a line that calls the model twice and mixes the two outputs.</p>
+</section>
+<section id="ode-solver" class="level3" data-number="6.5">
+<h3 data-number="6.5" class="anchored" data-anchor-id="ode-solver"><span class="header-section-number">6.5</span> ODE solver</h3>
+<p>The Euler method of <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> reads the velocity once per step. Higher-order solvers such as the midpoint method read it several times within a step. For example, reading the velocity once more at the middle of the step accounts for how the velocity changes in between. At the same number of steps, they follow a bending trajectory more closely. In exchange they call the model more times per step, so solvers should be compared at the same number of model calls, not the same number of steps. In code, the update in the generation loop changes.</p>
+<p>Seen this way, each choice touches a different line of the <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> code. The path changes the <code>xt</code> and <code>target</code> lines, the time weighting the <code>t</code> line, the prediction target the <code>target</code> line and a conversion in generation, conditions and CFG the model input and the generation loop, and the solver the update. <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> said flow matching is less a new principle than a way of exposing choices; in code, those choices separate into different lines like this.</p>
+</section>
+</section>
+<section id="appendix-notation-and-time-conventions-across-papers" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="appendix-notation-and-time-conventions-across-papers">Appendix: notation and time conventions across papers</h2>
+<p>What confuses most when reading about flow matching is the time direction and the meaning of <span class="math inline">\(x_0\)</span>. Papers differ on whether noise or the image sits at <span class="math inline">\(t=0\)</span>, so <span class="math inline">\(x_0\)</span> means noise in some papers and the image in others. This note follows Meta’s Flow Matching Guide and Code and Lipman et al.&nbsp;2023. The table below puts the conventions of this note, the previous note and the SD3 paper side by side.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;"></th>
+<th style="text-align: left;">This note (Meta guide; Lipman et al.&nbsp;2023 with <span class="math inline">\(\sigma_{\min}=0\)</span>)</th>
+<th style="text-align: left;">Previous note (DDPM-style diffusion)</th>
+<th style="text-align: left;">SD3 (Esser et al.&nbsp;2024)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Time</td>
+<td style="text-align: left;">Continuous, <span class="math inline">\(t\in[0,1]\)</span></td>
+<td style="text-align: left;">Integer timestep, <span class="math inline">\(t\in\{1,\ldots,T\}\)</span></td>
+<td style="text-align: left;">Continuous, <span class="math inline">\(t\in[0,1]\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Noise at</td>
+<td style="text-align: left;"><span class="math inline">\(t=0\)</span></td>
+<td style="text-align: left;">Near <span class="math inline">\(t=T\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(t=1\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Image at</td>
+<td style="text-align: left;"><span class="math inline">\(t=1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(t=0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(t=0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(x_0\)</span> means</td>
+<td style="text-align: left;">Noise</td>
+<td style="text-align: left;">Clean image</td>
+<td style="text-align: left;">Clean image</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Noise symbol</td>
+<td style="text-align: left;"><span class="math inline">\(x_0\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\epsilon\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(\epsilon\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Mixing formula</td>
+<td style="text-align: left;"><span class="math inline">\(x_t=(1-t)\,x_0+t\,x_1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(x_t=a_t x_0+\sigma_t\epsilon\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(z_t=(1-t)\,x_0+t\,\epsilon\)</span></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Training target</td>
+<td style="text-align: left;">Velocity <span class="math inline">\(x_1-x_0\)</span></td>
+<td style="text-align: left;">Noise <span class="math inline">\(\epsilon\)</span></td>
+<td style="text-align: left;">Velocity <span class="math inline">\(\epsilon-x_0\)</span></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Generation</td>
+<td style="text-align: left;"><span class="math inline">\(t\)</span>: <span class="math inline">\(0\to1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(t\)</span>: <span class="math inline">\(T\to1\)</span></td>
+<td style="text-align: left;"><span class="math inline">\(t\)</span>: <span class="math inline">\(1\to0\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>This note and SD3 write the same straight path with time running in opposite directions. Call SD3’s time <span class="math inline">\(s\)</span>; substituting <span class="math inline">\(s=1-t\)</span> makes the two mixing formulas identical. Because time runs backward, the velocity only changes sign. That is why this note’s <span class="math inline">\(x_1-x_0\)</span> (image minus noise) is SD3’s <span class="math inline">\(\epsilon-x_0\)</span> (noise minus image). The symbol <span class="math inline">\(x_0\)</span> has to be read differently as well: here it is noise, and in SD3 it is the image.</p>
+<p>The correspondence between the previous note’s diffusion and this note appeared in <a href="#sec-glance" class="quarto-xref">Section&nbsp;1</a> and <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a>. The previous note’s <span class="math inline">\(x_t=a_t x_0+\sigma_t\epsilon\)</span> is the general path <span class="math inline">\(x_t=\alpha_t x_1+\sigma_t x_0\)</span> of <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a> with the time direction reversed and <span class="math inline">\(\alpha_t^2+\sigma_t^2=1\)</span> kept. Dividing this point by <span class="math inline">\(a_t+\sigma_t\)</span> gives the point on this note’s straight line with <span class="math inline">\(t=a_t/(a_t+\sigma_t)\)</span>. The previous note’s noise prediction <span class="math inline">\(\epsilon\)</span> is the noise (<span class="math inline">\(x_0\)</span>) prediction of <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a>.</p>
+<p>The symbols used in this note:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Symbol</th>
+<th style="text-align: left;">Meaning</th>
+<th style="text-align: left;">First used</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(x_0\)</span></td>
+<td style="text-align: left;">Starting noise, <span class="math inline">\(x_0\sim\mathcal N(0,I)\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(x_1\)</span></td>
+<td style="text-align: left;">Destination image (or latent)</td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(x_t\)</span></td>
+<td style="text-align: left;">Sample at time <span class="math inline">\(t\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(u_t(x)\)</span></td>
+<td style="text-align: left;">Velocity field: the velocity at time <span class="math inline">\(t\)</span> and position <span class="math inline">\(x\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\psi_t(x_0)\)</span></td>
+<td style="text-align: left;">Flow: the time-<span class="math inline">\(t\)</span> position of the sample that started at <span class="math inline">\(x_0\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(h\)</span></td>
+<td style="text-align: left;">Time interval of one Euler step</td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(p_t(x\mid x_1)\)</span></td>
+<td style="text-align: left;">Conditional probability path: the distribution at time <span class="math inline">\(t\)</span> when the destination image is <span class="math inline">\(x_1\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(u_t(x\mid x_1)\)</span></td>
+<td style="text-align: left;">Conditional velocity, <span class="math inline">\((x_1-x)/(1-t)\)</span></td>
+<td style="text-align: left;"><a href="#sec-one-image" class="quarto-xref">Section&nbsp;2</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(q(x_1)\)</span></td>
+<td style="text-align: left;">Data distribution</td>
+<td style="text-align: left;"><a href="#sec-data" class="quarto-xref">Section&nbsp;3</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(p_t(x)\)</span></td>
+<td style="text-align: left;">Marginal probability path</td>
+<td style="text-align: left;"><a href="#sec-data" class="quarto-xref">Section&nbsp;3</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(p(x_1\mid x_t=x)\)</span></td>
+<td style="text-align: left;">Probability that a sample at position <span class="math inline">\(x\)</span> was heading to image <span class="math inline">\(x_1\)</span></td>
+<td style="text-align: left;"><a href="#sec-data" class="quarto-xref">Section&nbsp;3</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(u^\theta_t(x)\)</span></td>
+<td style="text-align: left;">Velocity predicted by the network; <span class="math inline">\(\theta\)</span> are its weights</td>
+<td style="text-align: left;"><a href="#sec-training" class="quarto-xref">Section&nbsp;4</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\alpha_t,\sigma_t\)</span></td>
+<td style="text-align: left;">Image and noise coefficients of a general path</td>
+<td style="text-align: left;"><a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a></td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><span class="math inline">\(y,\varnothing\)</span></td>
+<td style="text-align: left;">Generation condition (class, text) and the empty condition</td>
+<td style="text-align: left;"><a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a></td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><span class="math inline">\(\gamma\)</span></td>
+<td style="text-align: left;">CFG guidance scale, based at the unconditional velocity</td>
+<td style="text-align: left;"><a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="references-and-figure-provenance" class="level2 unnumbered">
+<h2 class="unnumbered anchored" data-anchor-id="references-and-figure-provenance">References and figure provenance</h2>
+<ul>
+<li>Yaron Lipman et al.&nbsp;<a href="https://arxiv.org/abs/2210.02747">Flow Matching for Generative Modeling</a>, 2023.</li>
+<li>Yaron Lipman et al.&nbsp;<a href="https://arxiv.org/abs/2412.06264v1">Flow Matching Guide and Code</a>, 2024.</li>
+<li>Patrick Esser et al.&nbsp;<a href="https://arxiv.org/abs/2403.03206v1">Scaling Rectified Flow Transformers for High-Resolution Image Synthesis</a>, 2024.</li>
+<li>Jonathan Ho, Ajay Jain, and Pieter Abbeel. <a href="https://arxiv.org/abs/2006.11239v2">Denoising Diffusion Probabilistic Models</a>, 2020.</li>
+<li>Jonathan Ho and Tim Salimans. <a href="https://arxiv.org/abs/2207.12598v1">Classifier-Free Diffusion Guidance</a>, 2022.</li>
+</ul>
+<p>The diffusion notation and code follow the <a href="../notes/diffusion-foundations.html">previous note</a>.</p>
+<p>All figures in this note are explanatory diagrams drawn by the accompanying <a href="assets/flow-matching-fundamentals/make_figures.py">figure script</a>, which uses only the Python standard library. <a href="#fig-arc-line" class="quarto-xref">Figure&nbsp;1</a> plots the two path formulas with the DDPM linear schedule. <a href="#fig-conditional-path" class="quarto-xref">Figure&nbsp;2</a> plots <span class="math inline">\(p_t(x\mid x_1)\)</span> for one point in two dimensions, with seven noise draws from a fixed seed. <a href="#fig-marginal-path" class="quarto-xref">Figure&nbsp;3</a> evaluates <span class="math inline">\(p_t(x)\)</span> and the average velocity <span class="math inline">\(u_t(x)\)</span> in closed form for three equally likely points. None of them is the output of a trained model. The code in <a href="#sec-code" class="quarto-xref">Section&nbsp;5</a> is pseudocode. The SD3 comparison of training setups in <a href="#sec-choices" class="quarto-xref">Section&nbsp;6</a> is reported from the SD3 paper, not from experiments run for this note.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/gs3393\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 gs3393</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../legacy.html">
+<p>Legacy</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/gs3393">
+<p>GitHub</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>
