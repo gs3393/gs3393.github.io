@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="dcterms.date" content="2026-11-16">
-<meta name="description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+<meta name="description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 31,453 papers, and the problems those queries exposed.">
 
 <title>Building a Personal Paper RAG for Agents – gs3393</title>
 <style>
@@ -87,13 +87,13 @@ ul.task-list li input[type="checkbox"] {
 
 
 <meta property="og:title" content="Building a Personal Paper RAG for Agents – gs3393">
-<meta property="og:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+<meta property="og:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 31,453 papers, and the problems those queries exposed.">
 <meta property="og:image" content="https://gs3393.github.io/assets/site/social-card.png">
 <meta property="og:site_name" content="gs3393">
 <meta property="og:image:height" content="630">
 <meta property="og:image:width" content="1200">
 <meta name="twitter:title" content="Building a Personal Paper RAG for Agents – gs3393">
-<meta name="twitter:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+<meta name="twitter:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 31,453 papers, and the problems those queries exposed.">
 <meta name="twitter:image" content="https://gs3393.github.io/assets/site/social-card.png">
 <meta name="twitter:image-height" content="630">
 <meta name="twitter:image-width" content="1200">
@@ -177,7 +177,7 @@ ul.task-list li input[type="checkbox"] {
   <li><a href="#the-first-search-result-cannot-be-used-as-it-is" id="toc-the-first-search-result-cannot-be-used-as-it-is" class="nav-link" data-scroll-target="#the-first-search-result-cannot-be-used-as-it-is">The first search result cannot be used as it is</a></li>
   <li><a href="#approximate-search-can-miss-material" id="toc-approximate-search-can-miss-material" class="nav-link" data-scroll-target="#approximate-search-can-miss-material">Approximate search can miss material</a></li>
   <li><a href="#visual-search-is-weak" id="toc-visual-search-is-weak" class="nav-link" data-scroll-target="#visual-search-is-weak">Visual search is weak</a></li>
-  <li><a href="#the-first-request-is-slow" id="toc-the-first-request-is-slow" class="nav-link" data-scroll-target="#the-first-request-is-slow">The first request is slow</a></li>
+  <li><a href="#requests-right-after-the-server-starts-are-slow" id="toc-requests-right-after-the-server-starts-are-slow" class="nav-link" data-scroll-target="#requests-right-after-the-server-starts-are-slow">Requests right after the server starts are slow</a></li>
   </ul></li>
   <li><a href="#closing" id="toc-closing" class="nav-link" data-scroll-target="#closing">Closing</a></li>
   </ul>
@@ -195,7 +195,7 @@ ul.task-list li input[type="checkbox"] {
 
 <div>
   <div class="description">
-    How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.
+    How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 31,453 papers, and the problems those queries exposed.
   </div>
 </div>
 
@@ -386,7 +386,7 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="queries-i-actually-ran" class="level2">
 <h2 class="anchored" data-anchor-id="queries-i-actually-ran">Queries I actually ran</h2>
-<p>On 2026-10-12 I sent real questions to the MCP server and checked three ways of using it. At that time 22,870 papers were registered and the index of text, tables and pages held 2,325,332 vectors. The paper index that searches titles and abstracts held fewer papers, 17,841.</p>
+<p>On 2026-11-16 I sent real questions to the MCP server and checked three ways of using it. I had sent the same questions on 2026-10-12, and the ranks in the table below were the same both times. In between, the registered papers grew from 22,870 to 31,453 and the index of text, tables and pages from 2,325,332 vectors to 4,456,056. The paper index that searches titles and abstracts also holds all 31,453 papers.</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -427,7 +427,7 @@ ul.task-list li input[type="checkbox"] {
 <p>Running these queries showed four things to fix.</p>
 <section id="the-first-search-result-cannot-be-used-as-it-is" class="level3">
 <h3 class="anchored" data-anchor-id="the-first-search-result-cannot-be-used-as-it-is">The first search result cannot be used as it is</h3>
-<p>With 22,870 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.</p>
+<p>With 31,453 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.</p>
 </section>
 <section id="approximate-search-can-miss-material" class="level3">
 <h3 class="anchored" data-anchor-id="approximate-search-can-miss-material">Approximate search can miss material</h3>
@@ -435,11 +435,11 @@ ul.task-list li input[type="checkbox"] {
 </section>
 <section id="visual-search-is-weak" class="level3">
 <h3 class="anchored" data-anchor-id="visual-search-is-weak">Visual search is weak</h3>
-<p>In the archive-wide search about DirectEdit’s preservation method, a page unrelated to the topic ranked at the top of the visual results. For the metric question restricted to DirectEdit, the visual results were empty. I also saw a comparison table extracted as paragraphs and a small region inside a graph detected as an empty table. The pages I needed this time were reached by starting from text search.</p>
+<p>In the archive-wide search about DirectEdit’s preservation method, the four visual results were all first pages of other editing papers, and none was a page of DirectEdit. On October 12 the top visual result had been page 27 of a paper unrelated to DirectEdit. For the two questions restricted to DirectEdit, the visual results were empty. The comparison table on page 7 was extracted as paragraphs, and five small regions inside the graph on the same page were detected as empty tables. The pages I needed this time were reached by starting from text search.</p>
 </section>
-<section id="the-first-request-is-slow" class="level3">
-<h3 class="anchored" data-anchor-id="the-first-request-is-slow">The first request is slow</h3>
-<p>On the first requests, status and search calls timed out while the server was reading large files of extracted elements and chunks. Later requests returned results. As the material has grown, the time and cost of this first load have to come down.</p>
+<section id="requests-right-after-the-server-starts-are-slow" class="level3">
+<h3 class="anchored" data-anchor-id="requests-right-after-the-server-starts-are-slow">Requests right after the server starts are slow</h3>
+<p>On October 12, the first status and search calls timed out while the server was reading large files of extracted elements and chunks. On November 16 the server had been running since November 2 and nothing timed out: the status call took 5.0 seconds, the searches 1.2 to 1.4 seconds, and fetching the image of page 7 took 0.8 seconds. The archive now has 1.9 times the chunks it had on October 12. A restart has that much more to read, so the time and cost of the first load have to come down.</p>
 </section>
 </section>
 <section id="closing" class="level2">
