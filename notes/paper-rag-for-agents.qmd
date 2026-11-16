@@ -1,7 +1,7 @@
 ---
 title: "Building a Personal Paper RAG for Agents"
 subtitle: "An archive that collects, extracts and indexes papers ahead of time, so an agent only searches and reads the parts a question needs"
-description: "How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed."
+description: "How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 31,453 papers, and the problems those queries exposed."
 date: 2026-11-16
 post-type: Tools
 image: /assets/site/social-card.png
@@ -126,7 +126,7 @@ I ran both. I exported a sample archive and imported it into a different data ro
 
 ## Queries I actually ran
 
-On 2026-10-12 I sent real questions to the MCP server and checked three ways of using it. At that time 22,870 papers were registered and the index of text, tables and pages held 2,325,332 vectors. The paper index that searches titles and abstracts held fewer papers, 17,841.
+On 2026-11-16 I sent real questions to the MCP server and checked three ways of using it. I had sent the same questions on 2026-10-12, and the ranks in the table below were the same both times. In between, the registered papers grew from 22,870 to 31,453 and the index of text, tables and pages from 2,325,332 vectors to 4,456,056. The paper index that searches titles and abstracts also holds all 31,453 papers.
 
 | What I was looking for | What came back | The way of using it |
 |---|---|---|
@@ -146,7 +146,7 @@ Running these queries showed four things to fix.
 
 ### The first search result cannot be used as it is
 
-With 22,870 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.
+With 31,453 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.
 
 ### Approximate search can miss material
 
@@ -154,11 +154,11 @@ Once the chunk vectors exceed 20,000, search uses IVF_PQ approximate search and 
 
 ### Visual search is weak
 
-In the archive-wide search about DirectEdit's preservation method, a page unrelated to the topic ranked at the top of the visual results. For the metric question restricted to DirectEdit, the visual results were empty. I also saw a comparison table extracted as paragraphs and a small region inside a graph detected as an empty table. The pages I needed this time were reached by starting from text search.
+In the archive-wide search about DirectEdit's preservation method, the four visual results were all first pages of other editing papers, and none was a page of DirectEdit. On October 12 the top visual result had been page 27 of a paper unrelated to DirectEdit. For the two questions restricted to DirectEdit, the visual results were empty. The comparison table on page 7 was extracted as paragraphs, and five small regions inside the graph on the same page were detected as empty tables. The pages I needed this time were reached by starting from text search.
 
-### The first request is slow
+### Requests right after the server starts are slow
 
-On the first requests, status and search calls timed out while the server was reading large files of extracted elements and chunks. Later requests returned results. As the material has grown, the time and cost of this first load have to come down.
+On October 12, the first status and search calls timed out while the server was reading large files of extracted elements and chunks. On November 16 the server had been running since November 2 and nothing timed out: the status call took 5.0 seconds, the searches 1.2 to 1.4 seconds, and fetching the image of page 7 took 0.8 seconds. The archive now has 1.9 times the chunks it had on October 12. A restart has that much more to read, so the time and cost of the first load have to come down.
 
 ## Closing
 
