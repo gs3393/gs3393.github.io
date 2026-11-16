@@ -1,0 +1,165 @@
+---
+title: "Building a Personal Paper RAG for Agents"
+subtitle: "An archive that collects, extracts and indexes papers ahead of time, so an agent only searches and reads the parts a question needs"
+description: "How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed."
+date: 2026-11-16
+post-type: Tools
+image: /assets/site/social-card.png
+categories: [Agents, Retrieval]
+toc-depth: 3
+---
+
+When I look into papers with an agent, a lot happens before the question gets answered. The agent has to find related papers on the web, download the PDFs, extract the text and tables, and then put together what it needs from several papers. If I ask about a similar topic later and the earlier material cannot be reused, all of that starts again from zero.
+
+The agent spends tokens and context on this. What it needs is one passage of explanation or one experimental condition, and to find it the agent keeps reading search results and long extracted text. I also expected that with more material it would lose track of evidence it had already checked, or mix up what different papers say.
+
+So I built `research-archive`. It is a server that stores papers and indexes them ahead of time. The agent finds related papers and passages on this server and takes only the parts it needs. Finding similar papers and checking the original figures and tables go through the same server.
+
+This note starts from the overall structure and goes down through preparation, the indexes, retrieval and storage. The last two sections show queries I actually sent and the problems I found while sending them.
+
+## Overall structure
+
+RAG means searching for material related to a question and generating the answer from that material. The server in this project only does the search and returns the original text. The answer is written by the agent connected to the server. In effect I attached one paper-search tool to an existing agent.
+
+The whole flow splits into two processes: (1) preparing the material, and (2) fetching evidence for a question.
+
+```{mermaid}
+flowchart TD
+    P[Collect paper PDFs and metadata] --> A[Source archive]
+    A --> E[Extract PDF elements]
+    E --> C[Build search units from text, tables and pages]
+    C --> J[Jina index of text and images]
+    A --> T[Title and abstract]
+    T --> S[SPECTER2 paper index]
+    J --> D[Separate search tables in LanceDB]
+    S --> D
+    Q[The agent's question] --> M[Search and retrieval over MCP]
+    D --> M
+    A --> R[Render the pages and tables that are needed]
+    R --> M
+    M --> O[The agent reads the evidence and answers]
+```
+
+Preparation registers a paper's PDF, extracts its content and splits it into search units. I call these units chunks. Each chunk is embedded and stored, and so is each paper's title and abstract. Embedding turns text or an image into a vector of numbers that search can use. When a question comes in, its vector is compared with the stored vectors to find nearby material, and the server returns the original text of the parts the agent picks.
+
+Collection and extraction end in the preparation process. When I look into the same paper again, the agent searches the index that already exists. Adding a new paper processes that paper. If the extracted content of an existing paper changes, the chunk vectors of the affected papers are updated. A per-paper fingerprint keeps track of this link.
+
+## Preparing the material
+
+After preparation, every chunk carries its text together with the paper ID, the page, the section heading and the position of the source element. If search finds a sentence but I cannot tell which paper and which page it came from, I cannot check the evidence, so the position is stored with the text. Figures and tables also keep a bbox, the region they occupy on the page. The bbox is the coordinate used to open that part of the original again.
+
+### Extraction and chunks
+
+I used OpenDataLoader for PDF extraction. It returns the type of each element along with its page and position, which made it easy to link paragraphs, headings, captions and tables to the search material. Text under the same section is grouped toward a target of 512 tokens. A long paragraph is split at sentence boundaries, with some sentences overlapping so that the surrounding context stays.
+
+### Tables and figures
+
+PDF extraction did not read every table and figure. In the early samples some detected tables had empty cells, and some tables and figures were not detected at all. So I also embedded each whole page as an image. When a table has too little text, the table region is cropped and embedded as an image. A PDF that OpenDataLoader fails on goes to PyMuPDF's text and image block extraction, and the extractor that was used is recorded.
+
+At first I also embedded each figure on its own. Search over those vectors was weak, so I took them out of the default rule. The index now holds text, tables and pages. The positions of the extracted figures are still stored, so once the right page is found the figure can be opened.
+
+### Images are made on request
+
+In the beginning every page and figure image was saved as a file. As papers accumulated, images that could be regenerated at any time took up a large share of the disk, so I changed this. Now the archive keeps the original PDF and the positions, and PyMuPDF renders an image when an embedding is built or when the agent asks for one.
+
+## One index for finding papers, one for finding passages
+
+I built two indexes because a paper search asks two kinds of question. "Which papers deal with this topic?" is answered well by titles and abstracts. "How does that paper explain this method?" needs a specific paragraph or a results table from the body. The search unit and the model are split to match.
+
+| Purpose | What goes into the index | Model and tools |
+|---|---|---|
+| Find papers on a topic, or papers similar to a known one | Title and abstract of each paper | SPECTER2 · `search_papers`, `find_similar_papers` |
+| Find the evidence for an explanation or an experiment | Text chunks, tables, page images | Jina omni · `search` |
+
+Paper-level search narrows the candidates, and the passage search can then be restricted to those papers. If I already know the paper, the agent searches its body directly.
+
+### The passage index
+
+Passage search uses `jina-embeddings-v5-omni-small-retrieval`. Papers contain figures and tables, so I picked a model that also takes images as search input. Questions are embedded with the `query` input setting, and the stored text and page images with `document`. The setting tells the embedding model which role an input plays: a question looking for an answer, or material that answers a question. The vectors of the material are stored ahead of time, and at search time the question vector is compared against them to find related paragraphs and pages.
+
+### The paper index
+
+Paper-level search uses SPECTER2. A paper is represented by its title and abstract together. Similarity between papers uses the `proximity` adapter, and short natural-language queries use the `adhoc_query` adapter.
+
+When I first added this index, the dependencies of SPECTER2's adapter library conflicted with the environment Jina runs in. I implemented the paper index with SciNCL first, and later moved SPECTER2 into a worker process with its own Python environment. The search service sends inputs to this worker and receives vectors. The two models run inside one service, each in its own environment.
+
+## Returning only as much as the agent needs
+
+Search does not return everything at once. Returning the full text of the top papers would defeat the purpose of saving context. Search returns short previews, and the agent opens the text and images of the results it chooses separately.
+
+### Tools
+
+The agent and the server are connected through MCP. The agent calls the server's tools over MCP to search and to fetch material. These are the tools it uses most.
+
+| Tool | What it returns |
+|---|---|
+| `search` | Ranked chunks with a preview (500 characters by default), the paper and the page |
+| `get_chunk` | The full text of a chosen chunk and its position in the source; the chunks before and after on request |
+| `get_element` | The text or image of a specific paragraph, table or figure element |
+| `get_page` | The extracted elements of one page; the page image on request |
+
+Asked "How does DirectEdit preserve the unedited region?", the agent first reads the previews in the search result and picks a related paragraph. If the paragraph it found is an experimental result, it narrows the search to that paper and asks again about the method itself. When it needs the surrounding explanation it sets `neighbors` on `get_chunk`. To check the columns of a comparison table or the layout of a figure, it opens the page.
+
+### Two groups in a search response
+
+A search response returns `text_hits` for text and tables and `visual_hits` for figures and pages as two separate lists. In early runs the two groups had different score ranges, and merging them into one ranking pushed the image results down. The groups are divided by chunk type, so a table crop that was embedded as an image still appears among the table results.
+
+### A prompt that fixes the reading order
+
+The MCP server also provides a prompt named `find_in_papers`. It tells the agent to search first, read a few related paragraphs and their neighbors, check any figure or table it needs, and then cite the paper and the page. If the material has no answer, the prompt tells the agent to say so. Following this order, the agent attaches sources and goes back to the original text it used in the answer.
+
+## Why the search database can be rebuilt
+
+The source material and the search data are kept apart, so that changing the model or the search database never requires collecting the papers again.
+
+| What is stored | Role |
+|---|---|
+| Original PDFs and extracted material | The basis for extracting again or chunking in a different way |
+| Vectors and settings per model | An index with the embedding model, its revision and the chunking rule fixed |
+| LanceDB search tables | A search database regenerated from the stored material and vectors |
+
+LanceDB fit this setup because the search process can open a directory without a separate database server running. The vectors are kept separately as Parquet files and loaded into LanceDB tables along with the paper, page and preview fields that search needs. A different model gets its own index and table, so vector spaces are never mixed.
+
+Moving the database and changing the model are different jobs. To move the database while keeping the vectors of the same model, the stored vectors and metadata are restored. To change the model, new vectors are built from the stored material and the server switches to a separate index. The two jobs can be told apart because the source positions and the vectors are stored independently.
+
+I ran both. I exported a sample archive and imported it into a different data root; the IDs, references, checksums, vectors and search results matched. I also re-embedded with a text-only Qwen3 model, switched the search model to it, and switched back to the Jina index.
+
+## Queries I actually ran
+
+On 2026-10-12 I sent real questions to the MCP server and checked three ways of using it. At that time 22,870 papers were registered and the index of text, tables and pages held 2,325,332 vectors. The paper index that searches titles and abstracts held fewer papers, 17,841.
+
+| What I was looking for | What came back | The way of using it |
+|---|---|---|
+| "How does DirectEdit preserve the unedited region?" | Over the whole archive, the top text result was an experimental result on page 7 of DirectEdit. After narrowing to that paper and asking about mask-guided blending, the method description on page 5 came first and I retrieved the original paragraph. | Find the paper from a broad question, then move to the specific evidence |
+| "Which metrics appear in DirectEdit's quantitative comparison table?" | With search restricted to DirectEdit, analysis text on page 8 ranked first and the text containing the main comparison table on page 7 ranked second. I opened the image of page 7 and checked the columns for Structure Distance, PSNR, LPIPS, MSE, SSIM and CLIP Similarity. | Check the original layout of a table from the page a search result points to |
+| Papers similar to DirectEdit | Passing DirectEdit to `find_similar_papers` returned FlowEdit, SteerFlow and Target-aware Image Editing via Cycle-consistent Constraints as the top three candidates. | Start from a known paper and find candidates to read or compare alongside it |
+
+In the first case the search first returned an experiment paragraph describing how well preservation works. After I made the question specific, "How does DirectEdit's mask-guided blending preserve the unedited region?", the method description came up. It says the edited region takes the latent from the editing path and the rest takes the latent from the reconstruction path.
+
+In the second case the numbers and column names of the table were in the extracted text, but the rows and columns were flattened into an ordinary paragraph. I opened the page image alongside it to see which metrics cover background preservation and which columns compare the editing result. That image did not come from the top visual results. I opened it from the page position attached to the text result.
+
+The third case widens the reading candidates through title and abstract vectors. How each candidate actually relates to DirectEdit is decided by reading the paper.
+
+## What still needs work
+
+Running these queries showed four things to fix.
+
+### The first search result cannot be used as it is
+
+With 22,870 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.
+
+### Approximate search can miss material
+
+Once the chunk vectors exceed 20,000, search uses IVF_PQ approximate search and no longer compares every vector. This cuts the number of candidates to compare, but related material can be missed, so the search-range settings have to be tuned along with it.
+
+### Visual search is weak
+
+In the archive-wide search about DirectEdit's preservation method, a page unrelated to the topic ranked at the top of the visual results. For the metric question restricted to DirectEdit, the visual results were empty. I also saw a comparison table extracted as paragraphs and a small region inside a graph detected as an empty table. The pages I needed this time were reached by starting from text search.
+
+### The first request is slow
+
+On the first requests, status and search calls timed out while the server was reading large files of extracted elements and chunks. Later requests returned results. As the material has grown, the time and cost of this first load have to come down.
+
+## Closing
+
+Finding and extracting the same paper again used to be repeated work, and it now lives in a reusable archive. For each question the agent picks the paragraphs and original pages it needs and reads those. The papers are stored outside any single context of the agent, so the next question can find and use the same evidence again.
