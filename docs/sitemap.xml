@@ -1,43 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
-    <loc>https://gs3393.github.io/notes/jit-fd-loss-analysis.html</loc>
-    <lastmod>2026-10-28T01:24:15.456Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/equalized-mask-table.html</loc>
-    <lastmod>2026-10-28T01:25:45.110Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/diffusion-foundations.html</loc>
-    <lastmod>2026-10-28T01:24:15.452Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes.html</loc>
-    <lastmod>2026-10-28T01:25:45.093Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/index.html</loc>
-    <lastmod>2026-10-28T01:25:45.092Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/about.html</loc>
-    <lastmod>2026-10-28T01:24:15.334Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/legacy.html</loc>
-    <lastmod>2026-10-28T01:25:45.093Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/cfgmp-sd35-remeasured.html</loc>
-    <lastmod>2026-10-28T01:24:15.451Z</lastmod>
-  </url>
-  <url>
-    <loc>https://gs3393.github.io/notes/editing-benchmark-background-metric.html</loc>
-    <lastmod>2026-10-28T01:25:45.108Z</lastmod>
+    <loc>https://gs3393.github.io/notes/paper-rag-for-agents.html</loc>
+    <lastmod>2026-11-16T05:02:56.751Z</lastmod>
   </url>
   <url>
     <loc>https://gs3393.github.io/notes/flow-matching-fundamentals.html</loc>
-    <lastmod>2026-10-28T01:25:45.336Z</lastmod>
+    <lastmod>2026-11-16T05:01:59.278Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/editing-benchmark-background-metric.html</loc>
+    <lastmod>2026-11-16T05:01:59.277Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/cfgmp-sd35-remeasured.html</loc>
+    <lastmod>2026-11-16T05:01:59.275Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/legacy.html</loc>
+    <lastmod>2026-11-16T05:01:59.230Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/about.html</loc>
+    <lastmod>2026-11-16T05:01:59.140Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/index.html</loc>
+    <lastmod>2026-11-16T05:01:59.228Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes.html</loc>
+    <lastmod>2026-11-16T05:01:59.230Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/diffusion-foundations.html</loc>
+    <lastmod>2026-11-16T05:01:59.276Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/equalized-mask-table.html</loc>
+    <lastmod>2026-11-16T05:01:59.278Z</lastmod>
+  </url>
+  <url>
+    <loc>https://gs3393.github.io/notes/jit-fd-loss-analysis.html</loc>
+    <lastmod>2026-11-16T05:01:59.279Z</lastmod>
   </url>
 </urlset>

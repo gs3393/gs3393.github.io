@@ -1,0 +1,883 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="dcterms.date" content="2026-11-16">
+<meta name="description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+
+<title>Building a Personal Paper RAG for Agents – gs3393</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<link href="../assets/site/favicon.svg" rel="icon" type="image/svg+xml">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-dark-9b36bde479e88d7d845adaafafc129ba.css" rel="stylesheet" class="quarto-color-scheme quarto-color-alternate" id="quarto-text-highlighting-styles">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-0466e08c6a400aced7fa0d3d15dffa7d.css" rel="stylesheet" class="quarto-color-scheme-extra" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-b43eaf97b61c213375c92ec0b3c4937e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-dark-3d2ffaf1f42bc699642a17ab1adc01e7.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme quarto-color-alternate" id="quarto-bootstrap" data-mode="light">
+<link href="../site_libs/bootstrap/bootstrap-b43eaf97b61c213375c92ec0b3c4937e.min.css" rel="stylesheet" append-hash="true" class="quarto-color-scheme-extra" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<style>html{ scroll-behavior: smooth; }</style>
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+
+<meta property="og:title" content="Building a Personal Paper RAG for Agents – gs3393">
+<meta property="og:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+<meta property="og:image" content="https://gs3393.github.io/assets/site/social-card.png">
+<meta property="og:site_name" content="gs3393">
+<meta property="og:image:height" content="630">
+<meta property="og:image:width" content="1200">
+<meta name="twitter:title" content="Building a Personal Paper RAG for Agents – gs3393">
+<meta name="twitter:description" content="How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.">
+<meta name="twitter:image" content="https://gs3393.github.io/assets/site/social-card.png">
+<meta name="twitter:image-height" content="630">
+<meta name="twitter:image-width" content="1200">
+<meta name="twitter:card" content="summary_large_image">
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="../index.html">
+    <span class="navbar-title">gs3393</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../notes.html"> 
+<span class="menu-text">Notes</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../about.html"> 
+<span class="menu-text">About</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://github.com/gs3393"> <i class="bi bi-github" role="img" aria-label="GitHub">
+</i> 
+<span class="menu-text"></span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#overall-structure" id="toc-overall-structure" class="nav-link active" data-scroll-target="#overall-structure">Overall structure</a></li>
+  <li><a href="#preparing-the-material" id="toc-preparing-the-material" class="nav-link" data-scroll-target="#preparing-the-material">Preparing the material</a>
+  <ul class="collapse">
+  <li><a href="#extraction-and-chunks" id="toc-extraction-and-chunks" class="nav-link" data-scroll-target="#extraction-and-chunks">Extraction and chunks</a></li>
+  <li><a href="#tables-and-figures" id="toc-tables-and-figures" class="nav-link" data-scroll-target="#tables-and-figures">Tables and figures</a></li>
+  <li><a href="#images-are-made-on-request" id="toc-images-are-made-on-request" class="nav-link" data-scroll-target="#images-are-made-on-request">Images are made on request</a></li>
+  </ul></li>
+  <li><a href="#one-index-for-finding-papers-one-for-finding-passages" id="toc-one-index-for-finding-papers-one-for-finding-passages" class="nav-link" data-scroll-target="#one-index-for-finding-papers-one-for-finding-passages">One index for finding papers, one for finding passages</a>
+  <ul class="collapse">
+  <li><a href="#the-passage-index" id="toc-the-passage-index" class="nav-link" data-scroll-target="#the-passage-index">The passage index</a></li>
+  <li><a href="#the-paper-index" id="toc-the-paper-index" class="nav-link" data-scroll-target="#the-paper-index">The paper index</a></li>
+  </ul></li>
+  <li><a href="#returning-only-as-much-as-the-agent-needs" id="toc-returning-only-as-much-as-the-agent-needs" class="nav-link" data-scroll-target="#returning-only-as-much-as-the-agent-needs">Returning only as much as the agent needs</a>
+  <ul class="collapse">
+  <li><a href="#tools" id="toc-tools" class="nav-link" data-scroll-target="#tools">Tools</a></li>
+  <li><a href="#two-groups-in-a-search-response" id="toc-two-groups-in-a-search-response" class="nav-link" data-scroll-target="#two-groups-in-a-search-response">Two groups in a search response</a></li>
+  <li><a href="#a-prompt-that-fixes-the-reading-order" id="toc-a-prompt-that-fixes-the-reading-order" class="nav-link" data-scroll-target="#a-prompt-that-fixes-the-reading-order">A prompt that fixes the reading order</a></li>
+  </ul></li>
+  <li><a href="#why-the-search-database-can-be-rebuilt" id="toc-why-the-search-database-can-be-rebuilt" class="nav-link" data-scroll-target="#why-the-search-database-can-be-rebuilt">Why the search database can be rebuilt</a></li>
+  <li><a href="#queries-i-actually-ran" id="toc-queries-i-actually-ran" class="nav-link" data-scroll-target="#queries-i-actually-ran">Queries I actually ran</a></li>
+  <li><a href="#what-still-needs-work" id="toc-what-still-needs-work" class="nav-link" data-scroll-target="#what-still-needs-work">What still needs work</a>
+  <ul class="collapse">
+  <li><a href="#the-first-search-result-cannot-be-used-as-it-is" id="toc-the-first-search-result-cannot-be-used-as-it-is" class="nav-link" data-scroll-target="#the-first-search-result-cannot-be-used-as-it-is">The first search result cannot be used as it is</a></li>
+  <li><a href="#approximate-search-can-miss-material" id="toc-approximate-search-can-miss-material" class="nav-link" data-scroll-target="#approximate-search-can-miss-material">Approximate search can miss material</a></li>
+  <li><a href="#visual-search-is-weak" id="toc-visual-search-is-weak" class="nav-link" data-scroll-target="#visual-search-is-weak">Visual search is weak</a></li>
+  <li><a href="#the-first-request-is-slow" id="toc-the-first-request-is-slow" class="nav-link" data-scroll-target="#the-first-request-is-slow">The first request is slow</a></li>
+  </ul></li>
+  <li><a href="#closing" id="toc-closing" class="nav-link" data-scroll-target="#closing">Closing</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<p class="post-kicker" data-type="Tools"><a href="../notes.html">Tools</a></p>
+<h1 class="title">Building a Personal Paper RAG for Agents</h1>
+<p class="subtitle lead">An archive that collects, extracts and indexes papers ahead of time, so an agent only searches and reads the parts a question needs</p>
+</div>
+
+<div>
+  <div class="description">
+    How I built research-archive, a server that keeps papers extracted and indexed so that an agent can find the right paper, the right paragraph and the original page through MCP. Covers the two indexes, the retrieval tools, the storage layout, three real queries against 22,870 papers, and the problems those queries exposed.
+  </div>
+</div>
+
+<div class="post-meta">
+  <span class="date">November 16, 2026</span>
+  <ul class="post-topics" aria-label="Topics">
+      <li class="topic">Agents</li>
+      <li class="topic">Retrieval</li>
+    </ul>
+</div>
+
+
+</header>
+
+
+<p>When I look into papers with an agent, a lot happens before the question gets answered. The agent has to find related papers on the web, download the PDFs, extract the text and tables, and then put together what it needs from several papers. If I ask about a similar topic later and the earlier material cannot be reused, all of that starts again from zero.</p>
+<p>The agent spends tokens and context on this. What it needs is one passage of explanation or one experimental condition, and to find it the agent keeps reading search results and long extracted text. I also expected that with more material it would lose track of evidence it had already checked, or mix up what different papers say.</p>
+<p>So I built <code>research-archive</code>. It is a server that stores papers and indexes them ahead of time. The agent finds related papers and passages on this server and takes only the parts it needs. Finding similar papers and checking the original figures and tables go through the same server.</p>
+<p>This note starts from the overall structure and goes down through preparation, the indexes, retrieval and storage. The last two sections show queries I actually sent and the problems I found while sending them.</p>
+<section id="overall-structure" class="level2">
+<h2 class="anchored" data-anchor-id="overall-structure">Overall structure</h2>
+<p>RAG means searching for material related to a question and generating the answer from that material. The server in this project only does the search and returns the original text. The answer is written by the agent connected to the server. In effect I attached one paper-search tool to an existing agent.</p>
+<p>The whole flow splits into two processes: (1) preparing the material, and (2) fetching evidence for a question.</p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">flowchart TD
+    P[Collect paper PDFs and metadata] --&gt; A[Source archive]
+    A --&gt; E[Extract PDF elements]
+    E --&gt; C[Build search units from text, tables and pages]
+    C --&gt; J[Jina index of text and images]
+    A --&gt; T[Title and abstract]
+    T --&gt; S[SPECTER2 paper index]
+    J --&gt; D[Separate search tables in LanceDB]
+    S --&gt; D
+    Q[The agent's question] --&gt; M[Search and retrieval over MCP]
+    D --&gt; M
+    A --&gt; R[Render the pages and tables that are needed]
+    R --&gt; M
+    M --&gt; O[The agent reads the evidence and answers]
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p>Preparation registers a paper’s PDF, extracts its content and splits it into search units. I call these units chunks. Each chunk is embedded and stored, and so is each paper’s title and abstract. Embedding turns text or an image into a vector of numbers that search can use. When a question comes in, its vector is compared with the stored vectors to find nearby material, and the server returns the original text of the parts the agent picks.</p>
+<p>Collection and extraction end in the preparation process. When I look into the same paper again, the agent searches the index that already exists. Adding a new paper processes that paper. If the extracted content of an existing paper changes, the chunk vectors of the affected papers are updated. A per-paper fingerprint keeps track of this link.</p>
+</section>
+<section id="preparing-the-material" class="level2">
+<h2 class="anchored" data-anchor-id="preparing-the-material">Preparing the material</h2>
+<p>After preparation, every chunk carries its text together with the paper ID, the page, the section heading and the position of the source element. If search finds a sentence but I cannot tell which paper and which page it came from, I cannot check the evidence, so the position is stored with the text. Figures and tables also keep a bbox, the region they occupy on the page. The bbox is the coordinate used to open that part of the original again.</p>
+<section id="extraction-and-chunks" class="level3">
+<h3 class="anchored" data-anchor-id="extraction-and-chunks">Extraction and chunks</h3>
+<p>I used OpenDataLoader for PDF extraction. It returns the type of each element along with its page and position, which made it easy to link paragraphs, headings, captions and tables to the search material. Text under the same section is grouped toward a target of 512 tokens. A long paragraph is split at sentence boundaries, with some sentences overlapping so that the surrounding context stays.</p>
+</section>
+<section id="tables-and-figures" class="level3">
+<h3 class="anchored" data-anchor-id="tables-and-figures">Tables and figures</h3>
+<p>PDF extraction did not read every table and figure. In the early samples some detected tables had empty cells, and some tables and figures were not detected at all. So I also embedded each whole page as an image. When a table has too little text, the table region is cropped and embedded as an image. A PDF that OpenDataLoader fails on goes to PyMuPDF’s text and image block extraction, and the extractor that was used is recorded.</p>
+<p>At first I also embedded each figure on its own. Search over those vectors was weak, so I took them out of the default rule. The index now holds text, tables and pages. The positions of the extracted figures are still stored, so once the right page is found the figure can be opened.</p>
+</section>
+<section id="images-are-made-on-request" class="level3">
+<h3 class="anchored" data-anchor-id="images-are-made-on-request">Images are made on request</h3>
+<p>In the beginning every page and figure image was saved as a file. As papers accumulated, images that could be regenerated at any time took up a large share of the disk, so I changed this. Now the archive keeps the original PDF and the positions, and PyMuPDF renders an image when an embedding is built or when the agent asks for one.</p>
+</section>
+</section>
+<section id="one-index-for-finding-papers-one-for-finding-passages" class="level2">
+<h2 class="anchored" data-anchor-id="one-index-for-finding-papers-one-for-finding-passages">One index for finding papers, one for finding passages</h2>
+<p>I built two indexes because a paper search asks two kinds of question. “Which papers deal with this topic?” is answered well by titles and abstracts. “How does that paper explain this method?” needs a specific paragraph or a results table from the body. The search unit and the model are split to match.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Purpose</th>
+<th>What goes into the index</th>
+<th>Model and tools</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Find papers on a topic, or papers similar to a known one</td>
+<td>Title and abstract of each paper</td>
+<td>SPECTER2 · <code>search_papers</code>, <code>find_similar_papers</code></td>
+</tr>
+<tr class="even">
+<td>Find the evidence for an explanation or an experiment</td>
+<td>Text chunks, tables, page images</td>
+<td>Jina omni · <code>search</code></td>
+</tr>
+</tbody>
+</table>
+<p>Paper-level search narrows the candidates, and the passage search can then be restricted to those papers. If I already know the paper, the agent searches its body directly.</p>
+<section id="the-passage-index" class="level3">
+<h3 class="anchored" data-anchor-id="the-passage-index">The passage index</h3>
+<p>Passage search uses <code>jina-embeddings-v5-omni-small-retrieval</code>. Papers contain figures and tables, so I picked a model that also takes images as search input. Questions are embedded with the <code>query</code> input setting, and the stored text and page images with <code>document</code>. The setting tells the embedding model which role an input plays: a question looking for an answer, or material that answers a question. The vectors of the material are stored ahead of time, and at search time the question vector is compared against them to find related paragraphs and pages.</p>
+</section>
+<section id="the-paper-index" class="level3">
+<h3 class="anchored" data-anchor-id="the-paper-index">The paper index</h3>
+<p>Paper-level search uses SPECTER2. A paper is represented by its title and abstract together. Similarity between papers uses the <code>proximity</code> adapter, and short natural-language queries use the <code>adhoc_query</code> adapter.</p>
+<p>When I first added this index, the dependencies of SPECTER2’s adapter library conflicted with the environment Jina runs in. I implemented the paper index with SciNCL first, and later moved SPECTER2 into a worker process with its own Python environment. The search service sends inputs to this worker and receives vectors. The two models run inside one service, each in its own environment.</p>
+</section>
+</section>
+<section id="returning-only-as-much-as-the-agent-needs" class="level2">
+<h2 class="anchored" data-anchor-id="returning-only-as-much-as-the-agent-needs">Returning only as much as the agent needs</h2>
+<p>Search does not return everything at once. Returning the full text of the top papers would defeat the purpose of saving context. Search returns short previews, and the agent opens the text and images of the results it chooses separately.</p>
+<section id="tools" class="level3">
+<h3 class="anchored" data-anchor-id="tools">Tools</h3>
+<p>The agent and the server are connected through MCP. The agent calls the server’s tools over MCP to search and to fetch material. These are the tools it uses most.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Tool</th>
+<th>What it returns</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>search</code></td>
+<td>Ranked chunks with a preview (500 characters by default), the paper and the page</td>
+</tr>
+<tr class="even">
+<td><code>get_chunk</code></td>
+<td>The full text of a chosen chunk and its position in the source; the chunks before and after on request</td>
+</tr>
+<tr class="odd">
+<td><code>get_element</code></td>
+<td>The text or image of a specific paragraph, table or figure element</td>
+</tr>
+<tr class="even">
+<td><code>get_page</code></td>
+<td>The extracted elements of one page; the page image on request</td>
+</tr>
+</tbody>
+</table>
+<p>Asked “How does DirectEdit preserve the unedited region?”, the agent first reads the previews in the search result and picks a related paragraph. If the paragraph it found is an experimental result, it narrows the search to that paper and asks again about the method itself. When it needs the surrounding explanation it sets <code>neighbors</code> on <code>get_chunk</code>. To check the columns of a comparison table or the layout of a figure, it opens the page.</p>
+</section>
+<section id="two-groups-in-a-search-response" class="level3">
+<h3 class="anchored" data-anchor-id="two-groups-in-a-search-response">Two groups in a search response</h3>
+<p>A search response returns <code>text_hits</code> for text and tables and <code>visual_hits</code> for figures and pages as two separate lists. In early runs the two groups had different score ranges, and merging them into one ranking pushed the image results down. The groups are divided by chunk type, so a table crop that was embedded as an image still appears among the table results.</p>
+</section>
+<section id="a-prompt-that-fixes-the-reading-order" class="level3">
+<h3 class="anchored" data-anchor-id="a-prompt-that-fixes-the-reading-order">A prompt that fixes the reading order</h3>
+<p>The MCP server also provides a prompt named <code>find_in_papers</code>. It tells the agent to search first, read a few related paragraphs and their neighbors, check any figure or table it needs, and then cite the paper and the page. If the material has no answer, the prompt tells the agent to say so. Following this order, the agent attaches sources and goes back to the original text it used in the answer.</p>
+</section>
+</section>
+<section id="why-the-search-database-can-be-rebuilt" class="level2">
+<h2 class="anchored" data-anchor-id="why-the-search-database-can-be-rebuilt">Why the search database can be rebuilt</h2>
+<p>The source material and the search data are kept apart, so that changing the model or the search database never requires collecting the papers again.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 50%">
+<col style="width: 50%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>What is stored</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Original PDFs and extracted material</td>
+<td>The basis for extracting again or chunking in a different way</td>
+</tr>
+<tr class="even">
+<td>Vectors and settings per model</td>
+<td>An index with the embedding model, its revision and the chunking rule fixed</td>
+</tr>
+<tr class="odd">
+<td>LanceDB search tables</td>
+<td>A search database regenerated from the stored material and vectors</td>
+</tr>
+</tbody>
+</table>
+<p>LanceDB fit this setup because the search process can open a directory without a separate database server running. The vectors are kept separately as Parquet files and loaded into LanceDB tables along with the paper, page and preview fields that search needs. A different model gets its own index and table, so vector spaces are never mixed.</p>
+<p>Moving the database and changing the model are different jobs. To move the database while keeping the vectors of the same model, the stored vectors and metadata are restored. To change the model, new vectors are built from the stored material and the server switches to a separate index. The two jobs can be told apart because the source positions and the vectors are stored independently.</p>
+<p>I ran both. I exported a sample archive and imported it into a different data root; the IDs, references, checksums, vectors and search results matched. I also re-embedded with a text-only Qwen3 model, switched the search model to it, and switched back to the Jina index.</p>
+</section>
+<section id="queries-i-actually-ran" class="level2">
+<h2 class="anchored" data-anchor-id="queries-i-actually-ran">Queries I actually ran</h2>
+<p>On 2026-10-12 I sent real questions to the MCP server and checked three ways of using it. At that time 22,870 papers were registered and the index of text, tables and pages held 2,325,332 vectors. The paper index that searches titles and abstracts held fewer papers, 17,841.</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>What I was looking for</th>
+<th>What came back</th>
+<th>The way of using it</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>“How does DirectEdit preserve the unedited region?”</td>
+<td>Over the whole archive, the top text result was an experimental result on page 7 of DirectEdit. After narrowing to that paper and asking about mask-guided blending, the method description on page 5 came first and I retrieved the original paragraph.</td>
+<td>Find the paper from a broad question, then move to the specific evidence</td>
+</tr>
+<tr class="even">
+<td>“Which metrics appear in DirectEdit’s quantitative comparison table?”</td>
+<td>With search restricted to DirectEdit, analysis text on page 8 ranked first and the text containing the main comparison table on page 7 ranked second. I opened the image of page 7 and checked the columns for Structure Distance, PSNR, LPIPS, MSE, SSIM and CLIP Similarity.</td>
+<td>Check the original layout of a table from the page a search result points to</td>
+</tr>
+<tr class="odd">
+<td>Papers similar to DirectEdit</td>
+<td>Passing DirectEdit to <code>find_similar_papers</code> returned FlowEdit, SteerFlow and Target-aware Image Editing via Cycle-consistent Constraints as the top three candidates.</td>
+<td>Start from a known paper and find candidates to read or compare alongside it</td>
+</tr>
+</tbody>
+</table>
+<p>In the first case the search first returned an experiment paragraph describing how well preservation works. After I made the question specific, “How does DirectEdit’s mask-guided blending preserve the unedited region?”, the method description came up. It says the edited region takes the latent from the editing path and the rest takes the latent from the reconstruction path.</p>
+<p>In the second case the numbers and column names of the table were in the extracted text, but the rows and columns were flattened into an ordinary paragraph. I opened the page image alongside it to see which metrics cover background preservation and which columns compare the editing result. That image did not come from the top visual results. I opened it from the page position attached to the text result.</p>
+<p>The third case widens the reading candidates through title and abstract vectors. How each candidate actually relates to DirectEdit is decided by reading the paper.</p>
+</section>
+<section id="what-still-needs-work" class="level2">
+<h2 class="anchored" data-anchor-id="what-still-needs-work">What still needs work</h2>
+<p>Running these queries showed four things to fix.</p>
+<section id="the-first-search-result-cannot-be-used-as-it-is" class="level3">
+<h3 class="anchored" data-anchor-id="the-first-search-result-cannot-be-used-as-it-is">The first search result cannot be used as it is</h3>
+<p>With 22,870 papers registered, the first search result still could not be used directly as evidence for an answer. Asked how DirectEdit preserves the unedited region, the first search returned an experimental result ahead of the method description. The paragraph I needed came only after I specified the term and the paper.</p>
+</section>
+<section id="approximate-search-can-miss-material" class="level3">
+<h3 class="anchored" data-anchor-id="approximate-search-can-miss-material">Approximate search can miss material</h3>
+<p>Once the chunk vectors exceed 20,000, search uses IVF_PQ approximate search and no longer compares every vector. This cuts the number of candidates to compare, but related material can be missed, so the search-range settings have to be tuned along with it.</p>
+</section>
+<section id="visual-search-is-weak" class="level3">
+<h3 class="anchored" data-anchor-id="visual-search-is-weak">Visual search is weak</h3>
+<p>In the archive-wide search about DirectEdit’s preservation method, a page unrelated to the topic ranked at the top of the visual results. For the metric question restricted to DirectEdit, the visual results were empty. I also saw a comparison table extracted as paragraphs and a small region inside a graph detected as an empty table. The pages I needed this time were reached by starting from text search.</p>
+</section>
+<section id="the-first-request-is-slow" class="level3">
+<h3 class="anchored" data-anchor-id="the-first-request-is-slow">The first request is slow</h3>
+<p>On the first requests, status and search calls timed out while the server was reading large files of extracted elements and chunks. Later requests returned results. As the material has grown, the time and cost of this first load have to come down.</p>
+</section>
+</section>
+<section id="closing" class="level2">
+<h2 class="anchored" data-anchor-id="closing">Closing</h2>
+<p>Finding and extracting the same paper again used to be repeated work, and it now lives in a reusable archive. For each question the agent picks the paragraphs and original pages it needs and reads those. The papers are stored outside any single context of the agent, so the next question can find and use the same evidence again.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/gs3393\.github\.io");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<footer class="footer">
+  <div class="nav-footer">
+    <div class="nav-footer-left">
+<p>© 2026 gs3393</p>
+</div>   
+    <div class="nav-footer-center">
+      &nbsp;
+    </div>
+    <div class="nav-footer-right">
+      <ul class="footer-items list-unstyled">
+    <li class="nav-item">
+    <a class="nav-link" href="../legacy.html">
+<p>Legacy</p>
+</a>
+  </li>  
+    <li class="nav-item">
+    <a class="nav-link" href="https://github.com/gs3393">
+<p>GitHub</p>
+</a>
+  </li>  
+</ul>
+    </div>
+  </div>
+</footer>
+
+
+
+
+<script src="../site_libs/quarto-html/zenscroll-min.js"></script>
+</body></html>

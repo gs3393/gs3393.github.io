@@ -1,17 +1,14 @@
 [
   {
-    "listing": "/notes.html",
+    "listing": "/legacy.html",
     "items": [
-      "/notes/flow-matching-fundamentals.html",
-      "/notes/cfgmp-sd35-remeasured.html",
-      "/notes/equalized-mask-table.html",
-      "/notes/diffusion-foundations.html",
-      "/notes/jit-fd-loss-analysis.html"
+      "/notes/editing-benchmark-background-metric.html"
     ]
   },
   {
     "listing": "/index.html",
     "items": [
+      "/notes/paper-rag-for-agents.html",
       "/notes/flow-matching-fundamentals.html",
       "/notes/cfgmp-sd35-remeasured.html",
       "/notes/equalized-mask-table.html",
@@ -20,9 +17,14 @@
     ]
   },
   {
-    "listing": "/legacy.html",
+    "listing": "/notes.html",
     "items": [
-      "/notes/editing-benchmark-background-metric.html"
+      "/notes/paper-rag-for-agents.html",
+      "/notes/flow-matching-fundamentals.html",
+      "/notes/cfgmp-sd35-remeasured.html",
+      "/notes/equalized-mask-table.html",
+      "/notes/diffusion-foundations.html",
+      "/notes/jit-fd-loss-analysis.html"
     ]
   }
 ]
