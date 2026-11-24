@@ -1,0 +1,45 @@
+\documentclass[border=3pt]{standalone}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usetikzlibrary{calc}
+\pgfplotsset{compat=1.18}
+\definecolor{trainc}{HTML}{0C5DA5}
+\definecolor{evalc}{HTML}{D7301F}
+\pgfplotsset{
+  log ticks with fixed point,
+  /pgf/number format/1000 sep={},
+  every axis/.append style={
+    width=5.25cm, height=4.1cm,
+    xlabel={Epoch}, xmin=0,
+    grid=major, grid style={black!9, line width=0.3pt},
+    tick align=inside, tick style={black, line width=0.3pt}, major tick length=2pt,
+    axis line style={line width=0.4pt},
+    tick label style={font=\footnotesize}, label style={font=\small}, title style={font=\small, yshift=-2pt},
+    xlabel style={yshift=2pt},
+    legend style={draw=none, fill=none, font=\footnotesize, legend columns=-1,
+                  /tikz/every even column/.append style={column sep=10pt}},
+  },
+  raw/.style={black!30, line width=0.25pt, line join=round},
+  mean/.style={trainc, line width=0.9pt, line join=round},
+  evalpts/.style={evalc, line width=0.6pt, densely dashed, mark=*, mark size=1.15pt,
+                  mark options={solid, fill=white, line width=0.6pt}},
+}
+\begin{document}
+\begin{tikzpicture}
+\begin{groupplot}[group style={group size=2 by 1, horizontal sep=1.15cm}, xmax=1000, xtick distance=200,
+                 width=6.1cm]
+\nextgroupplot[title={(a) Reward $f$}, ymin=0.2, ymax=1.0, legend to name=leg]
+\fill[black, opacity=0.07] (axis cs:650,0.2) rectangle (axis cs:850,1.0);
+\fill[black, opacity=0.17] (axis cs:850,0.2) rectangle (axis cs:1000,1.0);
+\addplot[raw] table[x=epoch, y=reward, col sep=comma] {abs_v2_raw.csv};
+\addplot[mean] table[x=epoch, y=reward, col sep=comma] {abs_v2_mean.csv};
+\legend{{training samples (10 steps), per epoch}, {10-epoch running mean}}
+\nextgroupplot[title={(b) Logged KL value ($\times 10^{-4}$)}, ymin=0, ymax=3]
+\fill[black, opacity=0.07] (axis cs:650,0) rectangle (axis cs:850,3);
+\fill[black, opacity=0.17] (axis cs:850,0) rectangle (axis cs:1000,3);
+\addplot[raw] table[x=epoch, y=kl, col sep=comma] {abs_v2_raw.csv};
+\addplot[mean] table[x=epoch, y=kl, col sep=comma] {abs_v2_mean.csv};
+\end{groupplot}
+\node[anchor=south] at ([yshift=16pt]$(group c1r1.north)!0.5!(group c2r1.north)$) {\pgfplotslegendfromname{leg}};
+\end{tikzpicture}
+\end{document}
